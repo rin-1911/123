@@ -141,16 +141,22 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
   }
 
   // 构建用户会话对象（用于表单组件）
+  const primaryRole = roles.includes("HQ_ADMIN") ? "HQ_ADMIN" 
+    : roles.includes("STORE_MANAGER") ? "STORE_MANAGER"
+    : roles.includes("DEPT_LEAD") ? "DEPT_LEAD"
+    : roles[0] || "STAFF";
+    
   const targetUserSession = {
     id: targetUser.id,
     name: targetUser.name,
     account: targetUser.account,
     roles: roles,
+    primaryRole: primaryRole as Role,
     storeId: targetUser.storeId,
     storeName: targetUser.Store?.name || "",
     departmentId: targetUser.departmentId,
     departmentName: targetUser.Department?.name || "",
-    departmentCode: targetUser.Department?.code as DepartmentCode | undefined,
+    departmentCode: targetUser.Department?.code as DepartmentCode | null,
     nursingRole: targetUser.nursingRole,
   };
 
