@@ -95,14 +95,14 @@ export async function GET(request: NextRequest) {
     >();
 
     for (const m of members) {
-      if (!m.department) continue;
+      if (!m.Department) continue;
 
-      const key = m.department.id;
+      const key = m.Department.id;
       if (!deptMap.has(key)) {
         deptMap.set(key, {
-          departmentId: m.department.id,
-          departmentCode: m.department.code,
-          departmentName: m.department.name,
+          departmentId: m.Department.id,
+          departmentCode: m.Department.code,
+          departmentName: m.Department.name,
           totalUsers: 0,
           submittedCount: 0,
           draftCount: 0,

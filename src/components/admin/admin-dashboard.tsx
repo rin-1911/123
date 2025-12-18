@@ -375,9 +375,9 @@ export function AdminDashboard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div>
-                        <p className="font-medium">{perm.user.name}</p>
+                        <p className="font-medium">{perm.User?.name}</p>
                         <p className="text-sm text-gray-500">
-                          {perm.user.Department?.name || "未分配部门"} · {perm.user.account}
+                          {perm.User?.Department?.name || "未分配部门"} · {perm.User?.account}
                         </p>
                       </div>
                       <div className="flex gap-2">

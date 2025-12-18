@@ -116,9 +116,9 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
 
   // 获取表单 schema
   const roles = JSON.parse(targetUser.roles || '["STAFF"]') as Role[];
-  const schema = targetUser.department
+  const schema = targetUser.Department
     ? getSchemaForRole(
-        targetUser.department.code as DepartmentCode,
+        targetUser.Department.code as DepartmentCode,
         roles,
         targetUser.nursingRole as NursingRole | undefined
       )

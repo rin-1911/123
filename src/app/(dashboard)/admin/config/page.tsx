@@ -178,9 +178,9 @@ export default async function ConfigPage() {
                 className={channel.isActive ? "" : "opacity-50"}
               >
                 {channel.name}
-                {channel.store && (
+                {channel.Store && (
                   <span className="ml-1 text-xs text-gray-400">
-                    ({channel.store.code})
+                    ({channel.Store.code})
                   </span>
                 )}
               </Badge>

@@ -779,15 +779,15 @@ async function aggregateDepartment(
     const formDataObj = parseFormData(r.formData as string | null);
     const formDataFields = Object.keys(formDataObj).length;
     const fixedTables = [
-      r.consultation ? '咨询' : '',
-      r.frontDesk ? '前台' : '',
-      r.nursing ? '护理' : '',
-      r.offlineMarketing ? '市场' : '',
-      r.onlineGrowth ? '网络' : '',
-      r.medical ? '医疗' : '',
-      r.financeHrAdmin ? '财务' : '',
+      r.ConsultationReport ? '咨询' : '',
+      r.FrontDeskReport ? '前台' : '',
+      r.NursingReport ? '护理' : '',
+      r.OfflineMarketingReport ? '市场' : '',
+      r.OnlineGrowthReport ? '网络' : '',
+      r.MedicalReport ? '医疗' : '',
+      r.FinanceHrAdminReport ? '财务' : '',
     ].filter(Boolean).join('/');
-    console.log(`  - 用户: ${r.user?.name}, 状态: ${r.status}, formData字段: ${formDataFields}个, 固定表: ${fixedTables || '无'}`);
+    console.log(`  - 用户: ${r.User?.name}, 状态: ${r.status}, formData字段: ${formDataFields}个, 固定表: ${fixedTables || '无'}`);
   }
 
   // 构建字段汇总
@@ -844,9 +844,9 @@ async function aggregateDepartment(
   
   for (const report of reports) {
     const formData = parseFormData(report.formData as string | null);
-    const userName = report.user?.name || "未知";
-    const userConfig = report.user?.customFormConfig 
-      ? parseCustomFormConfig(report.user.customFormConfig) 
+    const userName = report.User?.name || "未知";
+    const userConfig = report.User?.customFormConfig 
+      ? parseCustomFormConfig(report.User.customFormConfig) 
       : null;
 
     // 初始化该用户的已处理字段集合
@@ -1099,7 +1099,7 @@ export async function getFieldSummary(
 
   for (const report of reports) {
     const formData = parseFormData(report.formData);
-    const userName = report.user?.name || "未知";
+    const userName = report.User?.name || "未知";
 
     for (const fieldId of fieldIds) {
       const value = formData[fieldId];
