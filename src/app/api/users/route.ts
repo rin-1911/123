@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyRole } from "@/lib/types";
 import bcrypt from "bcryptjs";
+import { isPasswordStrong } from "@/lib/password-policy";
 
 // GET: 获取用户列表
 export async function GET(request: NextRequest) {
@@ -70,8 +71,11 @@ export async function POST(request: NextRequest) {
   }
 
   // 密码强度验证（生产环境）
-  if (password.length < 6) {
-    return NextResponse.json({ error: "密码长度至少6位" }, { status: 400 });
+  if (!isPasswordStrong(password)) {
+    return NextResponse.json(
+      { error: "密码必须至少8位，且同时包含字母与数字" },
+      { status: 400 }
+    );
   }
 
   // 验证角色

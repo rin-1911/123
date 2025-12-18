@@ -79,6 +79,8 @@ export interface UserSession {
   storeName: string | null;
   departmentName: string | null;
   nursingRole: string | null;  // 护理岗位类型
+  // 登录安全提示：弱密码（纯数字）提示用户尽快修改
+  passwordWeak?: boolean;
 }
 
 // 辅助函数：解析角色JSON

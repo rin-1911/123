@@ -28,6 +28,11 @@ export function Header({ user }: HeaderProps) {
   return (
     <>
       <header className="flex-shrink-0 bg-white border-b">
+        {user.passwordWeak && (
+          <div className="bg-amber-50 border-b border-amber-200 text-amber-900 text-sm px-4 sm:px-6 py-2">
+            检测到你正在使用弱密码（纯数字）。为保障账号安全，请尽快修改为“至少8位且包含字母+数字”的强密码。
+          </div>
+        )}
         <div className="flex items-center justify-between h-16 px-4 sm:px-6">
           <div className="flex items-center md:hidden">
             <Button

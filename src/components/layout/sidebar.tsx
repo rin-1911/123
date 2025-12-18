@@ -117,7 +117,11 @@ export function Sidebar({ user }: SidebarProps) {
           )}
           <nav className="flex-1 px-3 space-y-1">
             {filteredItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              // 修复：/admin 会被 /admin/users 等子路由误判为 active，导致多个菜单同时高亮
+              const isActive =
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}

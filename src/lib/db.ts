@@ -34,7 +34,7 @@ export async function withRetry<T>(
   }
 }
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// 生产环境（Vercel/Serverless）也需要复用 PrismaClient，
+// 否则每次请求都创建新连接池，容易触发 connection pool timeout
+globalForPrisma.prisma = prisma;
 

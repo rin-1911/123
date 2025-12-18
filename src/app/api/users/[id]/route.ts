@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasAnyRole, parseRoles } from "@/lib/types";
 import bcrypt from "bcryptjs";
+import { isPasswordStrong } from "@/lib/password-policy";
 
 // GET: 获取单个用户
 export async function GET(
@@ -129,6 +130,12 @@ export async function PUT(
 
     // 如果提供了新密码，则更新密码
     if (password) {
+      if (!isPasswordStrong(password)) {
+        return NextResponse.json(
+          { error: "密码必须至少8位，且同时包含字母与数字" },
+          { status: 400 }
+        );
+      }
       updateData.passwordHash = await bcrypt.hash(password, 10);
     }
 

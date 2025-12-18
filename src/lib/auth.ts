@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./db";
 import type { Role, DepartmentCode, UserSession } from "./types";
 import { parseRoles, getPrimaryRole } from "./types";
+import { isWeakPassword } from "./password-policy";
 
 declare module "next-auth" {
   interface Session {
@@ -68,6 +69,7 @@ export const authOptions: NextAuthOptions = {
           storeName: user.Store?.name ?? null,
           departmentName: user.Department?.name ?? null,
           nursingRole: user.nursingRole ?? null,
+          passwordWeak: isWeakPassword(credentials.password),
         };
       },
     }),
@@ -86,6 +88,7 @@ export const authOptions: NextAuthOptions = {
         token.storeName = user.storeName;
         token.departmentName = user.departmentName;
         token.nursingRole = user.nursingRole;
+        token.passwordWeak = (user as UserSession).passwordWeak ?? false;
       }
       // 兼容旧版本 token（只有 role，没有 roles/primaryRole）
       const anyToken = token as unknown as { role?: string; roles?: unknown; primaryRole?: unknown };
@@ -118,6 +121,7 @@ export const authOptions: NextAuthOptions = {
         storeName: token.storeName as string | null,
         departmentName: token.departmentName as string | null,
         nursingRole: token.nursingRole as string | null,
+        passwordWeak: (token as unknown as { passwordWeak?: boolean }).passwordWeak ?? false,
       };
       return session;
     },

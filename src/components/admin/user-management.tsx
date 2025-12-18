@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,6 +126,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   const [filterDept, setFilterDept] = useState("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [filterStore, setFilterStore] = useState("all");
   
   // 过滤后的用户列表
   const filteredUsers = users.filter((user) => {
@@ -136,13 +137,20 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
     
     // 部门匹配
     const matchDept = filterDept === "all" || user.departmentId === filterDept;
+
+    // 门店匹配
+    const matchStore =
+      filterStore === "all" ||
+      (filterStore === "HQ"
+        ? !user.storeId
+        : user.storeId === filterStore);
     
     // 状态匹配
     const matchStatus = filterStatus === "all" || 
       (filterStatus === "active" && user.isActive) ||
       (filterStatus === "inactive" && !user.isActive);
     
-    return matchSearch && matchDept && matchStatus;
+    return matchSearch && matchDept && matchStore && matchStatus;
   });
 
   // 表单数据
@@ -165,10 +173,20 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   const canView = hasAnyRole(currentUser.roles, ["STORE_MANAGER", "HQ_ADMIN"]);
 
   // 加载用户列表
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/users");
+      const qs = new URLSearchParams();
+      if (hasAnyRole(currentUser.roles, ["HQ_ADMIN"])) {
+        if (filterStore !== "all") {
+          // HQ = 总部/未绑定门店用户（后端目前无专门参数，走前端筛选即可）
+          // 这里仍然给出 storeId，方便按门店拉取
+          if (filterStore !== "HQ") qs.set("storeId", filterStore);
+        }
+      }
+
+      const url = qs.toString() ? `/api/users?${qs.toString()}` : "/api/users";
+      const res = await fetch(url);
       const data = await res.json();
       if (data.users) {
         setUsers(data.users);
@@ -182,11 +200,11 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser.roles, filterStore, toast]);
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [loadUsers]);
 
   // 打开新增弹窗
   const handleCreate = () => {
@@ -543,6 +561,27 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
             {/* 展开的筛选选项 */}
             {showFilters && (
               <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                {/* 门店筛选（HQ_ADMIN 才显示） */}
+                {hasAnyRole(currentUser.roles, ["HQ_ADMIN"]) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">门店：</span>
+                    <Select value={filterStore} onValueChange={setFilterStore}>
+                      <SelectTrigger className="w-[180px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部门店</SelectItem>
+                        <SelectItem value="HQ">总部（无门店）</SelectItem>
+                        {stores.map((store) => (
+                          <SelectItem key={store.id} value={store.id}>
+                            {store.name} ({store.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">部门：</span>
                   <Select value={filterDept} onValueChange={setFilterDept}>
@@ -561,12 +600,13 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                 </div>
                 
                 {/* 清除筛选 */}
-                {(filterDept !== "all" || filterStatus !== "all" || searchQuery) && (
+                {(filterStore !== "all" || filterDept !== "all" || filterStatus !== "all" || searchQuery) && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
                       setSearchQuery("");
+                      setFilterStore("all");
                       setFilterDept("all");
                       setFilterStatus("all");
                     }}
@@ -601,6 +641,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     size="sm"
                     onClick={() => {
                       setSearchQuery("");
+                      setFilterStore("all");
                       setFilterDept("all");
                       setFilterStatus("all");
                     }}
