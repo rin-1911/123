@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       },
     },
     include: {
-      lockedBy: {
+      User: {
         select: { name: true },
       },
     },
