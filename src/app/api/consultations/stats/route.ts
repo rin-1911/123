@@ -142,11 +142,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 计算转化率
-    for (const stat of consultantMap.values()) {
+    Array.from(consultantMap.values()).forEach(stat => {
       stat.conversionRate = stat.total > 0 
         ? Math.round(stat.deal / stat.total * 100) 
         : 0;
-    }
+    });
 
     const consultantStats = Array.from(consultantMap.values())
       .sort((a, b) => b.totalAmount - a.totalAmount);
