@@ -18,12 +18,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { Building2, Plus, Pencil, Trash2, Power, PowerOff, Loader2 } from "lucide-react";
 
 interface StoreCount {
-  users: number;
-  locks: number;
-  reports: number;
-  channels: number;
-  configs: number;
-  storeAccess: number;
+  User: number;
+  StoreDayLock: number;
+  DailyReport: number;
+  ChannelSource: number;
+  ConfigFlag: number;
+  UserStoreAccess: number;
 }
 
 interface Store {
@@ -179,7 +179,7 @@ export function StoreManagement({ initialStores }: StoreManagementProps) {
 
   const getTotalRefs = (store: Store) => {
     const c = store._count;
-    return c.users + c.locks + c.reports + c.channels + c.configs + c.storeAccess;
+    return c.User + c.StoreDayLock + c.DailyReport + c.ChannelSource + c.ConfigFlag + c.UserStoreAccess;
   };
 
   return (
