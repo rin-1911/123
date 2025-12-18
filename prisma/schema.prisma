@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model ChannelSource {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  storeId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Store     Store?   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, name])
+  @@index([storeId, isActive])
+}
+
+model ConfigFlag {
+  id          String   @id @default(cuid())
+  scope       String   @default("GLOBAL")
+  key         String
+  storeId     String?
+  isActive    Boolean  @default(true)
+  value       String   @default("{}")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Store       Store?   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([scope, storeId, key])
+  @@index([key])
+}
+
+model ConsultationReport {
+  dailyReportId        String      @id
+  receptionTotal       Int         @default(0)
+  initialTotal         Int         @default(0)
+  dealsTotal           Int         @default(0)
+  initialDealsTotal    Int         @default(0)
+  cashInCents          Int         @default(0)
+  implantLeads         Int         @default(0)
+  orthoLeads           Int         @default(0)
+  followupAppointments Int         @default(0)
+  followupCallsDone    Int         @default(0)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime
+  DailyReport          DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model ConsultationViewPermission {
+  id                                                String    @id @default(cuid())
+  userId                                            String
+  storeId                                           String
+  grantedById                                       String
+  canViewAll                                        Boolean   @default(false)
+  canViewStats                                      Boolean   @default(true)
+  canExport                                         Boolean   @default(false)
+  validFrom                                         DateTime  @default(now())
+  validUntil                                        DateTime?
+  isActive                                          Boolean   @default(true)
+  createdAt                                         DateTime  @default(now())
+  updatedAt                                         DateTime  @updatedAt
+  User_ConsultationViewPermission_grantedByIdToUser User      @relation("ConsultationViewPermission_grantedByIdToUser", fields: [grantedById], references: [id])
+  User_ConsultationViewPermission_userIdToUser      User      @relation("ConsultationViewPermission_userIdToUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+  @@index([storeId])
+}
+
+model DailyReport {
+  id                     String                  @id @default(cuid())
+  reportDate             String
+  status                 String                  @default("DRAFT")
+  submittedAt            DateTime?
+  storeId                String
+  departmentId           String
+  userId                 String
+  note                   String?
+  schemaId               String?
+  formData               String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  ConsultationReport     ConsultationReport?
+  Department             Department              @relation(fields: [departmentId], references: [id])
+  Store                  Store                   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  User                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  FinanceHrAdminReport   FinanceHrAdminReport?
+  FrontDeskReport        FrontDeskReport?
+  MedicalReport          MedicalReport?
+  NursingReport          NursingReport?
+  OfflineMarketingReport OfflineMarketingReport?
+  OnlineGrowthReport     OnlineGrowthReport?
+
+  @@unique([userId, reportDate])
+  @@index([departmentId, reportDate])
+  @@index([storeId, reportDate])
+}
+
+model Department {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  DailyReport DailyReport[]
+  User        User[]
+}
+
+model DictionaryItem {
+  id        String   @id @default(cuid())
+  category  String
+  name      String
+  value     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([category, name])
+  @@index([category, isActive])
+}
+
+model FinanceHrAdminReport {
+  dailyReportId            String      @id
+  cashInCents              Int         @default(0)
+  refundsInCents           Int         @default(0)
+  cashPayInCents           Int         @default(0)
+  cardPayInCents           Int         @default(0)
+  onlinePayInCents         Int         @default(0)
+  expenseTotalInCents      Int         @default(0)
+  expenseMaterialInCents   Int         @default(0)
+  expenseProcessingInCents Int         @default(0)
+  expenseMarketingInCents  Int         @default(0)
+  expenseAdminInCents      Int         @default(0)
+  reconciliationIssues     Int         @default(0)
+  staffScheduled           Int         @default(0)
+  staffPresent             Int         @default(0)
+  staffAbsent              Int         @default(0)
+  hiresCount               Int         @default(0)
+  resignationsCount        Int         @default(0)
+  trainingSessions         Int         @default(0)
+  traineesCount            Int         @default(0)
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime
+  DailyReport              DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model FrontDeskReport {
+  dailyReportId           String      @id
+  newVisits               Int         @default(0)
+  returningVisits         Int         @default(0)
+  newAppointments         Int         @default(0)
+  rescheduledAppointments Int         @default(0)
+  canceledAppointments    Int         @default(0)
+  noShowAppointments      Int         @default(0)
+  initialTriage           Int         @default(0)
+  revisitTriage           Int         @default(0)
+  paymentsCount           Int         @default(0)
+  refundsCount            Int         @default(0)
+  complaintsCount         Int         @default(0)
+  resolvedCount           Int         @default(0)
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime
+  DailyReport             DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model MedicalReport {
+  dailyReportId            String      @id
+  patientsSeen             Int         @default(0)
+  rootCanals               Int         @default(0)
+  fillings                 Int         @default(0)
+  extractions              Int         @default(0)
+  fixedProsthesisDelivered Int         @default(0)
+  removableProsthesisDeliv Int         @default(0)
+  implantSurgeries         Int         @default(0)
+  orthoStarts              Int         @default(0)
+  orthoFollowups           Int         @default(0)
+  riskEvents               Int         @default(0)
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime
+  DailyReport              DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model NursingReport {
+  dailyReportId        String      @id
+  workType             String
+  panoramicXrays       Int         @default(0)
+  cbctScans            Int         @default(0)
+  intraoralScansPhotos Int         @default(0)
+  sterilizerCycles     Int         @default(0)
+  instrumentPacks      Int         @default(0)
+  consumableIncidents  Int         @default(0)
+  doctorsAssisted      Int         @default(0)
+  overtimeMinutes      Int         @default(0)
+  hygieneVisits        Int         @default(0)
+  perioTherapies       Int         @default(0)
+  referralsToDoctor    Int         @default(0)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime
+  DailyReport          DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model OfflineMarketingReport {
+  dailyReportId          String      @id
+  touchpoints            Int         @default(0)
+  leadsNew               Int         @default(0)
+  leadsValid             Int         @default(0)
+  appointmentsBooked     Int         @default(0)
+  visitsArrived          Int         @default(0)
+  costInCents            Int         @default(0)
+  partnershipsNew        Int         @default(0)
+  partnershipsMaintained Int         @default(0)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime
+  DailyReport            DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model OnlineGrowthReport {
+  dailyReportId      String      @id
+  videosPublished    Int         @default(0)
+  liveSessions       Int         @default(0)
+  postsPublished     Int         @default(0)
+  leadsNew           Int         @default(0)
+  leadsValid         Int         @default(0)
+  appointmentsBooked Int         @default(0)
+  visitsArrived      Int         @default(0)
+  adSpendInCents     Int         @default(0)
+  followupsDone      Int         @default(0)
+  unreachableCount   Int         @default(0)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime
+  DailyReport        DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model PatientConsultation {
+  id               String   @id @default(cuid())
+  patientName      String
+  patientPhone     String?
+  patientAge       Int?
+  patientGender    String?
+  visitDate        String
+  visitType        String   @default("INITIAL")
+  source           String?
+  referrer         String?
+  toothPositions   String?
+  chiefComplaint   String?
+  diagnosis        String?
+  intendedProjects String?
+  intentionLevel   String?
+  dealStatus       String   @default("PENDING")
+  dealProjects     String?
+  dealAmount       Int      @default(0)
+  depositAmount    Int      @default(0)
+  paymentMethod    String?
+  noDealReason     String?
+  noDealDetail     String?
+  nextFollowDate   String?
+  nextFollowNote   String?
+  followHistory    String?
+  remark           String?
+  consultantId     String
+  storeId          String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  User             User     @relation(fields: [consultantId], references: [id], onDelete: Cascade)
+  Store            Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([consultantId, visitDate])
+  @@index([dealStatus])
+  @@index([patientPhone])
+  @@index([storeId, visitDate])
+}
+
+model Store {
+  id                  String                @id @default(cuid())
+  code                String                @unique
+  name                String
+  city                String?
+  address             String?
+  chairCnt            Int                   @default(0)
+  isActive            Boolean               @default(true)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  ChannelSource       ChannelSource[]
+  ConfigFlag          ConfigFlag[]
+  DailyReport         DailyReport[]
+  PatientConsultation PatientConsultation[]
+  StoreDayLock        StoreDayLock[]
+  User                User[]
+  UserStoreAccess     UserStoreAccess[]
+}
+
+model StoreDayLock {
+  id         String    @id @default(cuid())
+  storeId    String
+  reportDate String
+  isLocked   Boolean   @default(false)
+  lockedAt   DateTime?
+  lockedById String?
+  note       String?
+  User       User?     @relation(fields: [lockedById], references: [id])
+  Store      Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, reportDate])
+  @@index([reportDate])
+}
+
+model User {
+  id                                                                      String                       @id @default(cuid())
+  account                                                                 String                       @unique
+  name                                                                    String
+  passwordHash                                                            String
+  roles                                                                   String                       @default("[\"STAFF\"]")
+  isActive                                                                Boolean                      @default(true)
+  nursingRole                                                             String?
+  customFormConfig                                                        String?
+  storeId                                                                 String?
+  departmentId                                                            String?
+  createdAt                                                               DateTime                     @default(now())
+  updatedAt                                                               DateTime                     @updatedAt
+  ConsultationViewPermission_ConsultationViewPermission_grantedByIdToUser ConsultationViewPermission[] @relation("ConsultationViewPermission_grantedByIdToUser")
+  ConsultationViewPermission_ConsultationViewPermission_userIdToUser      ConsultationViewPermission[] @relation("ConsultationViewPermission_userIdToUser")
+  DailyReport                                                             DailyReport[]
+  PatientConsultation                                                     PatientConsultation[]
+  StoreDayLock                                                            StoreDayLock[]
+  Department                                                              Department?                  @relation(fields: [departmentId], references: [id])
+  Store                                                                   Store?                       @relation(fields: [storeId], references: [id])
+  UserStoreAccess                                                         UserStoreAccess[]
+
+  @@index([departmentId])
+  @@index([storeId])
+}
+
+model UserStoreAccess {
+  id        String   @id @default(cuid())
+  userId    String
+  storeId   String
+  roles     String   @default("[\"STAFF\"]")
+  createdAt DateTime @default(now())
+  Store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+  @@index([storeId])
+}
