@@ -571,13 +571,13 @@ function parseCustomFormConfig(configStr: string | null): {
  */
 function extractFixedTableData(
   report: {
-    consultation?: { receptionTotal: number; initialTotal: number; dealsTotal: number; initialDealsTotal: number; cashInCents: number; implantLeads: number; orthoLeads: number; followupAppointments: number; followupCallsDone: number } | null;
-    frontDesk?: { newVisits: number; returningVisits: number; newAppointments: number; rescheduledAppointments: number; canceledAppointments: number; noShowAppointments: number; initialTriage: number; revisitTriage: number; paymentsCount: number; refundsCount: number; complaintsCount: number; resolvedCount: number } | null;
-    offlineMarketing?: { touchpoints: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; costInCents: number; partnershipsNew: number; partnershipsMaintained: number } | null;
-    onlineGrowth?: { videosPublished: number; liveSessions: number; postsPublished: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; adSpendInCents: number; followupsDone: number; unreachableCount: number } | null;
-    medical?: { patientsSeen: number; rootCanals: number; fillings: number; extractions: number; fixedProsthesisDelivered: number; removableProsthesisDeliv: number; implantSurgeries: number; orthoStarts: number; orthoFollowups: number; riskEvents: number } | null;
-    nursing?: { workType: string; panoramicXrays: number; cbctScans: number; intraoralScansPhotos: number; sterilizerCycles: number; instrumentPacks: number; consumableIncidents: number; doctorsAssisted: number; overtimeMinutes: number; hygieneVisits: number; perioTherapies: number; referralsToDoctor: number } | null;
-    financeHrAdmin?: { cashInCents: number; refundsInCents: number; cashPayInCents: number; cardPayInCents: number; onlinePayInCents: number; expenseTotalInCents: number; expenseMaterialInCents: number; expenseProcessingInCents: number; expenseMarketingInCents: number; expenseAdminInCents: number; reconciliationIssues: number; staffScheduled: number; staffPresent: number; staffAbsent: number; hiresCount: number; resignationsCount: number; trainingSessions: number; traineesCount: number } | null;
+    ConsultationReport?: { receptionTotal: number; initialTotal: number; dealsTotal: number; initialDealsTotal: number; cashInCents: number; implantLeads: number; orthoLeads: number; followupAppointments: number; followupCallsDone: number } | null;
+    FrontDeskReport?: { newVisits: number; returningVisits: number; newAppointments: number; rescheduledAppointments: number; canceledAppointments: number; noShowAppointments: number; initialTriage: number; revisitTriage: number; paymentsCount: number; refundsCount: number; complaintsCount: number; resolvedCount: number } | null;
+    OfflineMarketingReport?: { touchpoints: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; costInCents: number; partnershipsNew: number; partnershipsMaintained: number } | null;
+    OnlineGrowthReport?: { videosPublished: number; liveSessions: number; postsPublished: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; adSpendInCents: number; followupsDone: number; unreachableCount: number } | null;
+    MedicalReport?: { patientsSeen: number; rootCanals: number; fillings: number; extractions: number; fixedProsthesisDelivered: number; removableProsthesisDeliv: number; implantSurgeries: number; orthoStarts: number; orthoFollowups: number; riskEvents: number } | null;
+    NursingReport?: { workType: string; panoramicXrays: number; cbctScans: number; intraoralScansPhotos: number; sterilizerCycles: number; instrumentPacks: number; consumableIncidents: number; doctorsAssisted: number; overtimeMinutes: number; hygieneVisits: number; perioTherapies: number; referralsToDoctor: number } | null;
+    FinanceHrAdminReport?: { cashInCents: number; refundsInCents: number; cashPayInCents: number; cardPayInCents: number; onlinePayInCents: number; expenseTotalInCents: number; expenseMaterialInCents: number; expenseProcessingInCents: number; expenseMarketingInCents: number; expenseAdminInCents: number; reconciliationIssues: number; staffScheduled: number; staffPresent: number; staffAbsent: number; hiresCount: number; resignationsCount: number; trainingSessions: number; traineesCount: number } | null;
   },
   departmentCode: string
 ): Record<string, unknown> {
@@ -585,8 +585,8 @@ function extractFixedTableData(
 
   switch (departmentCode) {
     case "CONSULTATION":
-      if (report.consultation) {
-        const c = report.consultation;
+      if (report.ConsultationReport) {
+        const c = report.ConsultationReport;
         data.receptionTotal = c.receptionTotal;
         data.initialTotal = c.initialTotal;
         data.dealsTotal = c.dealsTotal;
@@ -600,8 +600,8 @@ function extractFixedTableData(
       break;
 
     case "FRONT_DESK":
-      if (report.frontDesk) {
-        const f = report.frontDesk;
+      if (report.FrontDeskReport) {
+        const f = report.FrontDeskReport;
         data.newVisits = f.newVisits;
         data.returningVisits = f.returningVisits;
         data.newAppointments = f.newAppointments;
@@ -618,8 +618,8 @@ function extractFixedTableData(
       break;
 
     case "OFFLINE_MARKETING":
-      if (report.offlineMarketing) {
-        const o = report.offlineMarketing;
+      if (report.OfflineMarketingReport) {
+        const o = report.OfflineMarketingReport;
         data.touchpoints = o.touchpoints;
         data.leadsNew = o.leadsNew;
         data.leadsValid = o.leadsValid;
@@ -632,8 +632,8 @@ function extractFixedTableData(
       break;
 
     case "ONLINE_GROWTH":
-      if (report.onlineGrowth) {
-        const g = report.onlineGrowth;
+      if (report.OnlineGrowthReport) {
+        const g = report.OnlineGrowthReport;
         data.videosPublished = g.videosPublished;
         data.liveSessions = g.liveSessions;
         data.postsPublished = g.postsPublished;
@@ -648,8 +648,8 @@ function extractFixedTableData(
       break;
 
     case "MEDICAL":
-      if (report.medical) {
-        const m = report.medical;
+      if (report.MedicalReport) {
+        const m = report.MedicalReport;
         data.patientsSeen = m.patientsSeen;
         data.rootCanals = m.rootCanals;
         data.fillings = m.fillings;
@@ -664,8 +664,8 @@ function extractFixedTableData(
       break;
 
     case "NURSING":
-      if (report.nursing) {
-        const n = report.nursing;
+      if (report.NursingReport) {
+        const n = report.NursingReport;
         data.workType = n.workType;
         data.panoramicXrays = n.panoramicXrays;
         data.cbctScans = n.cbctScans;
@@ -682,8 +682,8 @@ function extractFixedTableData(
       break;
 
     case "FINANCE_HR_ADMIN":
-      if (report.financeHrAdmin) {
-        const fa = report.financeHrAdmin;
+      if (report.FinanceHrAdminReport) {
+        const fa = report.FinanceHrAdminReport;
         data.cashInCents = fa.cashInCents;
         data.refundsInCents = fa.refundsInCents;
         data.cashPayInCents = fa.cashPayInCents;
@@ -1002,7 +1002,7 @@ export async function aggregateStoreData(
   // 获取该门店所有部门
   const departments = await prisma.department.findMany({
     where: {
-      users: {
+      User: {
         some: { storeId, isActive: true },
       },
     },
@@ -1094,6 +1094,9 @@ export async function getFieldSummary(
       count: 0,
       average: 0,
       values: [],
+      isCustomField: false,
+      category: "other",
+      sourceType: "formData",
     };
   }
 

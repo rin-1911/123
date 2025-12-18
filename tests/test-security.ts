@@ -259,7 +259,7 @@ function generateReport() {
   console.log("                  安全测试报告");
   console.log("═".repeat(60));
   
-  const categories = [...new Set(results.map(r => r.category))];
+  const categories = Array.from(new Set(results.map(r => r.category)));
   
   const stats = {
     critical: { passed: 0, failed: 0 },

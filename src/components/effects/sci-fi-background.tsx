@@ -13,6 +13,10 @@ export function SciFiLoginBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // 保存非空引用
+    const cvs = canvas;
+    const context = ctx;
+
     let animationId: number;
     let particles: Particle[] = [];
     let gridLines: GridLine[] = [];
@@ -20,32 +24,32 @@ export function SciFiLoginBackground() {
 
     // 设置canvas尺寸
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      cvs.width = window.innerWidth;
+      cvs.height = window.innerHeight;
       initParticles();
       initGrid();
     };
 
     // 粒子类
     class Particle {
-      x: number;
-      y: number;
-      z: number;
-      size: number;
-      speed: number;
-      color: string;
-      angle: number;
-      orbit: number;
+      x: number = 0;
+      y: number = 0;
+      z: number = 0;
+      size: number = 0;
+      speed: number = 0;
+      color: string = "";
+      angle: number = 0;
+      orbit: number = 0;
 
       constructor() {
         this.reset();
-        this.z = Math.random() * canvas.width;
+        this.z = Math.random() * cvs.width;
       }
 
       reset() {
-        this.x = Math.random() * canvas.width - canvas.width / 2;
-        this.y = Math.random() * canvas.height - canvas.height / 2;
-        this.z = canvas.width;
+        this.x = Math.random() * cvs.width - cvs.width / 2;
+        this.y = Math.random() * cvs.height - cvs.height / 2;
+        this.z = cvs.width;
         this.size = Math.random() * 2 + 0.5;
         this.speed = Math.random() * 2 + 1;
         this.color = `hsla(${180 + Math.random() * 60}, 100%, ${60 + Math.random() * 20}%, `;
@@ -63,20 +67,20 @@ export function SciFiLoginBackground() {
       }
 
       draw() {
-        const scale = canvas.width / this.z;
-        const x2d = this.x * scale + canvas.width / 2;
-        const y2d = this.y * scale + canvas.height / 2;
+        const scale = cvs.width / this.z;
+        const x2d = this.x * scale + cvs.width / 2;
+        const y2d = this.y * scale + cvs.height / 2;
         const size = this.size * scale;
-        const opacity = 1 - this.z / canvas.width;
+        const opacity = 1 - this.z / cvs.width;
 
-        ctx!.beginPath();
-        ctx!.arc(x2d, y2d, Math.max(0.5, size), 0, Math.PI * 2);
-        ctx!.fillStyle = this.color + opacity + ")";
-        ctx!.fill();
+        context.beginPath();
+        context.arc(x2d, y2d, Math.max(0.5, size), 0, Math.PI * 2);
+        context.fillStyle = this.color + opacity + ")";
+        context.fill();
 
         // 添加发光效果
-        ctx!.shadowBlur = 10;
-        ctx!.shadowColor = this.color + "0.5)";
+        context.shadowBlur = 10;
+        context.shadowColor = this.color + "0.5)";
       }
     }
 
@@ -92,28 +96,28 @@ export function SciFiLoginBackground() {
 
       update() {
         this.y += this.speed;
-        if (this.y > canvas.height) {
-          this.y = canvas.height / 2;
+        if (this.y > cvs.height) {
+          this.y = cvs.height / 2;
         }
       }
 
       draw() {
-        const perspective = (this.y - canvas.height / 2) / (canvas.height / 2);
+        const perspective = (this.y - cvs.height / 2) / (cvs.height / 2);
         const alpha = Math.abs(perspective) * 0.3;
         
-        ctx!.beginPath();
-        ctx!.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
-        ctx!.lineWidth = 1;
-        ctx!.moveTo(0, this.y);
-        ctx!.lineTo(canvas.width, this.y);
-        ctx!.stroke();
+        context.beginPath();
+        context.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+        context.lineWidth = 1;
+        context.moveTo(0, this.y);
+        context.lineTo(cvs.width, this.y);
+        context.stroke();
       }
     }
 
     // 初始化粒子
     function initParticles() {
       particles = [];
-      const count = Math.floor((canvas.width * canvas.height) / 8000);
+      const count = Math.floor((cvs.width * cvs.height) / 8000);
       for (let i = 0; i < count; i++) {
         particles.push(new Particle());
       }
@@ -123,18 +127,18 @@ export function SciFiLoginBackground() {
     function initGrid() {
       gridLines = [];
       for (let i = 0; i < 20; i++) {
-        gridLines.push(new GridLine(canvas.height / 2 + i * 30));
+        gridLines.push(new GridLine(cvs.height / 2 + i * 30));
       }
     }
 
     // 绘制六边形网格
     function drawHexGrid() {
       const hexSize = 60;
-      const rows = Math.ceil(canvas.height / (hexSize * 1.5)) + 2;
-      const cols = Math.ceil(canvas.width / (hexSize * Math.sqrt(3))) + 2;
+      const rows = Math.ceil(cvs.height / (hexSize * 1.5)) + 2;
+      const cols = Math.ceil(cvs.width / (hexSize * Math.sqrt(3))) + 2;
 
-      ctx!.strokeStyle = "rgba(0, 255, 255, 0.05)";
-      ctx!.lineWidth = 1;
+      context.strokeStyle = "rgba(0, 255, 255, 0.05)";
+      context.lineWidth = 1;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -146,35 +150,35 @@ export function SciFiLoginBackground() {
     }
 
     function drawHexagon(x: number, y: number, size: number) {
-      ctx!.beginPath();
+      context.beginPath();
       for (let i = 0; i < 6; i++) {
         const angle = (Math.PI / 3) * i - Math.PI / 6;
         const hx = x + size * Math.cos(angle);
         const hy = y + size * Math.sin(angle);
         if (i === 0) {
-          ctx!.moveTo(hx, hy);
+          context.moveTo(hx, hy);
         } else {
-          ctx!.lineTo(hx, hy);
+          context.lineTo(hx, hy);
         }
       }
-      ctx!.closePath();
-      ctx!.stroke();
+      context.closePath();
+      context.stroke();
     }
 
     // 绘制中心能量环
     function drawEnergyRings() {
-      const centerX = canvas.width * 0.75;
-      const centerY = canvas.height / 2;
+      const centerX = cvs.width * 0.75;
+      const centerY = cvs.height / 2;
 
       for (let i = 0; i < 5; i++) {
         const radius = 100 + i * 50 + Math.sin(time * 0.02 + i) * 20;
         const alpha = 0.1 - i * 0.015;
         
-        ctx!.beginPath();
-        ctx!.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx!.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
-        ctx!.lineWidth = 2;
-        ctx!.stroke();
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        context.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+        context.lineWidth = 2;
+        context.stroke();
       }
 
       // 旋转的弧线
@@ -183,12 +187,12 @@ export function SciFiLoginBackground() {
         const endAngle = startAngle + Math.PI / 2;
         const radius = 150 + i * 40;
 
-        ctx!.beginPath();
-        ctx!.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx!.strokeStyle = `rgba(0, 200, 255, ${0.3 - i * 0.08})`;
-        ctx!.lineWidth = 3;
-        ctx!.lineCap = "round";
-        ctx!.stroke();
+        context.beginPath();
+        context.arc(centerX, centerY, radius, startAngle, endAngle);
+        context.strokeStyle = `rgba(0, 200, 255, ${0.3 - i * 0.08})`;
+        context.lineWidth = 3;
+        context.lineCap = "round";
+        context.stroke();
       }
     }
 
@@ -196,27 +200,27 @@ export function SciFiLoginBackground() {
     function drawDataStreams() {
       const streams = 8;
       for (let i = 0; i < streams; i++) {
-        const x = (canvas.width / streams) * i + 50;
-        const offset = (time * 2 + i * 100) % canvas.height;
+        const x = (cvs.width / streams) * i + 50;
+        const offset = (time * 2 + i * 100) % cvs.height;
         
-        const gradient = ctx!.createLinearGradient(x, offset - 100, x, offset);
+        const gradient = context.createLinearGradient(x, offset - 100, x, offset);
         gradient.addColorStop(0, "rgba(0, 255, 255, 0)");
         gradient.addColorStop(0.5, "rgba(0, 255, 255, 0.3)");
         gradient.addColorStop(1, "rgba(0, 255, 255, 0)");
 
-        ctx!.beginPath();
-        ctx!.strokeStyle = gradient;
-        ctx!.lineWidth = 2;
-        ctx!.moveTo(x, offset - 100);
-        ctx!.lineTo(x, offset);
-        ctx!.stroke();
+        context.beginPath();
+        context.strokeStyle = gradient;
+        context.lineWidth = 2;
+        context.moveTo(x, offset - 100);
+        context.lineTo(x, offset);
+        context.stroke();
       }
     }
 
     // 动画循环
     function animate() {
-      ctx!.fillStyle = "rgba(15, 23, 42, 0.1)";
-      ctx!.fillRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = "rgba(15, 23, 42, 0.1)";
+      context.fillRect(0, 0, cvs.width, cvs.height);
 
       // 绘制背景元素
       drawHexGrid();
@@ -230,7 +234,7 @@ export function SciFiLoginBackground() {
       });
 
       // 更新和绘制粒子
-      ctx!.shadowBlur = 0;
+      context.shadowBlur = 0;
       particles.forEach((particle) => {
         particle.update();
         particle.draw();
@@ -244,8 +248,8 @@ export function SciFiLoginBackground() {
     window.addEventListener("resize", resize);
 
     // 初始填充背景
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#0f172a";
+    context.fillRect(0, 0, cvs.width, cvs.height);
 
     animate();
 
@@ -478,4 +482,3 @@ export function SciFiLoadingAnimation() {
     </div>
   );
 }
-

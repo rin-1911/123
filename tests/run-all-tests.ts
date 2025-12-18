@@ -278,7 +278,7 @@ function generateReport() {
   log("                    测试报告汇总");
   log("═".repeat(60));
   
-  const categories = [...new Set(results.map(r => r.category))];
+  const categories = Array.from(new Set(results.map(r => r.category)));
   
   let totalPassed = 0;
   let totalFailed = 0;

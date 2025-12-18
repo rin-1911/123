@@ -342,7 +342,7 @@ export function EnhancedReportForm({
 
     // 检查必填字段
     if (schema) {
-      for (const section of effectiveSchema?.sections || []) {
+      for (const section of schema?.sections || []) {
         for (const field of section.fields) {
           if (field.required) {
             const value = formData[field.id];

@@ -38,12 +38,12 @@ export async function PUT(
       include: {
         _count: {
           select: {
-            users: true,
-            locks: true,
-            reports: true,
-            channels: true,
-            configs: true,
-            storeAccess: true,
+            User: true,
+            StoreDayLock: true,
+            DailyReport: true,
+            ChannelSource: true,
+            ConfigFlag: true,
+            UserStoreAccess: true,
           },
         },
       },
@@ -77,12 +77,12 @@ export async function DELETE(
       include: {
         _count: {
           select: {
-            users: true,
-            locks: true,
-            reports: true,
-            channels: true,
-            configs: true,
-            storeAccess: true,
+            User: true,
+            StoreDayLock: true,
+            DailyReport: true,
+            ChannelSource: true,
+            ConfigFlag: true,
+            UserStoreAccess: true,
           },
         },
       },
@@ -93,12 +93,12 @@ export async function DELETE(
     }
 
     const totalRefs =
-      store._count.users +
-      store._count.locks +
-      store._count.reports +
-      store._count.channels +
-      store._count.configs +
-      store._count.storeAccess;
+      store._count.User +
+      store._count.StoreDayLock +
+      store._count.DailyReport +
+      store._count.ChannelSource +
+      store._count.ConfigFlag +
+      store._count.UserStoreAccess;
 
     if (totalRefs > 0) {
       return NextResponse.json(

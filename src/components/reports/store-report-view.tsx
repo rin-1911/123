@@ -512,7 +512,7 @@ export function StoreReportView({ user, stores }: StoreReportViewProps) {
                     <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                       {aggregateData.storeFields?.length || 0} 项指标
                     </Badge>
-                    {aggregateData.storeFields?.some((f: { isCustomField?: boolean }) => f.isCustomField) && (
+                    {aggregateData.storeFields?.some((f: { fieldId: string; isCustomField?: boolean }) => f.isCustomField) && (
                       <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
                         含自定义字段
                       </Badge>

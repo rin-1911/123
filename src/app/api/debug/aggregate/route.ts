@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       submittedReports: allReports.filter((r) => r.status === "SUBMITTED").length,
       draftReports: allReports.filter((r) => r.status === "DRAFT").length,
       reportsWithFormData: allReports.filter((r) => r.formData).length,
-      reportsWithConsultation: allReports.filter((r) => r.consultation).length,
+      reportsWithConsultation: allReports.filter((r) => r.ConsultationReport).length,
     };
 
     return NextResponse.json({

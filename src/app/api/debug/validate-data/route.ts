@@ -73,10 +73,10 @@ export async function GET(request: NextRequest) {
       // 数据一致性检查
       const inconsistencies: string[] = [];
       
-      // 检查金额字段一致性
-      if (formData.actualRevenue && report.FrontDeskReport) {
+      // 检查金额字段一致性 - 使用财务表的数据
+      if (formData.actualRevenue && report.FinanceHrAdminReport) {
         const formValue = Number(formData.actualRevenue);
-        const tableValue = report.FrontDeskReport.cashInCents / 100;
+        const tableValue = report.FinanceHrAdminReport.cashInCents / 100;
         if (Math.abs(formValue - tableValue) > 0.01) {
           inconsistencies.push(`实收金额不一致: formData=${formValue}, 固定表=${tableValue}`);
         }

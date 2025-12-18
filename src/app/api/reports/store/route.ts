@@ -189,8 +189,8 @@ export async function GET(request: NextRequest) {
 
     // 按日期分组的趋势数据
     const dailyTrend = dateRange.map((date) => {
-      const dayConsult = consultReports.filter((r) => r.dailyReport.reportDate === date);
-      const dayFront = frontDeskReports.filter((r) => r.dailyReport.reportDate === date);
+      const dayConsult = consultReports.filter((r) => r.DailyReport.reportDate === date);
+      const dayFront = frontDeskReports.filter((r) => r.DailyReport.reportDate === date);
 
       return {
         date,

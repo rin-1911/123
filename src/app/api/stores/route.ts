@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
     include: {
       _count: {
         select: {
-          users: true,
-          locks: true,
-          reports: true,
-          channels: true,
-          configs: true,
-          storeAccess: true,
+          User: true,
+          StoreDayLock: true,
+          DailyReport: true,
+          ChannelSource: true,
+          ConfigFlag: true,
+          UserStoreAccess: true,
         },
       },
     },
@@ -71,12 +71,12 @@ export async function POST(request: NextRequest) {
       include: {
         _count: {
           select: {
-            users: true,
-            locks: true,
-            reports: true,
-            channels: true,
-            configs: true,
-            storeAccess: true,
+            User: true,
+            StoreDayLock: true,
+            DailyReport: true,
+            ChannelSource: true,
+            ConfigFlag: true,
+            UserStoreAccess: true,
           },
         },
       },

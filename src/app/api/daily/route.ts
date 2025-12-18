@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       id: targetUser.id,
       storeId: targetUser.storeId,
       departmentId: targetUser.departmentId,
-      departmentCode: targetUser.Department?.code as DepartmentCode | undefined,
+      departmentCode: (targetUser.Department?.code ?? null) as DepartmentCode | null,
     };
     isAdminEdit = true;
   }
@@ -241,6 +241,7 @@ async function upsertDepartmentReport(
           orthoLeads: getNum(data, "orthoLeads", "ortho_visit", "orthoIntention"),
           followupAppointments: getNum(data, "followupAppointments", "nextAppointment", "followupAppt"),
           followupCallsDone: getNum(data, "followupCallsDone", "followupDone"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -279,6 +280,7 @@ async function upsertDepartmentReport(
           refundsCount: getNum(data, "refundsCount"),
           complaintsCount: getNum(data, "complaintsCount"),
           resolvedCount: getNum(data, "resolvedCount"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -307,6 +309,7 @@ async function upsertDepartmentReport(
           costInCents: getMoneyInCents(data, "costInCents", "marketingCost"),
           partnershipsNew: getNum(data, "partnershipsNew", "partnerVisits"),
           partnershipsMaintained: getNum(data, "partnershipsMaintained"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -339,6 +342,7 @@ async function upsertDepartmentReport(
           adSpendInCents: getMoneyInCents(data, "adSpendInCents", "adSpend"),
           followupsDone: getNum(data, "followupsDone"),
           unreachableCount: getNum(data, "unreachableCount"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -371,6 +375,7 @@ async function upsertDepartmentReport(
           orthoStarts: getNum(data, "orthoStarts"),
           orthoFollowups: getNum(data, "orthoFollowups", "orthoCases"),
           riskEvents: getNum(data, "riskEvents"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -407,6 +412,7 @@ async function upsertDepartmentReport(
           hygieneVisits: getNum(data, "hygieneVisits"),
           perioTherapies: getNum(data, "perioTherapies"),
           referralsToDoctor: getNum(data, "referralsToDoctor"),
+          updatedAt: new Date(),
         },
       });
       break;
@@ -455,6 +461,7 @@ async function upsertDepartmentReport(
           resignationsCount: getNum(data, "resignationsCount", "resignCount"),
           trainingSessions: getNum(data, "trainingSessions"),
           traineesCount: getNum(data, "traineesCount", "traineeCount"),
+          updatedAt: new Date(),
         },
       });
       break;
