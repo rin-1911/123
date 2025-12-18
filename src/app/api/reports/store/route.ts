@@ -48,15 +48,15 @@ export async function GET(request: NextRequest) {
     // 获取咨询部数据
     const consultReports = await prisma.consultationReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: {
-          select: { reportDate: true, user: { select: { name: true } } },
+        DailyReport: {
+          select: { reportDate: true, User: { select: { name: true } } },
         },
       },
     });
@@ -64,15 +64,15 @@ export async function GET(request: NextRequest) {
     // 获取前台数据
     const frontDeskReports = await prisma.frontDeskReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: {
-          select: { reportDate: true, user: { select: { name: true } } },
+        DailyReport: {
+          select: { reportDate: true, User: { select: { name: true } } },
         },
       },
     });
@@ -80,15 +80,15 @@ export async function GET(request: NextRequest) {
     // 获取线下市场数据
     const marketingReports = await prisma.offlineMarketingReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: {
-          select: { reportDate: true, user: { select: { name: true } } },
+        DailyReport: {
+          select: { reportDate: true, User: { select: { name: true } } },
         },
       },
     });
@@ -96,15 +96,15 @@ export async function GET(request: NextRequest) {
     // 获取网络新媒体数据
     const onlineReports = await prisma.onlineGrowthReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: {
-          select: { reportDate: true, user: { select: { name: true } } },
+        DailyReport: {
+          select: { reportDate: true, User: { select: { name: true } } },
         },
       },
     });
@@ -112,15 +112,15 @@ export async function GET(request: NextRequest) {
     // 获取财务数据
     const financeReports = await prisma.financeHrAdminReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: {
-          select: { reportDate: true, user: { select: { name: true } } },
+        DailyReport: {
+          select: { reportDate: true, User: { select: { name: true } } },
         },
       },
     });

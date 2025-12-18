@@ -18,8 +18,8 @@ export async function GET(
   const user = await prisma.user.findUnique({
     where: { id: params.id },
     include: {
-      store: true,
-      department: true,
+      Store: true,
+      Department: true,
     },
   });
 
@@ -136,8 +136,8 @@ export async function PUT(
       where: { id: params.id },
       data: updateData,
       include: {
-        store: true,
-        department: true,
+        Store: true,
+        Department: true,
       },
     });
 

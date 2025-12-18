@@ -51,7 +51,7 @@ export default async function DashboardPage() {
         where: {
           storeId: user.storeId,
           isActive: true,
-          department: {
+          Department: {
             code: { not: "MANAGEMENT" },
           },
         },
@@ -101,14 +101,14 @@ export default async function DashboardPage() {
   if (hasAnyRole(user.roles, ["STORE_MANAGER", "HQ_ADMIN", "FINANCE"]) && user.storeId) {
     const consultReports = await prisma.consultationReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId: user.storeId,
           reportDate: { in: recentDates },
           status: "SUBMITTED",
         },
       },
       include: {
-        dailyReport: true,
+        DailyReport: true,
       },
     });
 

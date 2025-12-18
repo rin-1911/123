@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        consultant: {
+        User: {
           select: { id: true, name: true },
         },
       },
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       if (!consultantMap.has(key)) {
         consultantMap.set(key, {
           id: r.consultantId,
-          name: r.consultant.name,
+          name: r.User?.name || "未知",
           total: 0,
           deal: 0,
           noDeal: 0,

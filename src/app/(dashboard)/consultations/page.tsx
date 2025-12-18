@@ -59,7 +59,7 @@ export default async function ConsultationsPage() {
   const consultants = await prisma.user.findMany({
     where: {
       storeId: user.storeId || undefined,
-      department: { code: "CONSULTATION" },
+      Department: { code: "CONSULTATION" },
       isActive: true,
     },
     select: {

@@ -75,7 +75,7 @@ interface ConsultationRecord {
   noDealReason?: string;
   nextFollowDate?: string;
   remark?: string;
-  consultant: { id: string; name: string };
+  User: { id: string; name: string };
   createdAt: string;
 }
 
@@ -613,9 +613,9 @@ export function ConsultationRecordsView({
 
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400">
-                        {record.consultant.name}
+                        {record.User.name}
                       </span>
-                      {(userRole.isAdmin || record.consultant.id === user.id) && (
+                      {(userRole.isAdmin || record.User.id === user.id) && (
                         <Button
                           variant="ghost"
                           size="icon"

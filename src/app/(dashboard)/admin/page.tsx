@@ -82,13 +82,13 @@ export default async function AdminPage() {
     where: {
       ...(user.storeId ? { storeId: user.storeId } : {}),
       isActive: true,
-      department: { code: { not: "CONSULTATION" } },
+      Department: { code: { not: "CONSULTATION" } },
     },
     select: {
       id: true,
       name: true,
       account: true,
-      department: { select: { name: true } },
+      Department: { select: { name: true } },
     },
     orderBy: { name: "asc" },
   });

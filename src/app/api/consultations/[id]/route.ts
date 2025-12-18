@@ -22,10 +22,10 @@ export async function GET(
     const record = await prisma.patientConsultation.findUnique({
       where: { id: params.id },
       include: {
-        consultant: {
+        User: {
           select: { id: true, name: true }
         },
-        store: {
+        Store: {
           select: { id: true, name: true }
         }
       }
@@ -155,7 +155,7 @@ export async function PUT(
         remark: data.remark ?? record.remark,
       },
       include: {
-        consultant: {
+        User: {
           select: { id: true, name: true }
         }
       }

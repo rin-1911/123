@@ -31,15 +31,15 @@ export async function GET(request: NextRequest) {
     const permissions = await prisma.consultationViewPermission.findMany({
       where: { storeId },
       include: {
-        user: {
+        User_ConsultationViewPermission_userIdToUser: {
           select: {
             id: true,
             name: true,
             account: true,
-            department: { select: { name: true } },
+            Department: { select: { name: true } },
           },
         },
-        grantedBy: {
+        User_ConsultationViewPermission_grantedByIdToUser: {
           select: { id: true, name: true },
         },
       },
@@ -108,11 +108,11 @@ export async function POST(request: NextRequest) {
         isActive: data.isActive ?? true,
       },
       include: {
-        user: {
+        User_ConsultationViewPermission_userIdToUser: {
           select: {
             id: true,
             name: true,
-            department: { select: { name: true } },
+            Department: { select: { name: true } },
           },
         },
       },

@@ -112,8 +112,8 @@ export async function POST(request: NextRequest) {
         isActive: true,
       },
       include: {
-        store: true,
-        department: true,
+        Store: true,
+        Department: true,
       },
     });
 

@@ -70,13 +70,13 @@ interface Permission {
   canExport: boolean;
   isActive: boolean;
   validUntil: string | null;
-  user: {
+  User_ConsultationViewPermission_userIdToUser: {
     id: string;
     name: string;
     account: string;
     Department: { name: string } | null;
   };
-  grantedBy: {
+  User_ConsultationViewPermission_grantedByIdToUser: {
     id: string;
     name: string;
   };
@@ -375,9 +375,9 @@ export function AdminDashboard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div>
-                        <p className="font-medium">{perm.User?.name}</p>
+                        <p className="font-medium">{perm.User_ConsultationViewPermission_userIdToUser?.name}</p>
                         <p className="text-sm text-gray-500">
-                          {perm.User?.Department?.name || "未分配部门"} · {perm.User?.account}
+                          {perm.User_ConsultationViewPermission_userIdToUser?.Department?.name || "未分配部门"} · {perm.User_ConsultationViewPermission_userIdToUser?.account}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -425,7 +425,7 @@ export function AdminDashboard({
                     </div>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    由 {perm.grantedBy.name} 授权于 {new Date(perm.createdAt).toLocaleDateString()}
+                    由 {perm.User_ConsultationViewPermission_grantedByIdToUser.name} 授权于 {new Date(perm.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               ))}

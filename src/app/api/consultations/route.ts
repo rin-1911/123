@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     const records = await prisma.patientConsultation.findMany({
       where,
       include: {
-        consultant: {
+        User: {
           select: { id: true, name: true }
         }
       },
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
         storeId: user.storeId,
       },
       include: {
-        consultant: {
+        User: {
           select: { id: true, name: true }
         }
       }

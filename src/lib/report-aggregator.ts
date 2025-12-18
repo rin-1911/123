@@ -759,17 +759,17 @@ async function aggregateDepartment(
       formData: true,
       schemaId: true,
       status: true, // 添加状态字段用于调试
-      user: {
+      User: {
         select: { name: true, roles: true, nursingRole: true, customFormConfig: true },
       },
       // 包含所有固定表数据
-      consultation: true,
-      frontDesk: true,
-      offlineMarketing: true,
-      onlineGrowth: true,
-      medical: true,
-      nursing: true,
-      financeHrAdmin: true,
+      ConsultationReport: true,
+      FrontDeskReport: true,
+      OfflineMarketingReport: true,
+      OnlineGrowthReport: true,
+      MedicalReport: true,
+      NursingReport: true,
+      FinanceHrAdminReport: true,
     },
   });
   
@@ -1079,7 +1079,7 @@ export async function getFieldSummary(
     select: {
       userId: true,
       formData: true,
-      user: { select: { name: true } },
+      User: { select: { name: true } },
     },
   });
 
@@ -1127,7 +1127,7 @@ export async function getKeyMetrics(
   const [consultReports, frontDeskReports, financeReports] = await Promise.all([
     prisma.consultationReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
@@ -1136,7 +1136,7 @@ export async function getKeyMetrics(
     }),
     prisma.frontDeskReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
@@ -1145,7 +1145,7 @@ export async function getKeyMetrics(
     }),
     prisma.financeHrAdminReport.findMany({
       where: {
-        dailyReport: {
+        DailyReport: {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
