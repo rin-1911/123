@@ -37,12 +37,12 @@ export async function GET(request: NextRequest) {
     const where: {
       storeId: string;
       isActive: boolean;
-      department?: { code: { not: string } };
+      Department?: { code: { not: string } };
       departmentId?: string;
     } = {
       storeId,
       isActive: true,
-      department: { code: { not: "MANAGEMENT" } },
+      Department: { code: { not: "MANAGEMENT" } },
     };
 
     // 部门负责人只能看自己部门
@@ -59,10 +59,10 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         account: true,
-        department: {
+        Department: {
           select: { id: true, code: true, name: true },
         },
-        reports: {
+        DailyReport: {
           where: { reportDate },
           select: {
             status: true,
@@ -70,15 +70,15 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [{ department: { code: "asc" } }, { name: "asc" }],
+      orderBy: [{ Department: { code: "asc" } }, { name: "asc" }],
     });
 
     const formattedMembers = members.map((m) => ({
       id: m.id,
       name: m.name,
       account: m.account,
-      departmentName: m.department?.name || "",
-      report: m.reports[0] || null,
+      departmentName: m.Department?.name || "",
+      report: m.DailyReport[0] || null,
     }));
 
     // 计算部门汇总
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       const summary = deptMap.get(key)!;
       summary.totalUsers++;
 
-      const report = m.reports[0];
+      const report = m.DailyReport[0];
       if (report?.status === "SUBMITTED") {
         summary.submittedCount++;
       } else if (report?.status === "DRAFT") {

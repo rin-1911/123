@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
   const users = await prisma.user.findMany({
     where,
     include: {
-      store: true,
-      department: true,
+      Store: true,
+      Department: true,
     },
-    orderBy: [{ store: { code: "asc" } }, { department: { code: "asc" } }, { name: "asc" }],
+    orderBy: [{ Store: { code: "asc" } }, { Department: { code: "asc" } }, { name: "asc" }],
   });
 
   return NextResponse.json({ users });

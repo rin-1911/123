@@ -22,18 +22,18 @@ export async function GET(request: NextRequest) {
         reportDate: date,
       },
       include: {
-        user: {
+        User: {
           select: { id: true, name: true, account: true },
         },
-        store: {
+        Store: {
           select: { id: true, name: true, code: true },
         },
-        department: {
+        Department: {
           select: { id: true, name: true, code: true },
         },
-        consultation: true,
-        frontDesk: true,
-        nursing: true,
+        ConsultationReport: true,
+        FrontDeskReport: true,
+        NursingReport: true,
       },
     });
 
@@ -64,19 +64,19 @@ export async function GET(request: NextRequest) {
       totalReports: allReports.length,
       reports: allReports.map((r) => ({
         id: r.id,
-        userName: r.user?.name || "未知",
-        userAccount: r.user?.account,
-        storeName: r.store?.name || "未知",
+        userName: r.User?.name || "未知",
+        userAccount: r.User?.account,
+        storeName: r.Store?.name || "未知",
         storeId: r.storeId,
-        departmentName: r.department?.name || "未知",
+        departmentName: r.Department?.name || "未知",
         departmentId: r.departmentId,
         status: r.status,
         hasFormData: !!r.formData,
         formDataPreview: r.formData ? JSON.stringify(JSON.parse(r.formData as string)).slice(0, 200) : null,
-        hasConsultation: !!r.consultation,
-        hasFrontDesk: !!r.frontDesk,
-        hasNursing: !!r.nursing,
-        consultationData: r.consultation,
+        hasConsultation: !!r.ConsultationReport,
+        hasFrontDesk: !!r.FrontDeskReport,
+        hasNursing: !!r.NursingReport,
+        consultationData: r.ConsultationReport,
         submittedAt: r.submittedAt,
       })),
       stores,

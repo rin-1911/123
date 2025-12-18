@@ -32,8 +32,8 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findUnique({
           where: { account: credentials.account },
           include: {
-            store: true,
-            department: true,
+            Store: true,
+            Department: true,
           },
         });
 
@@ -64,9 +64,9 @@ export const authOptions: NextAuthOptions = {
           primaryRole: primaryRole,
           storeId: user.storeId,
           departmentId: user.departmentId,
-          departmentCode: user.department?.code as DepartmentCode | null,
-          storeName: user.store?.name ?? null,
-          departmentName: user.department?.name ?? null,
+          departmentCode: user.Department?.code as DepartmentCode | null,
+          storeName: user.Store?.name ?? null,
+          departmentName: user.Department?.name ?? null,
           nursingRole: user.nursingRole ?? null,
         };
       },

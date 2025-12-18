@@ -31,23 +31,23 @@ export async function GET(request: NextRequest) {
         reportDate: dateParam,
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             name: true,
             departmentId: true,
-            department: { select: { name: true, code: true } },
+            Department: { select: { name: true, code: true } },
             roles: true,
             customFormConfig: true,
           },
         },
-        consultation: true,
-        frontDesk: true,
-        offlineMarketing: true,
-        onlineGrowth: true,
-        medical: true,
-        nursing: true,
-        financeHrAdmin: true,
+        ConsultationReport: true,
+        FrontDeskReport: true,
+        OfflineMarketingReport: true,
+        OnlineGrowthReport: true,
+        MedicalReport: true,
+        NursingReport: true,
+        FinanceHrAdminReport: true,
       },
     });
 
@@ -62,38 +62,38 @@ export async function GET(request: NextRequest) {
       
       // 检查固定表数据
       const fixedTables: string[] = [];
-      if (report.consultation) fixedTables.push("咨询");
-      if (report.frontDesk) fixedTables.push("前台");
-      if (report.offlineMarketing) fixedTables.push("市场");
-      if (report.onlineGrowth) fixedTables.push("网络");
-      if (report.medical) fixedTables.push("医疗");
-      if (report.nursing) fixedTables.push("护理");
-      if (report.financeHrAdmin) fixedTables.push("财务");
+      if (report.ConsultationReport) fixedTables.push("咨询");
+      if (report.FrontDeskReport) fixedTables.push("前台");
+      if (report.OfflineMarketingReport) fixedTables.push("市场");
+      if (report.OnlineGrowthReport) fixedTables.push("网络");
+      if (report.MedicalReport) fixedTables.push("医疗");
+      if (report.NursingReport) fixedTables.push("护理");
+      if (report.FinanceHrAdminReport) fixedTables.push("财务");
 
       // 数据一致性检查
       const inconsistencies: string[] = [];
       
       // 检查金额字段一致性
-      if (formData.actualRevenue && report.frontDesk) {
+      if (formData.actualRevenue && report.FrontDeskReport) {
         const formValue = Number(formData.actualRevenue);
-        const tableValue = report.frontDesk.cashInCents / 100;
+        const tableValue = report.FrontDeskReport.cashInCents / 100;
         if (Math.abs(formValue - tableValue) > 0.01) {
           inconsistencies.push(`实收金额不一致: formData=${formValue}, 固定表=${tableValue}`);
         }
       }
       
-      if (formData.cashInYuan && report.consultation) {
+      if (formData.cashInYuan && report.ConsultationReport) {
         const formValue = Number(formData.cashInYuan);
-        const tableValue = report.consultation.cashInCents / 100;
+        const tableValue = report.ConsultationReport.cashInCents / 100;
         if (Math.abs(formValue - tableValue) > 0.01) {
           inconsistencies.push(`咨询实收不一致: formData=${formValue}, 固定表=${tableValue}`);
         }
       }
 
       // 检查人数字段一致性
-      if (formData.totalVisitors && report.frontDesk) {
+      if (formData.totalVisitors && report.FrontDeskReport) {
         const formValue = Number(formData.totalVisitors);
-        const tableValue = report.frontDesk.newVisits + report.frontDesk.returningVisits;
+        const tableValue = report.FrontDeskReport.newVisits + report.FrontDeskReport.returningVisits;
         if (formValue !== tableValue) {
           inconsistencies.push(`到院人数不一致: formData=${formValue}, 固定表=${tableValue}`);
         }
@@ -101,8 +101,8 @@ export async function GET(request: NextRequest) {
 
       return {
         userId: report.userId,
-        userName: report.user?.name || "未知",
-        department: report.user?.department?.name || "未知",
+        userName: report.User?.name || "未知",
+        department: report.User?.Department?.name || "未知",
         status: report.status,
         formDataFieldCount: formDataFields.length,
         standardFieldCount: standardFields.length,

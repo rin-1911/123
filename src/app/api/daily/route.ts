@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     // 获取目标用户信息
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
-      include: { department: true },
+      include: { Department: true },
     });
 
     if (!targetUser) {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       id: targetUser.id,
       storeId: targetUser.storeId,
       departmentId: targetUser.departmentId,
-      departmentCode: targetUser.department?.code as DepartmentCode | undefined,
+      departmentCode: targetUser.Department?.code as DepartmentCode | undefined,
     };
     isAdminEdit = true;
   }

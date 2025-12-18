@@ -36,15 +36,15 @@ export async function GET(request: NextRequest) {
         schemaId: true,
         departmentId: true,
         submittedAt: true,
-        user: {
+        User: {
           select: { name: true, account: true },
         },
-        department: {
+        Department: {
           select: { code: true, name: true },
         },
-        consultation: true,
-        frontDesk: true,
-        nursing: true,
+        ConsultationReport: true,
+        FrontDeskReport: true,
+        NursingReport: true,
       },
     });
 
@@ -65,16 +65,16 @@ export async function GET(request: NextRequest) {
       }
 
       // 检查固定表数据
-      const hasConsultation = !!report.consultation;
-      const hasFrontDesk = !!report.frontDesk;
-      const hasNursing = !!report.nursing;
+      const hasConsultation = !!report.ConsultationReport;
+      const hasFrontDesk = !!report.FrontDeskReport;
+      const hasNursing = !!report.NursingReport;
 
       return {
         userId: report.userId,
-        userName: report.user?.name || "未知",
-        userAccount: report.user?.account,
-        departmentCode: report.department?.code,
-        departmentName: report.department?.name,
+        userName: report.User?.name || "未知",
+        userAccount: report.User?.account,
+        departmentCode: report.Department?.code,
+        departmentName: report.Department?.name,
         status: report.status,
         submittedAt: report.submittedAt,
         hasFormData: !!report.formData,
@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
         hasConsultation,
         hasFrontDesk,
         hasNursing,
-        consultationData: report.consultation ? {
-          receptionTotal: report.consultation.receptionTotal,
-          dealsTotal: report.consultation.dealsTotal,
-          cashInCents: report.consultation.cashInCents,
+        consultationData: report.ConsultationReport ? {
+          receptionTotal: report.ConsultationReport.receptionTotal,
+          dealsTotal: report.ConsultationReport.dealsTotal,
+          cashInCents: report.ConsultationReport.cashInCents,
         } : null,
       };
     });

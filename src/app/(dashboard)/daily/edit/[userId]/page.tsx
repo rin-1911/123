@@ -46,8 +46,8 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
   const targetUser = await prisma.user.findUnique({
     where: { id: params.userId },
     include: {
-      store: true,
-      department: true,
+      Store: true,
+      Department: true,
     },
   });
 
@@ -147,10 +147,10 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
     account: targetUser.account,
     roles: roles,
     storeId: targetUser.storeId,
-    storeName: targetUser.store?.name || "",
+    storeName: targetUser.Store?.name || "",
     departmentId: targetUser.departmentId,
-    departmentName: targetUser.department?.name || "",
-    departmentCode: targetUser.department?.code as DepartmentCode | undefined,
+    departmentName: targetUser.Department?.name || "",
+    departmentCode: targetUser.Department?.code as DepartmentCode | undefined,
     nursingRole: targetUser.nursingRole,
   };
 
@@ -180,7 +180,7 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
           编辑日报 - {targetUser.name}
         </h1>
         <p className="text-gray-500 mt-1">
-          {targetUser.department?.name} · {reportDate}
+          {targetUser.Department?.name} · {reportDate}
           {lock?.isLocked && (
             <span className="ml-2 text-orange-600">（日期已锁定，仅管理员可编辑）</span>
           )}

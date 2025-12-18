@@ -38,23 +38,23 @@ export default async function ConfigPage() {
   // 获取配置列表
   const configs = await prisma.configFlag.findMany({
     include: {
-      store: true,
+      Store: true,
     },
     orderBy: [{ scope: "asc" }, { key: "asc" }],
   });
 
-  // 获取门店列表（带计数，供“能否删除”判断）
+  // 获取门店列表（带计数，供"能否删除"判断）
   const stores = await prisma.store.findMany({
     orderBy: { code: "asc" },
     include: {
       _count: {
         select: {
-          users: true,
-          locks: true,
-          reports: true,
-          channels: true,
-          configs: true,
-          storeAccess: true,
+          User: true,
+          StoreDayLock: true,
+          DailyReport: true,
+          ChannelSource: true,
+          ConfigFlag: true,
+          UserStoreAccess: true,
         },
       },
     },
@@ -63,7 +63,7 @@ export default async function ConfigPage() {
   // 获取渠道来源
   const channels = await prisma.channelSource.findMany({
     include: {
-      store: true,
+      Store: true,
     },
     orderBy: [{ storeId: "asc" }, { sortOrder: "asc" }],
   });
@@ -125,7 +125,7 @@ export default async function ConfigPage() {
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-gray-600">
-                        {config.store?.name || "-"}
+                        {config.Store?.name || "-"}
                       </td>
                       <td className="py-3 px-4">
                         {config.isActive ? (

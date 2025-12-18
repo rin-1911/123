@@ -59,7 +59,7 @@ interface NonConsultUser {
   id: string;
   name: string;
   account: string;
-  department: { name: string } | null;
+  Department: { name: string } | null;
 }
 
 interface Permission {
@@ -74,7 +74,7 @@ interface Permission {
     id: string;
     name: string;
     account: string;
-    department: { name: string } | null;
+    Department: { name: string } | null;
   };
   grantedBy: {
     id: string;
@@ -377,7 +377,7 @@ export function AdminDashboard({
                       <div>
                         <p className="font-medium">{perm.user.name}</p>
                         <p className="text-sm text-gray-500">
-                          {perm.user.department?.name || "未分配部门"} · {perm.user.account}
+                          {perm.user.Department?.name || "未分配部门"} · {perm.user.account}
                         </p>
                       </div>
                       <div className="flex gap-2">
@@ -457,7 +457,7 @@ export function AdminDashboard({
                 <SelectContent>
                   {nonConsultUsers.map(u => (
                     <SelectItem key={u.id} value={u.id}>
-                      {u.name} ({u.department?.name || "未分配"})
+                      {u.name} ({u.Department?.name || "未分配"})
                     </SelectItem>
                   ))}
                 </SelectContent>

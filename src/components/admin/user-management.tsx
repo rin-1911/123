@@ -56,8 +56,8 @@ interface UserData {
   departmentId: string | null;
   nursingRole: string | null;
   customFormConfig: string | null; // JSON字符串
-  store: Store | null;
-  department: Department | null;
+  Store: Store | null;
+  Department: Department | null;
 }
 
 interface UserManagementProps {
@@ -645,16 +645,16 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                         </td>
                         <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
                           <Badge variant="outline" className="font-normal">
-                            {user.store?.name || "总部"}
+                            {user.Store?.name || "总部"}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
                           <Badge variant="secondary" className="font-normal">
-                            {user.department?.name || "-"}
+                            {user.Department?.name || "-"}
                           </Badge>
                         </td>
                         <td className="py-3 px-4 hidden xl:table-cell">
-                          {user.department?.code === "NURSING" && user.nursingRole ? (
+                          {user.Department?.code === "NURSING" && user.nursingRole ? (
                             <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
                               {NURSING_ROLES.find(r => r.value === user.nursingRole)?.label || user.nursingRole}
                             </Badge>
