@@ -98,7 +98,7 @@ model DailyReport {
   OfflineMarketingReport OfflineMarketingReport?
   OnlineGrowthReport     OnlineGrowthReport?
 
-  @@unique([userId, reportDate])
+  @@index([userId, reportDate])
   @@index([departmentId, reportDate])
   @@index([storeId, reportDate])
 }

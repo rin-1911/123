@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import type { UserSession } from "@/lib/types";
 import { getToday, centsToYuan, calcPercentage, formatNumber } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -192,12 +193,29 @@ function getAggregateFieldValue(aggregateData: AggregateData | null, fieldIds: s
 
 export function StoreReportView({ user, stores }: StoreReportViewProps) {
   const { toast } = useToast();
-  const [selectedStoreId, setSelectedStoreId] = useState(user.storeId || stores[0]?.id || "");
-  const [period, setPeriod] = useState<"day" | "week" | "month">("day");
-  const [reportDate, setReportDate] = useState(getToday());
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const initialStoreId = searchParams.get("storeId") || user.storeId || stores[0]?.id || "";
+  const initialPeriod = (searchParams.get("period") as any) || "day";
+  const initialDate = searchParams.get("date") || getToday();
+
+  const [selectedStoreId, setSelectedStoreId] = useState(initialStoreId);
+  const [period, setPeriod] = useState<"day" | "week" | "month">(initialPeriod);
+  const [reportDate, setReportDate] = useState(initialDate);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<ReportData | null>(null);
   const [aggregateData, setAggregateData] = useState<AggregateData | null>(null);
+
+  // 同步 URL 参数
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedStoreId) params.set("storeId", selectedStoreId);
+    if (period) params.set("period", period);
+    if (reportDate) params.set("date", reportDate);
+    
+    router.replace(`/reports/store?${params.toString()}`, { scroll: false });
+  }, [selectedStoreId, period, reportDate, router]);
 
   // 合并指标：优先使用智能汇总数据（已规范化），如果为0则回退到传统数据
   const getMergedValue = (traditionalValue: number, metricKey: string): number => {

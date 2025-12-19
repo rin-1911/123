@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { account, name, password, roles, storeId, departmentId, nursingRole, customFormConfig } = body;
+  const { account: accountRaw, name, password, roles, storeId, departmentId, nursingRole, customFormConfig } = body;
+  const account = (accountRaw || "").trim();
 
   // 验证必填字段
   if (!account || !name || !password) {

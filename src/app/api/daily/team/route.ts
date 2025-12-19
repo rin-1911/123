@@ -6,6 +6,9 @@ import { canViewReportList } from "@/lib/rbac";
 import { hasAnyRole } from "@/lib/types";
 import { getToday } from "@/lib/utils";
 
+// 强制不缓存，确保管理员看到的是实时数据
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {

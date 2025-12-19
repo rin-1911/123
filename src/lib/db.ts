@@ -4,12 +4,28 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// 处理连接字符串，确保包含连接池限制参数
+const getDatabaseUrl = () => {
+  const url = process.env.DATABASE_URL || "";
+  if (!url) return url;
+  
+  // 如果已经有参数了，用 & 连接，否则用 ? 连接
+  const separator = url.includes("?") ? "&" : "?";
+  
+  // 关键参数：
+  // connection_limit=5: 限制本地只占用 5 个连接，给其他操作留空间
+  // pool_timeout=30: 等待连接的时间延长到 30 秒，避免 10 秒就报错
+  if (!url.includes("connection_limit")) {
+    return `${url}${separator}connection_limit=5&pool_timeout=30`;
+  }
+  return url;
+};
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ["error"], // 只记录错误，减少开销
-    // 增加数据库连接超时设置
-    datasourceUrl: process.env.DATABASE_URL,
+    log: ["error"],
+    datasourceUrl: getDatabaseUrl(),
   });
 
 // 在 Node.js 进程退出时关闭 Prisma 客户端，防止连接残留

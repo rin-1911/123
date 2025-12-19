@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import type { UserSession, DepartmentCode } from "@/lib/types";
 import { DEPARTMENT_LABELS, STATUS_LABELS, hasAnyRole } from "@/lib/types";
 import { getToday, formatDate } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -54,13 +55,31 @@ interface DeptSummary {
 
 export function TeamReportView({ user, stores, departments }: TeamReportViewProps) {
   const { toast } = useToast();
-  const [reportDate, setReportDate] = useState(getToday());
-  const [selectedStoreId, setSelectedStoreId] = useState(user.storeId || stores[0]?.id || "");
-  const [selectedDeptId, setSelectedDeptId] = useState<string>("all");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // 优先级：URL参数 > 用户所属门店 > 列表第一个
+  const initialStoreId = searchParams.get("storeId") || user.storeId || stores[0]?.id || "";
+  const initialDeptId = searchParams.get("departmentId") || "all";
+  const initialDate = searchParams.get("date") || getToday();
+
+  const [reportDate, setReportDate] = useState(initialDate);
+  const [selectedStoreId, setSelectedStoreId] = useState(initialStoreId);
+  const [selectedDeptId, setSelectedDeptId] = useState<string>(initialDeptId);
   const [isLoading, setIsLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [deptSummaries, setDeptSummaries] = useState<DeptSummary[]>([]);
+
+  // 同步 URL 参数
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedStoreId) params.set("storeId", selectedStoreId);
+    if (selectedDeptId !== "all") params.set("departmentId", selectedDeptId);
+    if (reportDate) params.set("date", reportDate);
+    
+    router.replace(`/daily/team?${params.toString()}`, { scroll: false });
+  }, [selectedStoreId, selectedDeptId, reportDate, router]);
 
   // 加载团队数据
   useEffect(() => {
@@ -461,7 +480,7 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}&readonly=true`;
+                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}&readonly=true&fromStore=${selectedStoreId}&fromDept=${selectedDeptId}`;
                                     }}
                                     className="text-cyan-600 border-cyan-200 hover:bg-cyan-50 h-8"
                                   >
@@ -471,7 +490,7 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => {
-                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}`;
+                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}&fromStore=${selectedStoreId}&fromDept=${selectedDeptId}`;
                                     }}
                                     className="text-gray-500 hover:text-cyan-600 h-8"
                                   >
@@ -483,7 +502,7 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
                                   variant="default"
                                   size="sm"
                                   onClick={() => {
-                                    window.location.href = `/daily/edit/${member.id}?date=${reportDate}`;
+                                    window.location.href = `/daily/edit/${member.id}?date=${reportDate}&fromStore=${selectedStoreId}&fromDept=${selectedDeptId}`;
                                   }}
                                   className="bg-cyan-600 hover:bg-cyan-700 text-white h-8"
                                 >

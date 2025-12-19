@@ -7,6 +7,9 @@ import { getToday } from "@/lib/utils";
 import type { DepartmentCode } from "@/lib/types";
 import { hasAnyRole } from "@/lib/types";
 
+// 强制不缓存，确保数据实时
+export const dynamic = "force-dynamic";
+
 // GET: 获取当前用户某日的日报
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -16,16 +19,16 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const reportDate = searchParams.get("date") || getToday();
+  const targetUserId = searchParams.get("targetUserId");
 
-  // 并行获取日报和用户自定义配置
+  // 并行获取最新的日报、用户自定义配置和锁定状态
   const [report, userWithConfig, lock] = await Promise.all([
-    prisma.dailyReport.findUnique({
+    prisma.dailyReport.findFirst({
       where: {
-        userId_reportDate: {
-          userId: session.user.id,
-          reportDate,
-        },
+        userId: targetUserId || session.user.id,
+        reportDate,
       },
+      orderBy: { createdAt: "desc" },
       include: {
         ConsultationReport: true,
         FrontDeskReport: true,
@@ -131,37 +134,49 @@ export async function POST(request: NextRequest) {
       // 将 formData 转为 JSON 字符串存储
       const formDataJson = formData ? JSON.stringify(formData) : null;
 
-      // 创建或更新主表
-      const report = await tx.dailyReport.upsert({
-        where: {
-          userId_reportDate: {
-            userId: user.id,
-            reportDate,
-          },
-        },
-        update: {
-          status: status || "DRAFT",
-          submittedAt: status === "SUBMITTED" ? new Date() : null,
-          note,
-          schemaId: schemaId || null,
-          formData: formDataJson,
-          updatedAt: new Date(),
-        },
-        create: {
-          userId: user.id,
-          storeId: user.storeId!,
-          departmentId: user.departmentId!,
-          reportDate,
-          status: status || "DRAFT",
-          submittedAt: status === "SUBMITTED" ? new Date() : null,
-          note: note || undefined,
-          schemaId: schemaId || undefined,
-          formData: formDataJson,
-        },
+      // 查找该用户当天的最新一份日报
+      const latestReport = await tx.dailyReport.findFirst({
+        where: { userId: user.id, reportDate },
+        orderBy: { createdAt: "desc" },
       });
 
-      // 无论是新格式还是旧格式，都同步更新固定表（保证数据一致性）
-      // 这样既支持旧的固定表查询，也支持新的 formData 灵活统计
+      let report;
+
+      // 逻辑：
+      // 1. 如果没有日报，创建新的 (DRAFT 或 SUBMITTED)
+      // 2. 如果最新的一份是 SUBMITTED，且用户再次提交，则创建第二份 (算作今日新报表)
+      // 3. 如果最新的一份是 DRAFT，则更新它
+      if (!latestReport || (latestReport.status === "SUBMITTED" && status === "SUBMITTED")) {
+        // 创建新记录
+        report = await tx.dailyReport.create({
+          data: {
+            userId: user.id,
+            storeId: user.storeId!,
+            departmentId: user.departmentId!,
+            reportDate,
+            status: status || "DRAFT",
+            submittedAt: status === "SUBMITTED" ? new Date() : null,
+            note: note || undefined,
+            schemaId: schemaId || undefined,
+            formData: formDataJson,
+          },
+        });
+      } else {
+        // 更新现有草稿（或覆盖已提交的 - 如果是管理员编辑等情况）
+        report = await tx.dailyReport.update({
+          where: { id: latestReport.id },
+          data: {
+            status: status || "DRAFT",
+            submittedAt: status === "SUBMITTED" ? new Date() : (latestReport.submittedAt),
+            note,
+            schemaId: schemaId || null,
+            formData: formDataJson,
+            updatedAt: new Date(),
+          },
+        });
+      }
+
+      // 同步更新固定表
       const dataToSync = formData || data;
       if (dataToSync) {
         await upsertDepartmentReport(tx, user.departmentCode as DepartmentCode, report.id, dataToSync);

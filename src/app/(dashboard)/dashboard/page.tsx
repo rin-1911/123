@@ -16,6 +16,9 @@ import {
   Building2
 } from "lucide-react";
 
+// 强制不缓存，确保首页数据实时
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   const user = session!.user;
@@ -23,13 +26,12 @@ export default async function DashboardPage() {
 
   // 并行获取今日日报状态和锁定状态
   const [todayReport, todayLock] = await Promise.all([
-    prisma.dailyReport.findUnique({
+    prisma.dailyReport.findFirst({
       where: {
-        userId_reportDate: {
-          userId: user.id,
-          reportDate: today,
-        },
+        userId: user.id,
+        reportDate: today,
       },
+      orderBy: { createdAt: "desc" },
     }),
     user.storeId
       ? prisma.storeDayLock.findUnique({

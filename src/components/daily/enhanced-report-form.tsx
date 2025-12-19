@@ -87,6 +87,7 @@ export function EnhancedReportForm({
   const [activeSection, setActiveSection] = useState(0);
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, DynamicOption[]>>({});
   const [customFormConfig, setCustomFormConfig] = useState<CustomFormConfig | null>(null);
+  const [version, setVersion] = useState(0); // 用于强制刷新数据
 
   const departmentCode = user.departmentCode as DepartmentCode;
   // 护理岗位直接从用户信息获取
@@ -187,64 +188,66 @@ export function EnhancedReportForm({
   }, [loadDynamicOptions]);
 
   // 加载日报数据
-  useEffect(() => {
-    async function loadReport() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/daily?date=${reportDate}`);
-        const data = await res.json();
+  const loadReport = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // 增加 v 参数防止浏览器缓存，并明确传递 targetUserId
+      const res = await fetch(`/api/daily?date=${reportDate}${targetUserId ? `&targetUserId=${targetUserId}` : ''}&v=${version}`);
+      const data = await res.json();
 
-        setIsLocked(data.isLocked);
+      setIsLocked(data.isLocked || false);
 
-        // 加载自定义表单配置
-        if (data.customFormConfig) {
-          try {
-            const config = typeof data.customFormConfig === "string"
-              ? JSON.parse(data.customFormConfig)
-              : data.customFormConfig;
-            setCustomFormConfig(config);
-          } catch {
-            setCustomFormConfig(null);
-          }
-        } else {
+      // 加载自定义表单配置
+      if (data.customFormConfig) {
+        try {
+          const config = typeof data.customFormConfig === "string"
+            ? JSON.parse(data.customFormConfig)
+            : data.customFormConfig;
+          setCustomFormConfig(config);
+        } catch {
           setCustomFormConfig(null);
         }
+      } else {
+        setCustomFormConfig(null);
+      }
 
-        if (data.report) {
-          setStatus(data.report.status);
-          setNote(data.report.note || "");
-          
-          // 加载已保存的表单数据
-          if (data.report.formData) {
-            try {
-              const savedData = typeof data.report.formData === "string" 
-                ? JSON.parse(data.report.formData) 
-                : data.report.formData;
-              setFormData(savedData);
-            } catch {
-              setFormData({});
-            }
-          } else {
+      if (data.report) {
+        setStatus(data.report.status);
+        setNote(data.report.note || "");
+        
+        // 加载已保存的表单数据
+        if (data.report.formData) {
+          try {
+            const savedData = typeof data.report.formData === "string" 
+              ? JSON.parse(data.report.formData) 
+              : data.report.formData;
+            setFormData(savedData);
+          } catch {
             setFormData({});
           }
         } else {
-          setStatus(null);
           setFormData({});
-          setNote("");
         }
-      } catch {
-        toast({
-          title: "加载失败",
-          description: "无法加载日报数据",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+      } else {
+        setStatus(null);
+        setFormData({});
+        setNote("");
       }
+    } catch {
+      toast({
+        title: "加载失败",
+        description: "无法加载日报数据",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }, [reportDate, targetUserId, version, toast]);
 
+  // 加载日报数据
+  useEffect(() => {
     loadReport();
-  }, [reportDate, toast]);
+  }, [loadReport]);
 
   // 数据验证警告
   const [validationWarnings, setValidationWarnings] = useState<Record<string, string>>({});
@@ -449,6 +452,8 @@ export function EnhancedReportForm({
         description: submitStatus === "SUBMITTED" ? "日报已提交" : "草稿已保存",
       });
 
+      // 强制触发重新拉取
+      setVersion(v => v + 1);
       router.refresh();
     } catch (error) {
       toast({
@@ -461,42 +466,13 @@ export function EnhancedReportForm({
     }
   };
 
-  // 撤回日报
-  const handleWithdraw = async () => {
-    setIsSaving(true);
-    try {
-      const res = await fetch("/api/daily", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reportDate,
-          status: "DRAFT",
-          formData: formData,
-          schemaId: schema?.id,
-          note,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || "撤回失败");
-      }
-
-      setStatus("DRAFT");
-      toast({
-        title: "撤回成功",
-        description: "日报已撤回为草稿状态",
-      });
-    } catch (error) {
-      toast({
-        title: "撤回失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
+  // 重新提交逻辑：解除只读，准备提交新的一份
+  const handleResubmit = () => {
+    toast({
+      title: "进入重新提交模式",
+      description: "您可以修改当前数据，再次点击提交将生成该日的第二份日报。",
+    });
+    setStatus(null); // 重置状态，使其不再判定为 SUBMITTED
   };
 
   // 日期切换
@@ -736,43 +712,43 @@ export function EnhancedReportForm({
   return (
     <TooltipProvider>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2 flex-wrap">
-                {schema.title}
-                {status && (
-                  <Badge variant={status === "SUBMITTED" ? "success" : "warning"}>
-                    {status === "SUBMITTED" ? "已提交" : "草稿"}
-                  </Badge>
-                )}
-                {isLocked && (
-                  <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
-                    <Lock className="h-3 w-3 mr-1" />
-                    已锁定
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>{schema.description}</CardDescription>
+            <div className="flex items-center gap-3">
+              {status && (
+                <Badge variant={status === "SUBMITTED" ? "success" : "warning"}>
+                  {status === "SUBMITTED" ? "已提交" : "草稿中"}
+                </Badge>
+              )}
+              {isLocked && (
+                <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">
+                  <Lock className="h-3 w-3 mr-1" />
+                  已锁定
+                </Badge>
+              )}
+              {!isAdminEdit && <span className="text-sm font-medium text-gray-700">{schema.title}</span>}
             </div>
 
             {/* 日期选择 */}
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => changeDate(-1)}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="px-4 py-2 bg-gray-50 rounded-md font-medium min-w-[120px] text-center">
-                {reportDate}
+            {!isAdminEdit && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => changeDate(-1)} className="h-8 w-8">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="px-3 py-1 bg-gray-50 rounded-md font-medium text-sm min-w-[100px] text-center">
+                  {reportDate}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => changeDate(1)}
+                  disabled={reportDate >= getToday()}
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => changeDate(1)}
-                disabled={reportDate >= getToday()}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            )}
           </div>
         </CardHeader>
 
@@ -841,7 +817,7 @@ export function EnhancedReportForm({
                   {isLocked ? (
                     <span className="text-orange-600">数据已锁定，无法修改</span>
                   ) : status === "SUBMITTED" ? (
-                    <span>如需修改，请先撤回</span>
+                    <span>如需修改数据，请点击“再次提交”生成新版本</span>
                   ) : (
                     <span>填写完成后请点击提交</span>
                   )}
@@ -874,9 +850,14 @@ export function EnhancedReportForm({
                   )}
 
                   {status === "SUBMITTED" && !isDisabled && !isReadOnly && (
-                    <Button variant="outline" onClick={handleWithdraw} disabled={isSaving}>
-                      <Undo2 className="h-4 w-4 mr-2" />
-                      撤回
+                    <Button 
+                      variant="outline" 
+                      onClick={handleResubmit} 
+                      disabled={isSaving}
+                      className="border-cyan-200 text-cyan-600 hover:bg-cyan-50"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      再次提交
                     </Button>
                   )}
 

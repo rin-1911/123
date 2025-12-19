@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import type { UserSession } from "@/lib/types";
 import { getToday, formatNumber, centsToYuan } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 import { 
   Plus, 
   Search,
@@ -119,15 +120,36 @@ export function ConsultationRecordsView({
   userRole 
 }: ConsultationRecordsViewProps) {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const initialDate = searchParams.get("date") || getToday();
+  const initialStatus = searchParams.get("status") || "all";
+  const initialConsultant = searchParams.get("consultantId") || "all";
+
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<ConsultationRecord[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   
   // 筛选条件
-  const [selectedDate, setSelectedDate] = useState(getToday());
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedConsultant, setSelectedConsultant] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [selectedStatus, setSelectedStatus] = useState<string>(initialStatus);
+  const [selectedConsultant, setSelectedConsultant] = useState<string>(initialConsultant);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // 同步 URL 参数
+  const updateUrl = (date: string, status: string, consultantId: string) => {
+    const params = new URLSearchParams();
+    if (date) params.set("date", date);
+    if (status !== "all") params.set("status", status);
+    if (consultantId !== "all") params.set("consultantId", consultantId);
+    
+    router.replace(`/consultations?${params.toString()}`, { scroll: false });
+  };
+
+  useEffect(() => {
+    updateUrl(selectedDate, selectedStatus, selectedConsultant);
+  }, [selectedDate, selectedStatus, selectedConsultant]);
   
   // 表单
   const [showForm, setShowForm] = useState(false);

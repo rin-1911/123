@@ -13,7 +13,12 @@ import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: { userId: string };
-  searchParams: { date?: string; readonly?: string };
+  searchParams: { 
+    date?: string; 
+    readonly?: string;
+    fromStore?: string;
+    fromDept?: string;
+  };
 }
 
 export default async function EditUserReportPage({ params, searchParams }: PageProps) {
@@ -25,6 +30,10 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
 
   const currentUser = session.user;
   const isReadOnly = searchParams.readonly === "true";
+  const reportDate = searchParams.date || new Date().toISOString().split("T")[0];
+
+  // 构建返回链接
+  const returnUrl = `/daily/team?date=${reportDate}${searchParams.fromStore ? `&storeId=${searchParams.fromStore}` : ""}${searchParams.fromDept ? `&departmentId=${searchParams.fromDept}` : ""}`;
 
   // 检查权限：只有店长和管理员可以编辑他人日报；查看模式也需要权限
   if (!hasAnyRole(currentUser.roles, ["STORE_MANAGER", "HQ_ADMIN"])) {
@@ -82,17 +91,14 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
     );
   }
 
-  const reportDate = searchParams.date || new Date().toISOString().split("T")[0];
-
   // 获取日报和锁定状态
   const [report, lock] = await Promise.all([
-    prisma.dailyReport.findUnique({
+    prisma.dailyReport.findFirst({
       where: {
-        userId_reportDate: {
-          userId: targetUser.id,
-          reportDate,
-        },
+        userId: targetUser.id,
+        reportDate,
       },
+      orderBy: { createdAt: "desc" },
       include: {
         ConsultationReport: true,
         FrontDeskReport: true,
@@ -174,7 +180,7 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/daily/team">
+        <Link href={returnUrl}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             返回团队日报
@@ -193,17 +199,6 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
           )}
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            {schema.title}
-          </CardTitle>
-          <CardDescription>
-            {schema.description}
-          </CardDescription>
-        </CardHeader>
-      </Card>
 
       <EnhancedReportForm
         user={targetUserSession}

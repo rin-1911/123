@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import type { UserSession, Role } from "@/lib/types";
 import { ROLE_LABELS, hasAnyRole } from "@/lib/types";
+import { useSearchParams, useRouter } from "next/navigation";
 import { 
   Users, 
   Plus, 
@@ -112,6 +113,9 @@ function parseRoles(rolesJson: string): Role[] {
 
 export function UserManagement({ currentUser, stores, departments }: UserManagementProps) {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -122,11 +126,22 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   const [showFormConfig, setShowFormConfig] = useState(false);
   
   // 搜索和筛选
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterDept, setFilterDept] = useState("all");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [filterStore, setFilterStore] = useState("all");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [filterDept, setFilterDept] = useState(searchParams.get("dept") || "all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">((searchParams.get("status") as any) || "all");
+  const [showFilters, setShowFilters] = useState(!!(searchParams.get("dept") || searchParams.get("store")));
+  const [filterStore, setFilterStore] = useState(searchParams.get("store") || "all");
+
+  // 同步 URL 参数
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (filterStore !== "all") params.set("store", filterStore);
+    if (filterDept !== "all") params.set("dept", filterDept);
+    if (filterStatus !== "all") params.set("status", filterStatus);
+    
+    router.replace(`/admin/users?${params.toString()}`, { scroll: false });
+  }, [searchQuery, filterStore, filterDept, filterStatus, router]);
   
   // 过滤后的用户列表
   const filteredUsers = users.filter((user) => {
@@ -820,7 +835,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={modalMode === "create" ? "设置登录密码" : "留空则保持原密码"}
+                    placeholder={modalMode === "create" ? "至少8位，含字母+数字" : "留空则保持原密码"}
                   />
                   <button
                     type="button"
@@ -830,6 +845,9 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <p className="text-[10px] text-gray-400">
+                  ⚠️ 安全要求：密码必须包含字母和数字，长度至少 8 位
+                </p>
               </div>
 
               <div className="space-y-2">

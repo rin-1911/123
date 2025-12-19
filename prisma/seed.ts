@@ -50,16 +50,85 @@ async function main() {
     console.log("✅ 历史数据已清理（保留 admin）\n");
   }
 
-  // ============ 2. 创建必要部门（总经办）===========
-  console.log("📁 创建部门（总经办）...");
-  const managementDept = await prisma.department.upsert({
-    where: { code: "MANAGEMENT" },
-    update: {},
-    create: { code: "MANAGEMENT", name: "总经办" },
-  });
-  console.log("✅ 部门已就绪：总经办");
+  // ============ 2. 创建所有部门架构（无虚拟员工）===========
+  console.log("📁 创建部门架构...");
+  const departments = await Promise.all([
+    prisma.department.upsert({
+      where: { code: "MANAGEMENT" },
+      update: {},
+      create: { code: "MANAGEMENT", name: "总经办" },
+    }),
+    prisma.department.upsert({
+      where: { code: "FRONT_DESK" },
+      update: {},
+      create: { code: "FRONT_DESK", name: "前台客服" },
+    }),
+    prisma.department.upsert({
+      where: { code: "CONSULTATION" },
+      update: {},
+      create: { code: "CONSULTATION", name: "咨询部" },
+    }),
+    prisma.department.upsert({
+      where: { code: "MEDICAL" },
+      update: {},
+      create: { code: "MEDICAL", name: "医疗部" },
+    }),
+    prisma.department.upsert({
+      where: { code: "NURSING" },
+      update: {},
+      create: { code: "NURSING", name: "护理部" },
+    }),
+    prisma.department.upsert({
+      where: { code: "OFFLINE_MARKETING" },
+      update: {},
+      create: { code: "OFFLINE_MARKETING", name: "线下市场" },
+    }),
+    prisma.department.upsert({
+      where: { code: "ONLINE_GROWTH" },
+      update: {},
+      create: { code: "ONLINE_GROWTH", name: "网络新媒体" },
+    }),
+    prisma.department.upsert({
+      where: { code: "FINANCE_HR_ADMIN" },
+      update: {},
+      create: { code: "FINANCE_HR_ADMIN", name: "财务" },
+    }),
+    prisma.department.upsert({
+      where: { code: "HR" },
+      update: {},
+      create: { code: "HR", name: "人事行政" },
+    }),
+  ]);
+  console.log(`✅ ${departments.length} 个部门架构已就绪`);
 
-  // ============ 3. 创建超级管理员账号 ============
+  const managementDept = departments.find(d => d.code === "MANAGEMENT");
+
+  // ============ 3. 创建标准门店 ============
+  console.log("\n🏪 创建门店...");
+  const storeXJ = await prisma.store.upsert({
+    where: { code: "wsxjkq" },
+    update: {},
+    create: {
+      code: "wsxjkq",
+      name: "文山鑫洁口腔",
+      city: "文山",
+      isActive: true,
+    },
+  });
+
+  const storeDF = await prisma.store.upsert({
+    where: { code: "wsdfkq" },
+    update: {},
+    create: {
+      code: "wsdfkq",
+      name: "文山德弗口腔",
+      city: "文山",
+      isActive: true,
+    },
+  });
+  console.log(`✅ 门店已就绪：${storeXJ.name}, ${storeDF.name}`);
+
+  // ============ 4. 创建超级管理员账号 ============
   console.log("\n👤 创建超级管理员账号...");
   
   // 管理员密码 - 生产环境强密码（字母+数字+特殊字符）

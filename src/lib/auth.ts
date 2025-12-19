@@ -26,32 +26,41 @@ export const authOptions: NextAuthOptions = {
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.account || !credentials?.password) {
+        const account = (credentials?.account || "").trim();
+        const password = credentials?.password || "";
+
+        if (!account || !password) {
           throw new Error("请输入账号和密码");
         }
 
         const user = await prisma.user.findUnique({
-          where: { account: credentials.account },
+          where: { account },
           include: {
             Store: true,
             Department: true,
           },
         });
 
-        // 安全改进：统一错误信息，防止用户枚举攻击
-        // 不区分"账号不存在"和"密码错误"
+        // 调试日志：看是否找到了用户
         if (!user) {
-          throw new Error("账号或密码错误");
+          console.log(`[AUTH DEBUG] 找不到账号: "${account}"`);
+          throw new Error("账号不存在 (调试用)");
         }
+
+        console.log(`[AUTH DEBUG] 找到账号: "${account}", 开始对比密码...`);
 
         if (!user.isActive) {
           throw new Error("账号已被禁用，请联系管理员");
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        const isValid = await bcrypt.compare(password, user.passwordHash);
+        
         if (!isValid) {
-          throw new Error("账号或密码错误");
+          console.log(`[AUTH DEBUG] 密码错误: 账号为 "${account}"`);
+          throw new Error("密码错误 (调试用)");
         }
+
+        console.log(`[AUTH DEBUG] 登录成功: "${account}"`);
 
         // 解析多角色
         const roles = parseRoles(user.roles);
@@ -69,7 +78,7 @@ export const authOptions: NextAuthOptions = {
           storeName: user.Store?.name ?? null,
           departmentName: user.Department?.name ?? null,
           nursingRole: user.nursingRole ?? null,
-          passwordWeak: isWeakPassword(credentials.password),
+          passwordWeak: isWeakPassword(password),
         };
       },
     }),
