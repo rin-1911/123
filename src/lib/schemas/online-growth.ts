@@ -24,6 +24,10 @@ export const onlineStaffSchema: DailyReportSchema = {
         { id: "invalidReason", label: "无效原因", type: "textarea" },
         { id: "followingLeads", label: "跟进中线索数", type: "number", required: true, hint: "未约到诊但可持续" },
         { id: "lostLeads", label: "丢单数", type: "number", required: true, hint: "明确不来/拉黑/去竞对" },
+        { id: "todayRevenue", label: "当日业绩汇总", type: "money", required: true, hint: "元" },
+        { id: "monthlyRevenue", label: "本月累计业绩汇总", type: "money", required: true, hint: "元" },
+        { id: "followUpCount", label: "回访数量", type: "number", required: true, hint: "个" },
+        { id: "phoneCallCount", label: "电话拨打数量", type: "number", required: true, hint: "个" },
       ],
     },
     {
@@ -146,6 +150,8 @@ export const onlineGrowthSchemas = {
   lead: onlineLeadSchema,
   director: onlineDirectorSchema,
 };
+
+
 
 
 

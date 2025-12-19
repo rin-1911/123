@@ -12,6 +12,13 @@ export const prisma =
     datasourceUrl: process.env.DATABASE_URL,
   });
 
+// 在 Node.js 进程退出时关闭 Prisma 客户端，防止连接残留
+if (typeof process !== "undefined") {
+  process.on("beforeExit", () => {
+    prisma.$disconnect();
+  });
+}
+
 // 添加连接重试逻辑
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;

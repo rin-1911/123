@@ -56,6 +56,7 @@ interface EnhancedReportFormProps {
   initialData?: Record<string, unknown> | null;
   reportDate?: string;
   isLocked?: boolean;
+  isReadOnly?: boolean; // 新增：只读模式
   status?: string;
   customFormConfig?: string | null;
   isAdminEdit?: boolean;
@@ -68,6 +69,7 @@ export function EnhancedReportForm({
   initialData: propInitialData,
   reportDate: propReportDate,
   isLocked: propIsLocked,
+  isReadOnly = false, // 默认不为只读
   status: propStatus,
   customFormConfig: propCustomFormConfig,
   isAdminEdit = false,
@@ -522,10 +524,11 @@ export function EnhancedReportForm({
                 onChange={(e) => updateField(field.id, e.target.value ? Number(e.target.value) : "")}
                 placeholder="0"
                 className={cn("flex-1", validationWarnings[field.id] && "border-orange-400 bg-orange-50")}
+                disabled={isReadOnly}
               />
               {field.suffix && <span className="text-sm text-gray-500">{field.suffix}</span>}
             </div>
-            {validationWarnings[field.id] && (
+            {validationWarnings[field.id] && !isReadOnly && (
               <p className="text-xs text-orange-600 flex items-center gap-1">
                 <span className="inline-block w-3 h-3 bg-orange-500 text-white rounded-full text-[10px] flex items-center justify-center">!</span>
                 {validationWarnings[field.id]}
@@ -547,9 +550,10 @@ export function EnhancedReportForm({
                 onChange={(e) => updateField(field.id, e.target.value ? Number(e.target.value) : "")}
                 placeholder="0.00"
                 className={cn("flex-1", validationWarnings[field.id] && "border-orange-400 bg-orange-50")}
+                disabled={isReadOnly}
               />
             </div>
-            {validationWarnings[field.id] && (
+            {validationWarnings[field.id] && !isReadOnly && (
               <p className="text-xs text-orange-600 flex items-center gap-1">
                 <span className="inline-block w-3 h-3 bg-orange-500 text-white rounded-full text-[10px] flex items-center justify-center">!</span>
                 {validationWarnings[field.id]}
@@ -565,6 +569,7 @@ export function EnhancedReportForm({
             value={(value as string) ?? ""}
             onChange={(e) => updateField(field.id, e.target.value)}
             placeholder={field.hint || ""}
+            disabled={isReadOnly}
           />
         );
 
@@ -575,6 +580,7 @@ export function EnhancedReportForm({
             value={(value as string) ?? ""}
             onChange={(e) => updateField(field.id, e.target.value)}
             placeholder={field.hint || ""}
+            disabled={isReadOnly}
           />
         );
 
@@ -583,6 +589,7 @@ export function EnhancedReportForm({
           <Select
             value={(value as string) ?? ""}
             onValueChange={(v) => updateField(field.id, v)}
+            disabled={isReadOnly}
           >
             <SelectTrigger>
               <SelectValue placeholder="请选择" />
@@ -605,12 +612,13 @@ export function EnhancedReportForm({
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => toggleMultiSelect(field.id, opt.value)}
+                onClick={() => !isReadOnly && toggleMultiSelect(field.id, opt.value)}
+                disabled={isReadOnly}
                 className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
                   selected.includes(opt.value)
                     ? "bg-cyan-500 text-white border-cyan-500"
                     : "bg-white text-gray-700 border-gray-300 hover:border-cyan-500"
-                }`}
+                } ${isReadOnly ? "cursor-default opacity-80" : "cursor-pointer"}`}
               >
                 {opt.label}
               </button>
@@ -620,11 +628,12 @@ export function EnhancedReportForm({
 
       case "boolean":
         return (
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className={`flex items-center gap-2 ${isReadOnly ? "cursor-default" : "cursor-pointer"}`}>
             <input
               type="checkbox"
               checked={!!value}
-              onChange={(e) => updateField(field.id, e.target.checked)}
+              onChange={(e) => !isReadOnly && updateField(field.id, e.target.checked)}
+              disabled={isReadOnly}
               className="w-4 h-4 rounded text-cyan-600"
             />
             <span className="text-sm">{field.hint || "是"}</span>
@@ -637,6 +646,7 @@ export function EnhancedReportForm({
           <Select
             value={(value as string) ?? ""}
             onValueChange={(v) => updateField(field.id, v)}
+            disabled={isReadOnly}
           >
             <SelectTrigger>
               <SelectValue placeholder="请选择" />
@@ -863,14 +873,14 @@ export function EnhancedReportForm({
                     </div>
                   )}
 
-                  {status === "SUBMITTED" && !isDisabled && (
+                  {status === "SUBMITTED" && !isDisabled && !isReadOnly && (
                     <Button variant="outline" onClick={handleWithdraw} disabled={isSaving}>
                       <Undo2 className="h-4 w-4 mr-2" />
                       撤回
                     </Button>
                   )}
 
-                  {status !== "SUBMITTED" && !isDisabled && (
+                  {status !== "SUBMITTED" && !isDisabled && !isReadOnly && (
                     <>
                       {/* 警告汇总 */}
                       {Object.keys(validationWarnings).length > 0 && (

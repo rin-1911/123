@@ -10,12 +10,45 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 开始初始化生产环境数据...\n");
 
-  // ============ 1. 清理旧数据（可选，正式环境请慎用）============
-  // 如需重置，取消下面的注释
-  // console.log("⚠️  清理旧用户数据...");
-  // await prisma.user.deleteMany({});
-  // await prisma.channelSource.deleteMany({});
-  // await prisma.configFlag.deleteMany({});
+  // ============ 1. 可控清库（生产环境默认不删，避免误操作）============
+  // 如需“只保留一个管理员账号”，请在执行前设置环境变量：
+  // Windows CMD:      set RESET_DB=1
+  // Windows PowerShell: $env:RESET_DB="1"
+  const shouldReset = process.env.RESET_DB === "1";
+  if (shouldReset) {
+    console.log("⚠️  RESET_DB=1 已开启：将删除历史数据，仅保留管理员账号 admin。\n");
+
+    // 先删与用户/日报强相关的数据，避免外键约束
+    await prisma.consultationViewPermission.deleteMany({});
+    await prisma.storeDayLock.deleteMany({});
+
+    // 日报子表
+    await prisma.consultationReport.deleteMany({});
+    await prisma.frontDeskReport.deleteMany({});
+    await prisma.medicalReport.deleteMany({});
+    await prisma.nursingReport.deleteMany({});
+    await prisma.offlineMarketingReport.deleteMany({});
+    await prisma.onlineGrowthReport.deleteMany({});
+    await prisma.financeHrAdminReport.deleteMany({});
+
+    // 日报主表
+    await prisma.dailyReport.deleteMany({});
+
+    // 咨询记录
+    await prisma.patientConsultation.deleteMany({});
+
+    // 门店访问权限
+    await prisma.userStoreAccess.deleteMany({});
+
+    // 删除除 admin 外的所有用户
+    await prisma.user.deleteMany({
+      where: {
+        account: { not: "admin" },
+      },
+    });
+
+    console.log("✅ 历史数据已清理（保留 admin）\n");
+  }
 
   // ============ 2. 创建必要部门（总经办）===========
   console.log("📁 创建部门（总经办）...");

@@ -454,19 +454,43 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
                         </td>
                         {hasAnyRole(user.roles, ["STORE_MANAGER", "HQ_ADMIN"]) && (
                           <td className="py-3 px-4 text-center">
-                            <Button
-                              variant={member.report ? "outline" : "default"}
-                              size="sm"
-                              onClick={() => {
-                                window.location.href = `/daily/edit/${member.id}?date=${reportDate}`;
-                              }}
-                              className={member.report 
-                                ? "text-cyan-600 border-cyan-200 hover:bg-cyan-50" 
-                                : "bg-cyan-600 hover:bg-cyan-700 text-white"
-                              }
-                            >
-                              {member.report ? "📄 查看" : "✏️ 代填"}
-                            </Button>
+                            <div className="flex items-center justify-center gap-2">
+                              {member.report ? (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}&readonly=true`;
+                                    }}
+                                    className="text-cyan-600 border-cyan-200 hover:bg-cyan-50 h-8"
+                                  >
+                                    📄 查看
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      window.location.href = `/daily/edit/${member.id}?date=${reportDate}`;
+                                    }}
+                                    className="text-gray-500 hover:text-cyan-600 h-8"
+                                  >
+                                    ✏️ 编辑
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => {
+                                    window.location.href = `/daily/edit/${member.id}?date=${reportDate}`;
+                                  }}
+                                  className="bg-cyan-600 hover:bg-cyan-700 text-white h-8"
+                                >
+                                  ✏️ 代填
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         )}
                       </tr>

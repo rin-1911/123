@@ -329,6 +329,10 @@ async function upsertDepartmentReport(
           adSpendInCents: getMoneyInCents(data, "adSpendInCents", "adSpend"),
           followupsDone: getNum(data, "followupsDone"),
           unreachableCount: getNum(data, "unreachableCount"),
+          todayRevenue: getMoneyInCents(data, "revenueDaily"),
+          monthlyRevenue: getMoneyInCents(data, "revenueMonth"),
+          followUpCount: getNum(data, "followupCount"),
+          phoneCallCount: getNum(data, "callCount"),
         },
         create: {
           dailyReportId,
@@ -342,6 +346,10 @@ async function upsertDepartmentReport(
           adSpendInCents: getMoneyInCents(data, "adSpendInCents", "adSpend"),
           followupsDone: getNum(data, "followupsDone"),
           unreachableCount: getNum(data, "unreachableCount"),
+          todayRevenue: getMoneyInCents(data, "revenueDaily"),
+          monthlyRevenue: getMoneyInCents(data, "revenueMonth"),
+          followUpCount: getNum(data, "followupCount"),
+          phoneCallCount: getNum(data, "callCount"),
           updatedAt: new Date(),
         },
       });

@@ -137,6 +137,14 @@ const FIELD_NORMALIZATION: Record<string, NormalizedField> = {
   // ====== 投诉相关 ======
   complaintsCount: { normalizedId: "complaintsCount", label: "投诉数", type: "number" },
   resolvedCount: { normalizedId: "resolvedCount", label: "已解决", type: "number" },
+
+  // ====== 业绩与跟进 (新媒体增强) ======
+  revenueDaily: { normalizedId: "todayRevenue", label: "当日业绩汇总", type: "money" },
+  todayRevenue: { normalizedId: "todayRevenue", label: "当日业绩汇总", type: "money", isMoneyInCents: true },
+  revenueMonth: { normalizedId: "monthlyRevenue", label: "本月累计业绩汇总", type: "money" },
+  monthlyRevenue: { normalizedId: "monthlyRevenue", label: "本月累计业绩汇总", type: "money", isMoneyInCents: true },
+  followUpCount: { normalizedId: "followUpCount", label: "回访数量", type: "number" },
+  phoneCallCount: { normalizedId: "phoneCallCount", label: "电话拨打数量", type: "number" },
 };
 
 /**
@@ -574,7 +582,22 @@ function extractFixedTableData(
     ConsultationReport?: { receptionTotal: number; initialTotal: number; dealsTotal: number; initialDealsTotal: number; cashInCents: number; implantLeads: number; orthoLeads: number; followupAppointments: number; followupCallsDone: number } | null;
     FrontDeskReport?: { newVisits: number; returningVisits: number; newAppointments: number; rescheduledAppointments: number; canceledAppointments: number; noShowAppointments: number; initialTriage: number; revisitTriage: number; paymentsCount: number; refundsCount: number; complaintsCount: number; resolvedCount: number } | null;
     OfflineMarketingReport?: { touchpoints: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; costInCents: number; partnershipsNew: number; partnershipsMaintained: number } | null;
-    OnlineGrowthReport?: { videosPublished: number; liveSessions: number; postsPublished: number; leadsNew: number; leadsValid: number; appointmentsBooked: number; visitsArrived: number; adSpendInCents: number; followupsDone: number; unreachableCount: number } | null;
+    OnlineGrowthReport?: { 
+      videosPublished: number; 
+      liveSessions: number; 
+      postsPublished: number; 
+      leadsNew: number; 
+      leadsValid: number; 
+      appointmentsBooked: number; 
+      visitsArrived: number; 
+      adSpendInCents: number; 
+      followupsDone: number; 
+      unreachableCount: number;
+      todayRevenue: number;
+      monthlyRevenue: number;
+      followUpCount: number;
+      phoneCallCount: number;
+    } | null;
     MedicalReport?: { patientsSeen: number; rootCanals: number; fillings: number; extractions: number; fixedProsthesisDelivered: number; removableProsthesisDeliv: number; implantSurgeries: number; orthoStarts: number; orthoFollowups: number; riskEvents: number } | null;
     NursingReport?: { workType: string; panoramicXrays: number; cbctScans: number; intraoralScansPhotos: number; sterilizerCycles: number; instrumentPacks: number; consumableIncidents: number; doctorsAssisted: number; overtimeMinutes: number; hygieneVisits: number; perioTherapies: number; referralsToDoctor: number } | null;
     FinanceHrAdminReport?: { cashInCents: number; refundsInCents: number; cashPayInCents: number; cardPayInCents: number; onlinePayInCents: number; expenseTotalInCents: number; expenseMaterialInCents: number; expenseProcessingInCents: number; expenseMarketingInCents: number; expenseAdminInCents: number; reconciliationIssues: number; staffScheduled: number; staffPresent: number; staffAbsent: number; hiresCount: number; resignationsCount: number; trainingSessions: number; traineesCount: number } | null;
@@ -644,6 +667,10 @@ function extractFixedTableData(
         data.adSpendInCents = g.adSpendInCents;
         data.followupsDone = g.followupsDone;
         data.unreachableCount = g.unreachableCount;
+        data.todayRevenue = g.todayRevenue;
+        data.monthlyRevenue = g.monthlyRevenue;
+        data.followUpCount = g.followUpCount;
+        data.phoneCallCount = g.phoneCallCount;
       }
       break;
 

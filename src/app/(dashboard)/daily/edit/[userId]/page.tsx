@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: { userId: string };
-  searchParams: { date?: string };
+  searchParams: { date?: string; readonly?: string };
 }
 
 export default async function EditUserReportPage({ params, searchParams }: PageProps) {
@@ -24,8 +24,9 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
   }
 
   const currentUser = session.user;
+  const isReadOnly = searchParams.readonly === "true";
 
-  // 检查权限：只有店长和管理员可以编辑他人日报
+  // 检查权限：只有店长和管理员可以编辑他人日报；查看模式也需要权限
   if (!hasAnyRole(currentUser.roles, ["STORE_MANAGER", "HQ_ADMIN"])) {
     return (
       <Card className="max-w-2xl mx-auto">
@@ -183,11 +184,11 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          编辑日报 - {targetUser.name}
+          {isReadOnly ? "查看日报" : "编辑日报"} - {targetUser.name}
         </h1>
         <p className="text-gray-500 mt-1">
           {targetUser.Department?.name} · {reportDate}
-          {lock?.isLocked && (
+          {!isReadOnly && lock?.isLocked && (
             <span className="ml-2 text-orange-600">（日期已锁定，仅管理员可编辑）</span>
           )}
         </p>
@@ -210,6 +211,7 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
         initialData={formData || (report?.formData ? JSON.parse(report.formData) : null)}
         reportDate={reportDate}
         isLocked={false} // 管理员可以编辑锁定的日报
+        isReadOnly={isReadOnly}
         status={report?.status || "DRAFT"}
         customFormConfig={targetUser.customFormConfig}
         isAdminEdit={true}

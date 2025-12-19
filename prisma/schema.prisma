@@ -234,8 +234,12 @@ model OnlineGrowthReport {
   adSpendInCents     Int         @default(0)
   followupsDone      Int         @default(0)
   unreachableCount   Int         @default(0)
+  todayRevenue       Int         @default(0) // 新增：当日业绩汇总
+  monthlyRevenue     Int         @default(0) // 新增：本月累计业绩汇总
+  followUpCount      Int         @default(0) // 新增：回访数量
+  phoneCallCount     Int         @default(0) // 新增：电话拨打数量
   createdAt          DateTime    @default(now())
-  updatedAt          DateTime
+  updatedAt          DateTime    @updatedAt
   DailyReport        DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
 }
 
