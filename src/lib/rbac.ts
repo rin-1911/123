@@ -50,8 +50,8 @@ export function canAccessDepartment(
     return { allowed: true };
   }
 
-  // FINANCE 可以访问财务相关
-  if (hasAnyRole(user.roles, ["FINANCE"])) {
+  // 财务部人员可以访问财务部
+  if (user.departmentCode === "FINANCE_HR_ADMIN") {
     return { allowed: true };
   }
 

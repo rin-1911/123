@@ -8,21 +8,32 @@ export const consultantStaffSchema: DailyReportSchema = {
   description: "咨询师每日必填 - 个人日报",
   sections: [
     {
-      id: "reception",
-      title: "一、接诊与转化",
+      id: "daily_data",
+      title: "当日总结",
+      description: "包含接诊转化、未成交原因及计划",
       fields: [
         { id: "receptionTotal", label: "当日接诊人数", type: "number", required: true, hint: "到咨询台完成初诊沟通的总人数" },
         { id: "firstVisitCount", label: "首诊接诊人数", type: "number", required: true },
         { id: "returnVisitCount", label: "复诊接诊人数", type: "number", required: true },
         { id: "dealCount", label: "成交人数", type: "number", required: true, hint: "含定金/预付" },
         { id: "noDealCount", label: "未成交人数", type: "number", required: true },
-        { id: "conversionRate", label: "到诊→成交转化率", type: "calculated", formula: "dealCount / receptionTotal * 100", suffix: "%" },
         { id: "cashInYuan", label: "当日实收金额", type: "money", required: true, hint: "个人贡献口径" },
+        {
+          id: "noDealReason",
+          label: "未成交原因说明",
+          type: "textarea",
+          required: true,
+          hint: "请详细填写未成交的具体原因，如价格、方案、信任度等"
+        },
+        { id: "today_plan", label: "今日总结", type: "textarea", required: true, hint: "今日工作完成情况总结" },
+        { id: "tomorrow_plan", label: "明日计划", type: "textarea", required: true, hint: "明日重点跟进客户及工作安排" },
+        { id: "daily_data_remark", label: "备注", type: "textarea", hint: "针对今日数据的特殊说明" },
       ],
     },
     {
-      id: "projectStructure",
-      title: "二、项目结构",
+      id: "data_detail",
+      title: "数据详细",
+      description: "各项目明细统计",
       fields: [
         { id: "implant_visit", label: "种植-到诊", type: "number", required: true },
         { id: "implant_deal", label: "种植-成交", type: "number", required: true },
@@ -39,51 +50,6 @@ export const consultantStaffSchema: DailyReportSchema = {
         { id: "other_visit", label: "其他-到诊", type: "number", required: true },
         { id: "other_deal", label: "其他-成交", type: "number", required: true },
         { id: "other_amount", label: "其他-金额", type: "money", required: true },
-      ],
-    },
-    {
-      id: "keyProcess",
-      title: "三、关键过程数据",
-      fields: [
-        { id: "planOutputCount", label: "方案输出数", type: "number", required: true, hint: "给出治疗方案的数量" },
-        { id: "followupNeeded", label: "复访客户数", type: "number", required: true, hint: "当日需要跟进的未成交客户数" },
-        { id: "followupDone", label: "当日完成回访次数", type: "number", required: true, hint: "电话/微信/面访" },
-        { id: "nextAppointment", label: "预约下次复诊人数", type: "number", required: true, hint: "已锁定时间" },
-        { id: "depositCount", label: "定金笔数", type: "number", required: true },
-        { id: "depositAmount", label: "定金金额", type: "money", required: true },
-        { id: "installmentApply", label: "分期申请数", type: "number" },
-        { id: "installmentApproved", label: "分期通过数", type: "number" },
-      ],
-    },
-    {
-      id: "noDealReasons",
-      title: "四、未成交原因",
-      fields: [
-        {
-          id: "noDealReason",
-          label: "主要未成交原因",
-          type: "multiselect",
-          required: true,
-          options: [
-            { value: "price", label: "价格/预算" },
-            { value: "plan_hesitation", label: "方案犹豫" },
-            { value: "time_family", label: "时间/家属未到" },
-            { value: "trust", label: "信任不足（医生/机构）" },
-            { value: "competitor", label: "竞对对比" },
-            { value: "fear", label: "痛感/恐惧" },
-            { value: "other", label: "其他" },
-          ],
-        },
-        { id: "noDealReasonDetail", label: "原因补充说明", type: "textarea" },
-      ],
-    },
-    {
-      id: "dailyActions",
-      title: "五、当日三件事动作",
-      fields: [
-        { id: "todayActions", label: "今日促成动作", type: "textarea", required: true, hint: "例：家属沟通、二次方案、医生二次会诊" },
-        { id: "tomorrowTargets", label: "明日要约对象", type: "textarea", required: true, hint: "名单+预计到诊时间" },
-        { id: "supportNeeded", label: "需要支持", type: "textarea", hint: "医生/价格/活动/资料" },
       ],
     },
   ],
@@ -109,7 +75,6 @@ export const consultantLeadSchema: DailyReportSchema = {
         { id: "orthoRatio", label: "正畸占比", type: "number", suffix: "%" },
         { id: "restoreRatio", label: "综合占比", type: "number", suffix: "%" },
         { id: "pediatricRatio", label: "儿牙占比", type: "number", suffix: "%" },
-        { id: "teamConversionRate", label: "组转化率", type: "calculated", formula: "teamDealCount / teamReceptionTotal * 100", suffix: "%" },
       ],
     },
     {
@@ -150,12 +115,3 @@ export const consultationSchemas = {
   staff: consultantStaffSchema,
   lead: consultantLeadSchema,
 };
-
-
-
-
-
-
-
-
-

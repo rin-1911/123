@@ -7,6 +7,7 @@ import { onlineGrowthSchemas } from "./online-growth";
 import { storeManagerSchemas } from "./store-manager";
 import { financeSchemas } from "./finance";
 import { hrSchemas } from "./hr";
+import { adminSchemas } from "./admin";
 import { nursingSchemas } from "./nursing";
 
 export * from "./types";
@@ -17,6 +18,7 @@ export { onlineGrowthSchemas } from "./online-growth";
 export { storeManagerSchemas } from "./store-manager";
 export { financeSchemas } from "./finance";
 export { hrSchemas } from "./hr";
+export { adminSchemas } from "./admin";
 export { nursingSchemas } from "./nursing";
 
 // 护理岗位类型
@@ -100,24 +102,31 @@ export const departmentSchemaMap: DepartmentSchemaMapping = {
     // 总监使用财务主管表单
     director: financeSchemas.manager,
   },
-  // 人事部门（可作为独立部门或复用 FINANCE_HR_ADMIN）
-  HR: {
-    staff: hrSchemas.staff,
-    lead: hrSchemas.lead,
-    director: hrSchemas.director,
-  },
+  HR: hrSchemas,
+  ADMIN: adminSchemas,
   MANAGEMENT: {
     staff: storeManagerSchemas.storeManager,
     manager: storeManagerSchemas.storeManager,
   },
 };
 
+// 线下市场子部门类型
+export type MarketingSubDept = "expansion" | "customerService";
+
+// 线下市场子部门标签
+export const MARKETING_SUB_DEPT_LABELS: Record<MarketingSubDept, string> = {
+  expansion: "市场拓展",
+  customerService: "市场客服",
+};
+
 // 根据部门代码和角色获取对应的表单 Schema
 // nursingRole: 护理部专用，指定具体岗位类型
+// marketingSubDept: 线下市场专用，指定子部门类型
 export function getSchemaForRole(
   departmentCode: string,
   roles: string[],
-  nursingRole?: NursingRole
+  nursingRole?: NursingRole,
+  marketingSubDept?: MarketingSubDept
 ): DailyReportSchema | null {
   const schemas = departmentSchemaMap[departmentCode];
   if (!schemas) {
@@ -149,17 +158,32 @@ export function getSchemaForRole(
     return nursingSchemas.assistant;
   }
 
-  // 财务部门特殊处理：FINANCE 角色使用会计表单
-  if (departmentCode === "FINANCE_HR_ADMIN") {
-    if (roles.includes("FINANCE")) {
-      // 财务负责人或主管使用财务经理表单
-      if (roles.includes("DEPT_LEAD") || roles.includes("HQ_ADMIN")) {
-        return financeSchemas.manager;
+  // 线下市场特殊处理：根据 marketingSubDept 返回对应表单
+  if (departmentCode === "OFFLINE_MARKETING") {
+    const isLead = roles.includes("DEPT_LEAD");
+    const isDirector = roles.includes("HQ_ADMIN") || roles.includes("REGION_MANAGER");
+    
+    if (marketingSubDept === "customerService") {
+      // 客服子部门
+      if (isDirector || isLead) {
+        return offlineMarketingSchemas.customerServiceLead;
       }
-      // 普通财务（会计）使用会计表单
-      return financeSchemas.accountant;
+      return offlineMarketingSchemas.customerServiceStaff;
     }
-    // 其他情况（出纳/收银）使用默认表单
+    // 默认或拓展子部门
+    if (isDirector) {
+      return offlineMarketingSchemas.director;
+    }
+    if (isLead) {
+      return offlineMarketingSchemas.lead;
+    }
+    return offlineMarketingSchemas.staff;
+  }
+
+  // 财务部门特殊处理：统一使用何总要求的"财务收支对账日报"
+  if (departmentCode === "FINANCE_HR_ADMIN") {
+    // 只要属于财务部门，就使用财务对账报表
+    return financeSchemas.detailed;
   }
 
   // 优先级：director > manager > lead > staff
@@ -220,5 +244,9 @@ export function getAllSchemas(): DailyReportSchema[] {
     hrSchemas.staff,
     hrSchemas.lead,
     hrSchemas.director,
+    // 行政端
+    adminSchemas.staff,
+    adminSchemas.lead,
+    adminSchemas.director,
   ];
 }

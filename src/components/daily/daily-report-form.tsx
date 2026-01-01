@@ -128,6 +128,7 @@ const DEPARTMENT_FIELDS: Record<DepartmentCode, { key: string; type: "number" | 
     { key: "traineesCount", type: "number" },
   ],
   HR: [],
+  ADMIN: [],
   MANAGEMENT: [],
 };
 
@@ -470,6 +471,7 @@ function getDetailKey(departmentCode: DepartmentCode): string {
     NURSING: "nursing",
     FINANCE_HR_ADMIN: "financeHrAdmin",
     HR: "",
+    ADMIN: "",
     MANAGEMENT: "",
   };
   return keyMap[departmentCode];

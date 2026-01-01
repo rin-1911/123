@@ -5,8 +5,8 @@ export type Role =
   | "STORE_MANAGER"
   | "REGION_MANAGER"
   | "HQ_ADMIN"
-  | "FINANCE"
-  | "MEDICAL_QC";
+  | "MEDICAL_QC"
+  | "FINANCE";
 
 // 部门代码
 export type DepartmentCode =
@@ -18,6 +18,7 @@ export type DepartmentCode =
   | "ONLINE_GROWTH"
   | "FINANCE_HR_ADMIN"
   | "HR"
+  | "ADMIN"
   | "MANAGEMENT";
 
 // 日报状态
@@ -36,8 +37,8 @@ export const ROLE_LABELS: Record<Role, string> = {
   STORE_MANAGER: "店长",
   REGION_MANAGER: "区域经理",
   HQ_ADMIN: "总部管理员",
-  FINANCE: "财务",
   MEDICAL_QC: "医疗质控",
+  FINANCE: "财务人员",
 };
 
 // 部门显示名称
@@ -49,7 +50,8 @@ export const DEPARTMENT_LABELS: Record<DepartmentCode, string> = {
   OFFLINE_MARKETING: "线下市场",
   ONLINE_GROWTH: "网络新媒体",
   FINANCE_HR_ADMIN: "财务",
-  HR: "人事行政",
+  HR: "人事部",
+  ADMIN: "行政部",
   MANAGEMENT: "管理层",
 };
 
@@ -79,9 +81,19 @@ export interface UserSession {
   storeName: string | null;
   departmentName: string | null;
   nursingRole: string | null;  // 护理岗位类型
+  marketingSubDept: string | null;  // 线下市场子部门类型
   // 登录安全提示：弱密码（纯数字）提示用户尽快修改
   passwordWeak?: boolean;
 }
+
+// 线下市场子部门类型
+export type MarketingSubDept = "expansion" | "customerService";
+
+// 线下市场子部门标签
+export const MARKETING_SUB_DEPT_LABELS: Record<MarketingSubDept, string> = {
+  expansion: "市场拓展",
+  customerService: "市场客服",
+};
 
 // 辅助函数：解析角色JSON
 export function parseRoles(rolesJson: string): Role[] {
@@ -99,7 +111,6 @@ export function getPrimaryRole(roles: Role[]): Role {
     "HQ_ADMIN",
     "REGION_MANAGER", 
     "STORE_MANAGER",
-    "FINANCE",
     "MEDICAL_QC",
     "DEPT_LEAD",
     "STAFF",

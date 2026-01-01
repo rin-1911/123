@@ -153,14 +153,12 @@ export async function GET(request: NextRequest) {
       totalNoShows: frontDeskReports.reduce((sum, r) => sum + r.noShowAppointments, 0),
       // 市场线索（线下+线上）
       totalLeadsOffline: marketingReports.reduce((sum, r) => sum + r.leadsNew, 0),
-      totalLeadsOnline: onlineReports.reduce((sum, r) => sum + r.leadsNew, 0),
+      totalLeadsOnline: onlineReports.reduce((sum, r) => sum + r.leads_today, 0),
       totalLeadsValid: 
-        marketingReports.reduce((sum, r) => sum + r.leadsValid, 0) +
-        onlineReports.reduce((sum, r) => sum + r.leadsValid, 0),
+        marketingReports.reduce((sum, r) => sum + r.leadsValid, 0),
       // 市场费用
       totalMarketingCost:
-        marketingReports.reduce((sum, r) => sum + r.costInCents, 0) +
-        onlineReports.reduce((sum, r) => sum + r.adSpendInCents, 0),
+        marketingReports.reduce((sum, r) => sum + r.costInCents, 0),
       // 种植意向
       totalImplantLeads: consultReports.reduce((sum, r) => sum + r.implantLeads, 0),
       // 正畸意向

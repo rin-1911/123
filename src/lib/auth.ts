@@ -78,6 +78,7 @@ export const authOptions: NextAuthOptions = {
           storeName: user.Store?.name ?? null,
           departmentName: user.Department?.name ?? null,
           nursingRole: user.nursingRole ?? null,
+          marketingSubDept: user.marketingSubDept ?? null,
           passwordWeak: isWeakPassword(password),
         };
       },
@@ -97,6 +98,7 @@ export const authOptions: NextAuthOptions = {
         token.storeName = user.storeName;
         token.departmentName = user.departmentName;
         token.nursingRole = user.nursingRole;
+        token.marketingSubDept = user.marketingSubDept;
         token.passwordWeak = (user as UserSession).passwordWeak ?? false;
       }
       // 兼容旧版本 token（只有 role，没有 roles/primaryRole）
@@ -130,6 +132,7 @@ export const authOptions: NextAuthOptions = {
         storeName: token.storeName as string | null,
         departmentName: token.departmentName as string | null,
         nursingRole: token.nursingRole as string | null,
+        marketingSubDept: token.marketingSubDept as string | null,
         passwordWeak: (token as unknown as { passwordWeak?: boolean }).passwordWeak ?? false,
       };
       return session;

@@ -8,54 +8,25 @@ export const storeManagerSchema: DailyReportSchema = {
   description: "店长每日必填 - 经营日报",
   sections: [
     {
-      id: "businessResult",
-      title: "一、经营结果",
+      id: "daily",
+      title: "店长经营日报",
       fields: [
+        // 核心经营数据（尽量少但够用）
         { id: "totalVisits", label: "当日总到诊", type: "number", required: true },
         { id: "firstVisits", label: "首诊人数", type: "number", required: true },
         { id: "returnVisits", label: "复诊人数", type: "number", required: true },
         { id: "dealCount", label: "当日成交人数", type: "number", required: true },
         { id: "cashInYuan", label: "实收金额", type: "money", required: true },
         { id: "avgTicket", label: "客单价", type: "money" },
-        { id: "implantCount", label: "种植-人数", type: "number" },
-        { id: "implantAmount", label: "种植-金额", type: "money" },
-        { id: "orthoCount", label: "正畸-人数", type: "number" },
-        { id: "orthoAmount", label: "正畸-金额", type: "money" },
         { id: "restoreCount", label: "综合-人数", type: "number" },
         { id: "restoreAmount", label: "综合-金额", type: "money" },
-        { id: "pediatricCount", label: "儿牙-人数", type: "number" },
-        { id: "pediatricAmount", label: "儿牙-金额", type: "money" },
         { id: "returnAppointment7Days", label: "复诊预约锁定人数", type: "number", required: true, hint: "未来7天" },
-      ],
-    },
-    {
-      id: "resourceEfficiency",
-      title: "二、资源与效率",
-      fields: [
-        { id: "chairsOpen", label: "开诊椅位数", type: "number", required: true },
-        { id: "chairsUsed", label: "使用椅位数", type: "number", required: true },
-        { id: "chairUtilization", label: "椅位利用率", type: "calculated", formula: "chairsUsed / chairsOpen * 100", suffix: "%" },
-        { id: "doctorOnDuty", label: "医生出诊情况", type: "textarea", required: true, hint: "谁出诊" },
-        { id: "doctorAbsent", label: "缺诊情况", type: "textarea", hint: "缺诊原因" },
-        { id: "waitTimeOverCount", label: "等候时间异常例数", type: "number", hint: ">X分钟" },
-      ],
-    },
-    {
-      id: "customerRisk",
-      title: "三、客户与风险",
-      fields: [
-        { id: "complaintEvent", label: "客诉/医疗纠纷/退款", type: "textarea", hint: "事件描述" },
-        { id: "complaintProgress", label: "处理节点", type: "textarea" },
-        { id: "priceException", label: "价格异常/赠送异常", type: "textarea", hint: "是否超权限" },
-      ],
-    },
-    {
-      id: "tomorrowPlan",
-      title: "四、明日计划",
-      fields: [
-        { id: "tomorrowVisitForecast", label: "明日到诊预测", type: "number", required: true, hint: "按预约" },
-        { id: "keyCustomerList", label: "明日重点项目客户清单", type: "textarea", required: true, hint: "种植/正畸" },
-        { id: "promotionPlan", label: "明日促销/活动执行点", type: "textarea", hint: "谁负责" },
+
+        // 运营备注（合并：客诉/退款/异常/需协调，避免重复填）
+        { id: "todayIssues", label: "今日异常/风险/需协调", type: "textarea", hint: "请输入..." },
+
+        // 明日安排（合并：重点事项+排班）
+        { id: "tomorrowKeyFocus", label: "明日重点安排", type: "textarea", hint: "请输入..." },
       ],
     },
   ],
@@ -137,6 +108,9 @@ export const storeManagerSchemas = {
   storeManager: storeManagerSchema,
   operations: operationsSchema,
 };
+
+
+
 
 
 

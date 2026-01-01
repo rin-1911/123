@@ -165,6 +165,7 @@ export default async function EditUserReportPage({ params, searchParams }: PageP
     departmentName: targetUser.Department?.name || "",
     departmentCode: targetUser.Department?.code as DepartmentCode | null,
     nursingRole: targetUser.nursingRole,
+    marketingSubDept: targetUser.marketingSubDept,
   };
 
   // 解析表单数据

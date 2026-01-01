@@ -13,6 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/components/ui/use-toast";
 import type { UserSession, Role } from "@/lib/types";
 import { ROLE_LABELS, hasAnyRole } from "@/lib/types";
@@ -33,7 +38,8 @@ import {
   ChevronDown,
   ChevronUp
 } from "lucide-react";
-import { FormConfigModal, CustomFormConfig } from "./form-config-modal";
+// 统一日报配置中心上线后，这里不再提供“按人配置字段”的入口，避免与中控台重复
+import type { CustomFormConfig } from "./form-config-modal";
 
 interface Store {
   id: string;
@@ -55,7 +61,9 @@ interface UserData {
   isActive: boolean;
   storeId: string | null;
   departmentId: string | null;
+  extraDepartmentIds: string | null; // JSON数组，额外的部门ID
   nursingRole: string | null;
+  marketingSubDept: string | null; // 线下市场子部门
   customFormConfig: string | null; // JSON字符串
   Store: Store | null;
   Department: Department | null;
@@ -70,7 +78,7 @@ interface UserManagementProps {
 const ALL_ROLES: { value: Role; label: string; level: number }[] = [
   { value: "STAFF", label: "员工", level: 1 },
   { value: "DEPT_LEAD", label: "部门负责人", level: 2 },
-  { value: "FINANCE", label: "财务", level: 3 },
+  { value: "FINANCE", label: "财务人员", level: 2 },
   { value: "MEDICAL_QC", label: "医疗质控", level: 3 },
   { value: "STORE_MANAGER", label: "店长", level: 3 },
   { value: "REGION_MANAGER", label: "区域经理", level: 4 },
@@ -86,6 +94,14 @@ const NURSING_ROLES: { value: NursingRoleType; label: string; description: strin
   { value: "hygienist", label: "洁牙师", description: "洁牙、牙周治疗" },
   { value: "hygienistLead", label: "洁牙师组长", description: "管理洁牙团队" },
   { value: "headNurse", label: "护士长", description: "护理部全面管理" },
+];
+
+// 线下市场子部门类型
+type MarketingSubDeptType = "expansion" | "customerService";
+
+const MARKETING_SUB_DEPTS: { value: MarketingSubDeptType; label: string; description: string }[] = [
+  { value: "expansion", label: "市场拓展", description: "地推/驻点/异业合作" },
+  { value: "customerService", label: "市场客服", description: "回访转化/电销" },
 ];
 
 // 咨询部表单类型
@@ -123,7 +139,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [showFormConfig, setShowFormConfig] = useState(false);
+  // const [showFormConfig, setShowFormConfig] = useState(false); // 已弃用：按人配置字段
   
   // 搜索和筛选
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -176,7 +192,9 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
     roles: ["STAFF"] as Role[],
     storeId: "",
     departmentId: "",
+    extraDepartmentIds: [] as string[], // 额外的部门ID
     nursingRole: "" as string,  // 护理部岗位
+    marketingSubDept: "" as string,  // 线下市场子部门
     formType: "" as string,     // 通用表单类型（用于其他部门）
     customFormConfig: null as CustomFormConfig | null, // 自定义表单配置
     isActive: true,
@@ -232,7 +250,9 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
       roles: ["STAFF"],
       storeId: currentUser.storeId || "",
       departmentId: "",
+      extraDepartmentIds: [],
       nursingRole: "",
+      marketingSubDept: "",
       formType: "",
       customFormConfig: null,
       isActive: true,
@@ -255,6 +275,16 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
       }
     }
     
+    // 解析额外部门ID
+    let extraDepts: string[] = [];
+    if (user.extraDepartmentIds) {
+      try {
+        extraDepts = JSON.parse(user.extraDepartmentIds);
+      } catch {
+        extraDepts = [];
+      }
+    }
+    
     setFormData({
       account: user.account,
       name: user.name,
@@ -262,7 +292,9 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
       roles: parseRoles(user.roles),
       storeId: user.storeId || "",
       departmentId: user.departmentId || "",
+      extraDepartmentIds: extraDepts,
       nursingRole: user.nursingRole || "",
+      marketingSubDept: user.marketingSubDept || "",
       formType: "",
       customFormConfig: parsedConfig,
       isActive: user.isActive,
@@ -337,7 +369,9 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
           roles: formData.roles,
           storeId: formData.storeId || null,
           departmentId: formData.departmentId || null,
+          extraDepartmentIds: formData.extraDepartmentIds.length > 0 ? JSON.stringify(formData.extraDepartmentIds) : null,
           nursingRole: deptCode === "NURSING" ? formData.nursingRole || null : null,
+          marketingSubDept: deptCode === "OFFLINE_MARKETING" ? formData.marketingSubDept || null : null,
           customFormConfig: formData.customFormConfig ? JSON.stringify(formData.customFormConfig) : null,
           isActive: formData.isActive,
         }),
@@ -589,7 +623,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                         <SelectItem value="HQ">总部（无门店）</SelectItem>
                         {stores.map((store) => (
                           <SelectItem key={store.id} value={store.id}>
-                            {store.name} ({store.code})
+                            {store.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -711,9 +745,21 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                         </td>
                         <td className="py-3 px-4 hidden xl:table-cell">
                           {user.Department?.code === "NURSING" && user.nursingRole ? (
-                            <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                              {NURSING_ROLES.find(r => r.value === user.nursingRole)?.label || user.nursingRole}
-                            </Badge>
+                            <div className="flex flex-wrap gap-1">
+                              {user.nursingRole.split(",").filter(Boolean).map(role => (
+                                <Badge key={role} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                  {NURSING_ROLES.find(r => r.value === role)?.label || role}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : user.Department?.code === "OFFLINE_MARKETING" && user.marketingSubDept ? (
+                            <div className="flex flex-wrap gap-1">
+                              {user.marketingSubDept.split(",").filter(Boolean).map(subDept => (
+                                <Badge key={subDept} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                  {MARKETING_SUB_DEPTS.find(r => r.value === subDept)?.label || subDept}
+                                </Badge>
+                              ))}
+                            </div>
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
                           )}
@@ -906,7 +952,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     <SelectItem value="none">总部（无门店）</SelectItem>
                     {stores.map((store) => (
                       <SelectItem key={store.id} value={store.id}>
-                        {store.name} ({store.code})
+                        {store.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -914,7 +960,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="department">所属部门</Label>
+                <Label htmlFor="department">主部门</Label>
                 <Select
                   value={formData.departmentId || "none"}
                   onValueChange={(value) => setFormData({ 
@@ -925,7 +971,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                   })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="选择部门" />
+                    <SelectValue placeholder="选择主部门" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">无</SelectItem>
@@ -938,38 +984,127 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                 </Select>
               </div>
 
-              {/* 护理部岗位选择 */}
+              {/* 额外部门（多选下拉） */}
+              <div className="space-y-2">
+                <Label>
+                  兼任部门 <span className="text-gray-400 text-xs">（可多选，用于填写多个部门日报）</span>
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between font-normal"
+                    >
+                      {formData.extraDepartmentIds.length > 0
+                        ? `已选择 ${formData.extraDepartmentIds.length} 个部门`
+                        : "选择兼任部门"}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <div className="max-h-60 overflow-y-auto p-2">
+                      {departments
+                        .filter(dept => dept.id !== formData.departmentId) // 排除主部门
+                        .map((dept) => {
+                          const isSelected = formData.extraDepartmentIds.includes(dept.id);
+                          return (
+                            <label
+                              key={dept.id}
+                              className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                isSelected ? "bg-cyan-50" : "hover:bg-gray-100"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {
+                                  if (isSelected) {
+                                    setFormData({
+                                      ...formData,
+                                      extraDepartmentIds: formData.extraDepartmentIds.filter(id => id !== dept.id)
+                                    });
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      extraDepartmentIds: [...formData.extraDepartmentIds, dept.id]
+                                    });
+                                  }
+                                }}
+                                className="rounded text-cyan-600"
+                              />
+                              <span className="text-sm">{dept.name}</span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {/* 已选中的部门标签 */}
+                {formData.extraDepartmentIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {formData.extraDepartmentIds.map(id => {
+                      const dept = departments.find(d => d.id === id);
+                      return dept ? (
+                        <Badge key={id} variant="secondary" className="text-xs">
+                          {dept.name}
+                          <button
+                            type="button"
+                            onClick={() => setFormData({
+                              ...formData,
+                              extraDepartmentIds: formData.extraDepartmentIds.filter(did => did !== id)
+                            })}
+                            className="ml-1 hover:text-red-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* 护理部子部门选择（多选） */}
               {(() => {
                 const selectedDept = departments.find(d => d.id === formData.departmentId);
                 if (selectedDept?.code === "NURSING") {
+                  const selectedRoles = formData.nursingRole ? formData.nursingRole.split(",").filter(Boolean) : [];
                   return (
                     <div className="space-y-2">
                       <Label>
-                        日报表单类型 * <span className="text-gray-400 text-xs">（决定填写哪种日报）</span>
+                        子部门 * <span className="text-gray-400 text-xs">（可多选，填写日报时可切换）</span>
                       </Label>
                       <div className="grid grid-cols-1 gap-2">
-                        {NURSING_ROLES.map((role) => (
-                          <label
-                            key={role.value}
-                            className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                              formData.nursingRole === role.value
-                                ? "border-cyan-500 bg-cyan-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="nursingRole"
-                              checked={formData.nursingRole === role.value}
-                              onChange={() => setFormData({ ...formData, nursingRole: role.value })}
-                              className="text-cyan-600"
-                            />
-                            <div>
-                              <span className="text-sm font-medium">{role.label}</span>
-                              <p className="text-xs text-gray-500">{role.description}</p>
-                            </div>
-                          </label>
-                        ))}
+                        {NURSING_ROLES.map((role) => {
+                          const isSelected = selectedRoles.includes(role.value);
+                          return (
+                            <label
+                              key={role.value}
+                              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                                isSelected
+                                  ? "border-cyan-500 bg-cyan-50"
+                                  : "border-gray-200 hover:border-gray-300"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {
+                                  const newRoles = isSelected
+                                    ? selectedRoles.filter(r => r !== role.value)
+                                    : [...selectedRoles, role.value];
+                                  setFormData({ ...formData, nursingRole: newRoles.join(",") });
+                                }}
+                                className="rounded text-cyan-600"
+                              />
+                              <div>
+                                <span className="text-sm font-medium">{role.label}</span>
+                                <p className="text-xs text-gray-500">{role.description}</p>
+                              </div>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -977,42 +1112,54 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                 return null;
               })()}
 
-              {/* 自定义表单字段配置 */}
-              {formData.departmentId && (
-                <div className="space-y-2">
-                  <Label>自定义表单字段</Label>
-                  <div className="p-3 border rounded-lg bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        {formData.customFormConfig ? (
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                              已自定义
-                            </Badge>
-                            <span className="text-sm text-gray-500">
-                              启用 {formData.customFormConfig.enabledFields?.length || 0} 个字段
-                              {(formData.customFormConfig.customFields?.length || 0) > 0 && (
-                                <span>，{formData.customFormConfig.customFields.length} 个自定义字段</span>
-                              )}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500">使用默认表单配置</span>
-                        )}
+              {/* 线下市场子部门选择（多选） */}
+              {(() => {
+                const selectedDept = departments.find(d => d.id === formData.departmentId);
+                if (selectedDept?.code === "OFFLINE_MARKETING") {
+                  const selectedSubDepts = formData.marketingSubDept ? formData.marketingSubDept.split(",").filter(Boolean) : [];
+                  return (
+                    <div className="space-y-2">
+                      <Label>
+                        子部门 * <span className="text-gray-400 text-xs">（可多选，填写日报时可切换）</span>
+                      </Label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {MARKETING_SUB_DEPTS.map((subDept) => {
+                          const isSelected = selectedSubDepts.includes(subDept.value);
+                          return (
+                            <label
+                              key={subDept.value}
+                              className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                                isSelected
+                                  ? "border-cyan-500 bg-cyan-50"
+                                  : "border-gray-200 hover:border-gray-300"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {
+                                  const newSubDepts = isSelected
+                                    ? selectedSubDepts.filter(r => r !== subDept.value)
+                                    : [...selectedSubDepts, subDept.value];
+                                  setFormData({ ...formData, marketingSubDept: newSubDepts.join(",") });
+                                }}
+                                className="rounded text-cyan-600"
+                              />
+                              <div>
+                                <span className="text-sm font-medium">{subDept.label}</span>
+                                <p className="text-xs text-gray-500">{subDept.description}</p>
+                              </div>
+                            </label>
+                          );
+                        })}
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowFormConfig(true)}
-                      >
-                        <Settings2 className="h-4 w-4 mr-1" />
-                        配置字段
-                      </Button>
                     </div>
-                  </div>
-                </div>
-              )}
+                  );
+                }
+                return null;
+              })()}
+
+              {/* 说明：字段配置已迁移到“统一日报配置中心”，这里不再提供按人配置入口，避免重复与混乱 */}
 
               {modalMode === "edit" && (
                 <div className="flex items-center gap-2">
@@ -1060,19 +1207,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
         </div>
       )}
 
-      {/* 表单字段配置弹窗 */}
-      <FormConfigModal
-        isOpen={showFormConfig}
-        onClose={() => setShowFormConfig(false)}
-        onSave={(config) => {
-          setFormData({ ...formData, customFormConfig: config });
-        }}
-        departmentCode={departments.find(d => d.id === formData.departmentId)?.code || ""}
-        roles={formData.roles}
-        nursingRole={formData.nursingRole}
-        currentConfig={formData.customFormConfig}
-        userName={formData.name || "新用户"}
-      />
+      {/* FormConfigModal 已弃用：统一日报配置中心接管 */}
     </>
   );
 }

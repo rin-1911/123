@@ -25,8 +25,32 @@ import { useToast } from "@/components/ui/use-toast";
 import type { UserSession, DepartmentCode } from "@/lib/types";
 import { DEPARTMENT_LABELS, hasAnyRole } from "@/lib/types";
 import { getToday, formatDate, cn } from "@/lib/utils";
-import { getSchemaForRole, DailyReportSchema, FormField, FormSection, NursingRole } from "@/lib/schemas";
-import { Save, Send, Undo2, Lock, HelpCircle, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { getSchemaForRole, DailyReportSchema, FormField, FormSection, NursingRole, MarketingSubDept, NURSING_ROLE_LABELS, MARKETING_SUB_DEPT_LABELS } from "@/lib/schemas";
+import { buildSchemaFromTemplateV2, flattenContainerizedFormData, isTemplateV2, nestFlatFormDataToContainers } from "@/lib/templates/template-schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { 
+  Save, 
+  Send, 
+  Undo2, 
+  Lock, 
+  HelpCircle, 
+  ChevronLeft, 
+  ChevronRight, 
+  FileText,
+  Plus,
+  Trash2,
+  AlertTriangle,
+  Layers,
+  ChevronDown,
+  ChevronUp
+} from "lucide-react";
 
 // 动态选项类型
 interface DynamicOption {
@@ -78,85 +102,78 @@ export function EnhancedReportForm({
   const router = useRouter();
   const { toast } = useToast();
   const [reportDate, setReportDate] = useState(getToday());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 初始为 true，避免闪烁
   const [isSaving, setIsSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [status, setStatus] = useState<"DRAFT" | "SUBMITTED" | null>(null);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [note, setNote] = useState("");
-  const [activeSection, setActiveSection] = useState(0);
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, DynamicOption[]>>({});
-  const [customFormConfig, setCustomFormConfig] = useState<CustomFormConfig | null>(null);
+  const [templateSchema, setTemplateSchema] = useState<DailyReportSchema | null>(null); // V2：容器化模板直接生成 schema
   const [version, setVersion] = useState(0); // 用于强制刷新数据
 
   const departmentCode = user.departmentCode as DepartmentCode;
-  // 护理岗位直接从用户信息获取
-  const nursingRole = user.nursingRole as NursingRole | null;
+  // 护理岗位直接从用户信息获取（可能是逗号分隔的多个值）
+  const nursingRoleRaw = user.nursingRole || "";
+  const nursingRoles = nursingRoleRaw.split(",").filter(Boolean) as NursingRole[];
+  // 线下市场子部门（可能是逗号分隔的多个值）
+  const marketingSubDeptRaw = user.marketingSubDept || "";
+  const marketingSubDepts = marketingSubDeptRaw.split(",").filter(Boolean) as MarketingSubDept[];
+
+  // 当用户有多个子部门时，需要选择要填写的
+  const [selectedNursingRole, setSelectedNursingRole] = useState<NursingRole | null>(
+    nursingRoles.length > 0 ? nursingRoles[0] : null
+  );
+  const [selectedMarketingSubDept, setSelectedMarketingSubDept] = useState<MarketingSubDept | null>(
+    marketingSubDepts.length > 0 ? marketingSubDepts[0] : null
+  );
 
   // 获取对应的表单 Schema
   const baseSchema = useMemo(() => {
+    // V2 模板优先：完全由配置中心驱动
+    if (templateSchema) return templateSchema;
     // 护理部根据用户的 nursingRole 获取对应表单
-    if (departmentCode === "NURSING" && nursingRole) {
-      return getSchemaForRole(departmentCode, user.roles || [], nursingRole);
+    if (departmentCode === "NURSING" && selectedNursingRole) {
+      return getSchemaForRole(departmentCode, user.roles || [], selectedNursingRole);
+    }
+    // 线下市场根据 marketingSubDept 获取对应表单
+    if (departmentCode === "OFFLINE_MARKETING") {
+      return getSchemaForRole(departmentCode, user.roles || [], undefined, selectedMarketingSubDept || undefined);
     }
     return getSchemaForRole(departmentCode, user.roles || []);
-  }, [departmentCode, user.roles, nursingRole]);
+  }, [templateSchema, departmentCode, user.roles, selectedNursingRole, selectedMarketingSubDept]);
 
   // 应用自定义配置后的 Schema
+  // 优先级：V2 模板 schema > 默认 schema
+  // 已移除用户个人配置（customFormConfig），确保只能由配置中心统一管理
   const schema = useMemo((): DailyReportSchema | null => {
     if (!baseSchema) return null;
-    if (!customFormConfig) return baseSchema;
+    
+    // V2 模板 schema 或 默认 schema 直接返回
+    return baseSchema;
+  }, [baseSchema]);
 
-    const { enabledFields, fieldLabels, customFields, hiddenSections } = customFormConfig;
-    const enabledSet = new Set(enabledFields);
-    const hiddenSet = new Set(hiddenSections || []);
-
-    // 过滤和修改字段
-    const filteredSections: FormSection[] = baseSchema.sections
-      .filter((section) => !hiddenSet.has(section.id))
-      .map((section) => {
-        // 过滤启用的字段
-        const filteredFields = section.fields.filter((field) => enabledSet.has(field.id));
-        
-        // 应用字段名称覆盖
-        const modifiedFields: FormField[] = filteredFields.map((field) => ({
-          ...field,
-          label: fieldLabels[field.id] || field.label,
-        }));
-
-        // 添加该分组下的自定义字段
-        const sectionCustomFields = (customFields || [])
-          .filter((cf) => cf.sectionId === section.id && enabledSet.has(cf.id))
-          .map((cf): FormField => ({
-            id: cf.id,
-            label: fieldLabels[cf.id] || cf.label,
-            type: cf.type as any,
-            required: cf.required,
-          }));
-
-        return {
-          ...section,
-          fields: [...modifiedFields, ...sectionCustomFields],
-        };
-      })
-      .filter((section) => section.fields.length > 0); // 移除空分组
-
-    return {
-      ...baseSchema,
-      sections: filteredSections,
-    };
-  }, [baseSchema, customFormConfig]);
-
-  // 获取所有需要的动态选项类别
+  // 获取所有需要的动态选项类别（包括 dynamic_rows 中的 rowFields）
   const dynamicOptionsKeys = useMemo(() => {
     if (!schema) return [];
     const keys: string[] = [];
     schema.sections.forEach((section) => {
       section.fields.forEach((field) => {
+        // 普通 dynamic_select 字段
         if (field.type === "dynamic_select" && field.dynamicOptionsKey) {
           if (!keys.includes(field.dynamicOptionsKey)) {
             keys.push(field.dynamicOptionsKey);
           }
+        }
+        // dynamic_rows 中的 rowFields 也可能有 dynamic_select
+        if (field.type === "dynamic_rows" && field.rowFields) {
+          field.rowFields.forEach((rf) => {
+            if (rf.type === "dynamic_select" && rf.dynamicOptionsKey) {
+              if (!keys.includes(rf.dynamicOptionsKey)) {
+                keys.push(rf.dynamicOptionsKey);
+              }
+            }
+          });
         }
       });
     });
@@ -187,29 +204,68 @@ export function EnhancedReportForm({
     loadDynamicOptions();
   }, [loadDynamicOptions]);
 
+  // 加载模板配置（角色+部门模板，优先于用户个人配置）
+  const loadTemplateConfig = useCallback(async () => {
+    if (!user.departmentId) return;
+
+    try {
+      // 确定角色：部门负责人 or 员工
+      const role = (user.roles || []).includes("DEPT_LEAD") ? "DEPT_LEAD" : "STAFF";
+      
+      // 确定子部门
+      let subDept = "";
+      if (departmentCode === "NURSING" && selectedNursingRole) {
+        subDept = selectedNursingRole;
+      } else if (departmentCode === "OFFLINE_MARKETING" && selectedMarketingSubDept) {
+        subDept = selectedMarketingSubDept;
+      }
+
+      const params = new URLSearchParams({
+        departmentId: user.departmentId,
+        role,
+      });
+      if (subDept) {
+        params.append("subDept", subDept);
+      }
+
+      const res = await fetch(`/api/daily-templates?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.template) {
+          const rawConfig = typeof data.template.configJson === "string"
+            ? JSON.parse(data.template.configJson)
+            : data.template.configJson;
+
+          // V2：容器化模板
+          if (isTemplateV2(rawConfig)) {
+            setTemplateSchema(buildSchemaFromTemplateV2(
+              rawConfig,
+              `tpl_v2_${role}_${user.departmentId}_${subDept || "default"}`
+            ));
+            return;
+          }
+        }
+      }
+      setTemplateSchema(null);
+    } catch (error) {
+      console.error("加载模板配置失败", error);
+      setTemplateSchema(null);
+    }
+  }, [user.departmentId, user.roles, departmentCode, selectedNursingRole, selectedMarketingSubDept]);
+
   // 加载日报数据
   const loadReport = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 增加 v 参数防止浏览器缓存，并明确传递 targetUserId
-      const res = await fetch(`/api/daily?date=${reportDate}${targetUserId ? `&targetUserId=${targetUserId}` : ''}&v=${version}`);
+      // 先加载模板配置
+      await loadTemplateConfig();
+
+      // 增加 v 参数防止浏览器缓存，并明确传递 targetUserId 和 departmentId
+      const deptParam = user.departmentId ? `&departmentId=${user.departmentId}` : '';
+      const res = await fetch(`/api/daily?date=${reportDate}${targetUserId ? `&targetUserId=${targetUserId}` : ''}${deptParam}&v=${version}`);
       const data = await res.json();
 
       setIsLocked(data.isLocked || false);
-
-      // 加载自定义表单配置
-      if (data.customFormConfig) {
-        try {
-          const config = typeof data.customFormConfig === "string"
-            ? JSON.parse(data.customFormConfig)
-            : data.customFormConfig;
-          setCustomFormConfig(config);
-        } catch {
-          setCustomFormConfig(null);
-        }
-      } else {
-        setCustomFormConfig(null);
-      }
 
       if (data.report) {
         setStatus(data.report.status);
@@ -221,7 +277,9 @@ export function EnhancedReportForm({
             const savedData = typeof data.report.formData === "string" 
               ? JSON.parse(data.report.formData) 
               : data.report.formData;
-            setFormData(savedData);
+            // V2：按容器存储的数据需要先扁平化
+            const flat = flattenContainerizedFormData(savedData);
+            setFormData(flat || savedData);
           } catch {
             setFormData({});
           }
@@ -242,7 +300,7 @@ export function EnhancedReportForm({
     } finally {
       setIsLoading(false);
     }
-  }, [reportDate, targetUserId, version, toast]);
+  }, [reportDate, targetUserId, version, toast, user.departmentId, loadTemplateConfig]);
 
   // 加载日报数据
   useEffect(() => {
@@ -382,13 +440,77 @@ export function EnhancedReportForm({
   };
 
   // 计算字段值
-  const calculateField = (formula: string): string => {
+  const calculateField = (formula: string, sectionId?: string, dataOverride?: Record<string, unknown>): string => {
+    const data = dataOverride ?? formData;
     try {
-      // 替换公式中的变量
+      // 特殊处理：SECTION_SUM (对某个分组下的所有数值/金额字段求和)
+      if (formula.startsWith("SECTION_SUM:")) {
+        const targetSectionId = formula.split(":")[1];
+        const targetSection = schema?.sections.find(s => s.id === targetSectionId);
+        if (!targetSection) return "0.0";
+        
+        let sum = 0;
+        // 统计标准字段
+        targetSection.fields.forEach(f => {
+          if (f.type === "number" || f.type === "money") {
+            sum += Number(data[f.id]) || 0;
+          }
+          // 同时也统计动态行中的数值总和
+          if (f.type === "dynamic_rows") {
+            const rows = (data[f.id] as any[]) || [];
+            rows.forEach(row => {
+              Object.values(row).forEach(val => {
+                if (typeof val === "number") sum += val;
+              });
+            });
+          }
+        });
+        return sum.toFixed(2);
+      }
+
+      // 特殊处理：ROW_SUM（对 dynamic_rows 的某一列求和）
+      // - ROW_SUM_INT:listFieldId,columnId  => 返回整数
+      // - ROW_SUM_MONEY:listFieldId,columnId => 返回两位小数
+      if (formula.startsWith("ROW_SUM_INT:") || formula.startsWith("ROW_SUM_MONEY:")) {
+        const isMoney = formula.startsWith("ROW_SUM_MONEY:");
+        const payload = formula.split(":")[1] || "";
+        const [listFieldIdRaw, columnIdRaw] = payload.split(",").map(s => s?.trim());
+        if (!listFieldIdRaw || !columnIdRaw) return isMoney ? "0.00" : "0";
+
+        const rows = (data[listFieldIdRaw] as any[]) || [];
+        let sum = 0;
+        for (const row of rows) {
+          const v = row?.[columnIdRaw];
+          sum += Number(v) || 0;
+        }
+        return isMoney ? sum.toFixed(2) : String(Math.round(sum));
+      }
+
+      // 特殊处理：PERCENT (计算百分比，公式格式: PERCENT:分子字段,分母字段)
+      if (formula.startsWith("PERCENT:")) {
+        const parts = formula.split(":")[1].split(",");
+        if (parts.length !== 2) return "-";
+        const numerator = Number(data[parts[0].trim()]) || 0;
+        const denominator = Number(data[parts[1].trim()]) || 0;
+        if (denominator === 0) return "0.00";
+        const percent = (numerator / denominator) * 100;
+        return percent.toFixed(2);
+      }
+
+      // 常规公式处理
       let expr = formula;
-      const matches = formula.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
+      // 替换 SECTION_SUM 宏
+      const sectionSumMatches = formula.match(/SECTION_SUM:[a-zA-Z0-9_]+/g) || [];
+      for (const match of sectionSumMatches) {
+        const val = calculateField(match, undefined, data);
+        expr = expr.replace(match, val === "-" ? "0" : val);
+      }
+
+      const matches = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g) || [];
       for (const varName of matches) {
-        const value = Number(formData[varName]) || 0;
+        // 避免替换 JavaScript 关键字
+        if (["Math", "abs", "round", "ceil", "floor"].includes(varName)) continue;
+        const value = Number(data[varName]) || 0;
         expr = expr.replace(new RegExp(varName, "g"), String(value));
       }
       // eslint-disable-next-line no-eval
@@ -396,7 +518,7 @@ export function EnhancedReportForm({
       if (Number.isNaN(result) || !Number.isFinite(result)) {
         return "-";
       }
-      return result.toFixed(1);
+      return result.toFixed(2);
     } catch {
       return "-";
     }
@@ -426,17 +548,39 @@ export function EnhancedReportForm({
 
     setIsSaving(true);
     try {
+      // 先把 calculated 字段“物化”写入提交数据，保证报表侧也能取到汇总值
+      const materialized = (() => {
+        if (!schema) return { ...formData };
+        const next = { ...formData } as Record<string, unknown>;
+        for (const sec of schema.sections) {
+          for (const f of sec.fields) {
+            if (f.type === "calculated" && f.formula) {
+              const v = calculateField(f.formula, sec.id, next);
+              const num = Number(v);
+              next[f.id] = Number.isFinite(num) ? num : v;
+            }
+          }
+        }
+        return next;
+      })();
+
+      const payloadFormData = templateSchema
+        ? nestFlatFormDataToContainers(materialized)
+        : materialized;
+
       const res = await fetch("/api/daily", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reportDate: isAdminEdit && propReportDate ? propReportDate : reportDate,
           status: submitStatus,
-          formData: formData,
+          formData: payloadFormData,
           schemaId: schema?.id,
           note,
           // 管理员编辑模式：指定目标用户ID
           targetUserId: isAdminEdit ? targetUserId : undefined,
+          // 多部门支持：指定当前选中的部门ID
+          departmentId: user.departmentId,
         }),
       });
 
@@ -485,7 +629,7 @@ export function EnhancedReportForm({
   const isDisabled = isLocked && !hasAnyRole(user.roles, ["STORE_MANAGER", "HQ_ADMIN"]);
 
   // 渲染字段
-  const renderField = (field: FormField) => {
+  const renderField = (field: FormField, sectionId?: string) => {
     const value = formData[field.id];
 
     switch (field.type) {
@@ -540,24 +684,29 @@ export function EnhancedReportForm({
 
       case "text":
         return (
-          <Input
-            type="text"
-            value={(value as string) ?? ""}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder={field.hint || ""}
-            disabled={isReadOnly}
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              value={(value as string) ?? ""}
+              onChange={(e) => updateField(field.id, e.target.value)}
+              placeholder={field.hint || ""}
+              disabled={isReadOnly}
+              className="flex-1"
+            />
+          </div>
         );
 
       case "textarea":
         return (
-          <textarea
-            className="w-full min-h-[80px] px-3 py-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            value={(value as string) ?? ""}
-            onChange={(e) => updateField(field.id, e.target.value)}
-            placeholder={field.hint || ""}
-            disabled={isReadOnly}
-          />
+          <div className="flex items-start gap-2">
+            <textarea
+              className="w-full min-h-[100px] px-3 py-2 border border-input rounded-md text-sm resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-background"
+              value={(value as string) ?? ""}
+              onChange={(e) => updateField(field.id, e.target.value)}
+              placeholder={field.hint || ""}
+              disabled={isReadOnly}
+            />
+          </div>
         );
 
       case "select":
@@ -582,9 +731,11 @@ export function EnhancedReportForm({
 
       case "multiselect":
         const selected = (value as string[]) || [];
+        const combinedOptions = [...(field.options || [])];
+        
         return (
-          <div className="flex flex-wrap gap-2">
-            {field.options?.map((opt) => (
+          <div className="flex flex-wrap gap-2 items-center">
+            {combinedOptions.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
@@ -599,6 +750,19 @@ export function EnhancedReportForm({
                 {opt.label}
               </button>
             ))}
+          </div>
+        );
+
+      case "divider":
+        return (
+          <div className="col-span-full pt-6 pb-2 border-b-2 border-cyan-100/50 mb-4 mt-2">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-5 bg-gradient-to-b from-cyan-500 to-blue-600 rounded-full" />
+              <h4 className="text-sm font-bold text-slate-800 tracking-tight">
+                {field.label}
+              </h4>
+              {field.hint && <span className="text-[10px] text-slate-400 font-normal ml-2">{field.hint}</span>}
+            </div>
           </div>
         );
 
@@ -641,13 +805,154 @@ export function EnhancedReportForm({
           </Select>
         );
 
-      case "calculated":
-        const calcValue = field.formula ? calculateField(field.formula) : "-";
+      case "dynamic_rows":
+        const rows = (value as any[]) || [];
+        // 如果没有定义子字段，默认提供“名称”和“数值”
+        const rowFields = field.rowFields || [
+          { id: "name", label: "分类名称", type: "text" },
+          { id: "amount", label: "数值/金额", type: "number" }
+        ];
+        
+        const addRow = () => {
+          // 数字/金额默认用空字符串，让输入框显示 placeholder（而不是默认显示 0）
+          const newRow = rowFields.reduce(
+            (acc, f) => ({ ...acc, [f.id]: f.type === "text" ? "" : "" }),
+            {}
+          );
+          updateField(field.id, [...rows, newRow]);
+        };
+
+        const removeRow = (index: number) => {
+          const newRows = rows.filter((_, i) => i !== index);
+          updateField(field.id, newRows);
+        };
+
+        const updateRowField = (index: number, rowFieldId: string, val: any) => {
+          const newRows = [...rows];
+          newRows[index] = { ...newRows[index], [rowFieldId]: val };
+          updateField(field.id, newRows);
+        };
+
         return (
-          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md">
-            <span className="font-medium text-cyan-600">{calcValue}</span>
+          <div className="space-y-3 w-full md:col-span-2 lg:col-span-3">
+            {rows.map((row, idx) => (
+              <div key={idx} className="flex flex-wrap items-end gap-3 p-3 bg-slate-50/50 rounded-xl border border-slate-100 group relative">
+                {rowFields.map((rf) => (
+                  <div
+                    key={rf.id}
+                    className={cn(
+                      "space-y-1.5",
+                      rf.fullWidth 
+                        ? "basis-full min-w-[240px]" 
+                        : rf.type === "money" 
+                          ? "min-w-[90px] max-w-[120px]"  // 金额字段更窄更紧凑
+                          : rf.type === "number"
+                            ? "min-w-[80px] max-w-[100px]" // 数字字段也稍窄
+                            : rf.type === "dynamic_select"
+                              ? "min-w-[140px] max-w-[180px]" // 下拉框适中宽度
+                              : "flex-1 min-w-[120px]"       // 文本字段可伸展
+                    )}
+                  >
+                    <Label className="text-[10px] text-gray-400 uppercase truncate">{rf.label}</Label>
+                    {rf.type === "dynamic_select" && rf.dynamicOptionsKey ? (
+                      // 下拉框（从字典加载选项）
+                      <Select
+                        value={row[rf.id] ?? ""}
+                        onValueChange={(val) => updateRowField(idx, rf.id, val)}
+                        disabled={isReadOnly}
+                      >
+                        <SelectTrigger className="h-9 text-sm">
+                          <SelectValue placeholder="请选择" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(dynamicOptions[rf.dynamicOptionsKey] || []).length === 0 ? (
+                            <div className="px-2 py-1 text-sm text-gray-500">暂无选项，请在配置中心添加</div>
+                          ) : (
+                            (dynamicOptions[rf.dynamicOptionsKey] || []).map((opt) => (
+                              <SelectItem key={opt.id} value={opt.value || opt.name}>
+                                {opt.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    ) : rf.type === "money" ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-gray-400">¥</span>
+                        <Input
+                          type="number"
+                          value={row[rf.id] ?? ""}
+                          onChange={(e) => updateRowField(idx, rf.id, e.target.value === "" ? "" : Number(e.target.value))}
+                          placeholder="0"
+                          className="h-9 text-sm"
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    ) : rf.type === "number" ? (
+                      <Input
+                        type="number"
+                        value={row[rf.id] ?? ""}
+                        onChange={(e) => updateRowField(idx, rf.id, e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="0"
+                        className="h-9 text-sm"
+                        disabled={isReadOnly}
+                      />
+                    ) : (
+                      <Input
+                        type="text"
+                        value={row[rf.id] ?? ""}
+                        onChange={(e) => updateRowField(idx, rf.id, e.target.value)}
+                        placeholder="请输入..."
+                        className="h-9 text-sm"
+                        disabled={isReadOnly}
+                      />
+                    )}
+                  </div>
+                ))}
+                {!isReadOnly && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-300 hover:text-red-500 transition-colors"
+                    onClick={() => removeRow(idx)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {!isReadOnly && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addRow}
+                className="w-full py-4 border-dashed border-slate-200 text-slate-400 hover:text-cyan-600 hover:border-cyan-500 hover:bg-cyan-50/30 rounded-xl transition-all h-auto"
+              >
+                {(() => {
+                  const addText = field.addRowLabel || "点击添加一行记录";
+                  // 如果文案本身已经带“+”，就不重复渲染图标
+                  if (addText.trim().startsWith("+")) {
+                    return <span>{addText}</span>;
+                  }
+                  return (
+                    <>
+                <Plus className="h-4 w-4 mr-2" />
+                      {addText}
+                    </>
+                  );
+                })()}
+              </Button>
+            )}
+          </div>
+        );
+
+      case "calculated":
+        const calcValue = field.formula ? calculateField(field.formula, sectionId) : "-";
+        return (
+          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-md border border-gray-100 shadow-sm">
+            <span className="font-bold text-cyan-700">{calcValue}</span>
             {field.suffix && <span className="text-sm text-gray-500">{field.suffix}</span>}
-            <span className="text-xs text-gray-400">（自动计算）</span>
+            <span className="text-[10px] text-gray-400">（智能计算）</span>
           </div>
         );
 
@@ -658,40 +963,79 @@ export function EnhancedReportForm({
 
   // 渲染分组
   const renderSection = (section: FormSection, index: number) => {
+    // 合并标准字段
+    const sectionFields = [...section.fields];
+
+    // 网络部特殊处理：不再使用硬编码的排版，统一遵循配置中心逻辑
+    const isOnlineGrowth = departmentCode === "ONLINE_GROWTH";
+
+    // 财务特有：支出对账校验
+    const isFinance = departmentCode === "FINANCE_HR_ADMIN";
+    const moduleASum = isFinance ? Number(calculateField("SECTION_SUM:module_a")) : 0;
+    const moduleBSum = isFinance ? Number(calculateField("SECTION_SUM:module_b")) : 0;
+    const isMismatch = isFinance && section.id === "module_d" && Math.abs(moduleASum - moduleBSum) > 0.01;
+
     return (
       <div key={section.id} className="space-y-4">
-        <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-gray-800">{section.title}</h3>
-          {section.description && (
-            <span className="text-sm text-gray-500">({section.description})</span>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* V2 模板：标题左侧蓝色竖线 */}
+            {templateSchema && (
+              <div className="w-1 h-5 bg-cyan-500 rounded-full" />
+            )}
+            <h3 className="text-base font-semibold text-gray-800">{section.title}</h3>
+            {section.description && (
+              <span className="text-sm text-gray-500">({section.description})</span>
+            )}
+          </div>
         </div>
+
+        {/* 财务对账警告 */}
+        {isMismatch && (
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-pulse">
+            <AlertTriangle className="h-4 w-4" />
+            <span>警告：支出明细总计(¥{moduleASum.toFixed(2)})与支付方式总计(¥{moduleBSum.toFixed(2)})不一致，请仔细核对！</span>
+          </div>
+        )}
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {section.fields.map((field) => (
-            <div
-              key={field.id}
-              className={`space-y-2 ${
-                field.type === "textarea" || field.type === "multiselect" ? "md:col-span-2 lg:col-span-3" : ""
-              }`}
-            >
-              <Label className="flex items-center gap-1.5">
-                {field.label}
-                {field.required && <span className="text-red-500">*</span>}
-                {field.hint && field.type !== "textarea" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-3.5 w-3.5 text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>{field.hint}</p>
-                    </TooltipContent>
-                  </Tooltip>
+        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+          {sectionFields.map((field, fieldIdx) => {
+            // 如果是 divider 分割线字段，不显示外层 Label
+            const isDivider = field.type === "divider";
+            
+            // 隐藏"自动计算"字段，不让其显示在填写界面，只在管理员报表中汇总
+            if (field.type === "calculated") {
+              return null;
+            }
+
+            return (
+              <div
+                key={field.id}
+                className={cn(
+                  "space-y-1.5",
+                  (field.type === "textarea" || field.type === "multiselect" || field.type === "dynamic_rows" || isDivider) ? "md:col-span-2 lg:col-span-3" : ""
                 )}
-              </Label>
-              {renderField(field)}
-            </div>
-          ))}
+              >
+                    {!isDivider && (
+                      <Label className="flex items-center gap-1.5">
+                        {field.label}
+                        {field.required && <span className="text-red-500">*</span>}
+                        {field.hint && field.type !== "textarea" && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <HelpCircle className="h-3.5 w-3.5 text-gray-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{field.hint}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </Label>
+                    )}
+                    {renderField(field, section.id)}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -699,19 +1043,61 @@ export function EnhancedReportForm({
 
   if (!schema) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center text-gray-500">
+      <div className="w-full">
+        <Card className="w-full">
+          <CardContent className="py-12 text-center text-gray-500 min-h-[450px] flex flex-col items-center justify-center">
           <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
           <p>当前岗位暂无日报表单</p>
           <p className="text-sm mt-2">请联系管理员配置</p>
         </CardContent>
       </Card>
+      </div>
     );
   }
 
+  // 是否需要显示子部门选择器
+  const showNursingRoleSelector = departmentCode === "NURSING" && nursingRoles.length > 1;
+  const showMarketingSubDeptSelector = departmentCode === "OFFLINE_MARKETING" && marketingSubDepts.length > 1;
+
   return (
     <TooltipProvider>
-      <Card>
+      <div className="w-full">
+        {/* 子部门选择器（护理部/线下市场，多选时显示） */}
+        {(showNursingRoleSelector || showMarketingSubDeptSelector) && (
+          <div className="mb-4 flex items-center gap-3 flex-wrap">
+            <span className="text-sm text-gray-600">选择子部门：</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {showNursingRoleSelector && nursingRoles.map((role) => (
+                <button
+                  key={role}
+                  onClick={() => setSelectedNursingRole(role)}
+                  className={`px-3 py-1.5 rounded-full border transition-all text-sm ${
+                    selectedNursingRole === role
+                      ? "border-cyan-500 bg-cyan-500 text-white"
+                      : "border-gray-300 hover:border-cyan-400 hover:bg-cyan-50"
+                  }`}
+                >
+                  {NURSING_ROLE_LABELS[role] || role}
+                </button>
+              ))}
+              {showMarketingSubDeptSelector && marketingSubDepts.map((subDept) => (
+                <button
+                  key={subDept}
+                  onClick={() => setSelectedMarketingSubDept(subDept)}
+                  className={`px-3 py-1.5 rounded-full border transition-all text-sm ${
+                    selectedMarketingSubDept === subDept
+                      ? "border-cyan-500 bg-cyan-500 text-white"
+                      : "border-gray-300 hover:border-cyan-400 hover:bg-cyan-50"
+                  }`}
+                >
+                  {MARKETING_SUB_DEPT_LABELS[subDept] || subDept}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+      <Card className="w-full">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -752,70 +1138,37 @@ export function EnhancedReportForm({
           </div>
         </CardHeader>
 
-        {/* 分组导航 */}
-        {schema.sections.length > 3 && (
-          <div className="px-6 pb-4">
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {schema.sections.map((section, index) => (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(index)}
-                  className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-colors ${
-                    activeSection === index
-                      ? "bg-cyan-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {section.title.replace(/^[一二三四五六七八九十]+、/, "")}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <Separator />
 
         <CardContent className="pt-6">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-12 min-h-[400px]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600" />
             </div>
           ) : (
-            <div className={isDisabled ? "opacity-60 pointer-events-none" : ""}>
-              {/* 表单内容 */}
-              <div className="space-y-8">
-                {schema.sections.length > 3 ? (
-                  // 多分组时只显示当前分组
-                  renderSection(schema.sections[activeSection], activeSection)
-                ) : (
-                  // 少量分组时显示全部
-                  schema.sections.map((section, index) => renderSection(section, index))
-                )}
+            <div className={cn(
+              "transition-all duration-300 min-h-[450px] flex flex-col",
+              isDisabled ? "opacity-60 pointer-events-none" : ""
+            )}>
+              {/* 表单内容 - 锚定容器 */}
+              <div className="flex-1 space-y-8">
+                {schema.sections.map((section, index) => (
+                    <div key={section.id}>
+                      {index > 0 && (
+                        <div className="my-8">
+                          <div className="h-0.5 bg-gradient-to-r from-cyan-300 via-cyan-200 to-transparent rounded-full" />
+                        </div>
+                      )}
+                      {renderSection(section, index)}
+                    </div>
+                ))}
               </div>
 
-              {/* 备注 - 可折叠 */}
-              <details className="mt-8 group">
-                <summary className="flex items-center gap-2 cursor-pointer list-none py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
-                  <span className="transform transition-transform group-open:rotate-90">▶</span>
-                  备注（选填）
-                  {note && <Badge variant="outline" className="text-xs">已填写</Badge>}
-                </summary>
-                <div className="mt-2">
-                  <textarea
-                    className="w-full min-h-[80px] px-3 py-2 border rounded-md text-sm resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="如有特殊情况请在此说明（最多500字）"
-                    maxLength={500}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                  />
-                </div>
-              </details>
-
-              {/* 操作按钮 */}
-              <div className="mt-6 flex items-center justify-between flex-wrap gap-4">
-                <div className="text-sm text-gray-500">
+              {/* 操作按钮 - 固定在容器底部（无论内容多少，位置相对稳定） */}
+              <div className="mt-auto pt-10 flex items-center justify-between flex-wrap gap-4 border-t border-gray-50">
+                <div className="text-sm text-gray-500 italic">
                   {isLocked ? (
-                    <span className="text-orange-600">数据已锁定，无法修改</span>
+                    <span className="text-orange-600 font-medium">数据已锁定，无法修改</span>
                   ) : status === "SUBMITTED" ? (
                     <span>如需修改数据，请点击“再次提交”生成新版本</span>
                   ) : (
@@ -824,31 +1177,6 @@ export function EnhancedReportForm({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* 分组导航按钮 */}
-                  {schema.sections.length > 3 && (
-                    <div className="flex items-center gap-2 mr-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveSection(Math.max(0, activeSection - 1))}
-                        disabled={activeSection === 0}
-                      >
-                        上一项
-                      </Button>
-                      <span className="text-sm text-gray-500">
-                        {activeSection + 1} / {schema.sections.length}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveSection(Math.min(schema.sections.length - 1, activeSection + 1))}
-                        disabled={activeSection === schema.sections.length - 1}
-                      >
-                        下一项
-                      </Button>
-                    </div>
-                  )}
-
                   {status === "SUBMITTED" && !isDisabled && !isReadOnly && (
                     <Button 
                       variant="outline" 
@@ -892,6 +1220,7 @@ export function EnhancedReportForm({
           )}
         </CardContent>
       </Card>
+      </div>
     </TooltipProvider>
   );
 }

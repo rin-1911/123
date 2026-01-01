@@ -49,7 +49,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const { name, password, roles, storeId, departmentId, isActive, nursingRole, customFormConfig } = body;
+  const { name, password, roles, storeId, departmentId, extraDepartmentIds, isActive, nursingRole, marketingSubDept, customFormConfig } = body;
 
   // 获取要更新的用户
   const targetUser = await prisma.user.findUnique({
@@ -108,16 +108,20 @@ export async function PUT(
       roles?: string;
       storeId?: string | null;
       departmentId?: string | null;
+      extraDepartmentIds?: string | null;
       isActive?: boolean;
       nursingRole?: string | null;
+      marketingSubDept?: string | null;
       customFormConfig?: string | null;
     } = {};
 
     if (name !== undefined) updateData.name = name;
     if (storeId !== undefined) updateData.storeId = storeId || null;
     if (departmentId !== undefined) updateData.departmentId = departmentId || null;
+    if (extraDepartmentIds !== undefined) updateData.extraDepartmentIds = extraDepartmentIds || null;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (nursingRole !== undefined) updateData.nursingRole = nursingRole || null;
+    if (marketingSubDept !== undefined) updateData.marketingSubDept = marketingSubDept || null;
     if (customFormConfig !== undefined) updateData.customFormConfig = customFormConfig || null;
 
     // 角色更新（需要权限检查）

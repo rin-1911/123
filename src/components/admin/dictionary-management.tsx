@@ -38,6 +38,7 @@ interface DictionaryItem {
 const DICTIONARY_CATEGORIES = [
   { key: "first_visit_sources", label: "初诊来源", description: "患者首次就诊的来源渠道" },
   { key: "treatment_projects", label: "项目成交", description: "可选择的治疗项目类型" },
+  { key: "marketing_spots", label: "市场点位", description: "线下市场拓展活动点位（摆展/驻点）" },
 ];
 
 export function DictionaryManagement() {
@@ -363,6 +364,9 @@ export function DictionaryManagement() {
     </Card>
   );
 }
+
+
+
 
 
 

@@ -22,7 +22,7 @@ import {
   Minus,
   Info
 } from "lucide-react";
-import { formatNumber, centsToYuan } from "@/lib/utils";
+import { formatNumber, centsToYuan, cn } from "@/lib/utils";
 
 // 部门汇总数据类型
 interface DepartmentSummary {
@@ -61,7 +61,7 @@ const FIELD_CATEGORIES: Record<string, { label: string; icon: typeof Users; colo
     label: "业绩收入",
     icon: DollarSign,
     color: "emerald",
-    fields: ["actualRevenue", "expectedRevenue", "firstVisitAmount", "returnVisitAmount", "teamCashInYuan", "业绩", "收入", "金额"],
+    fields: ["actualRevenue", "expectedRevenue", "firstVisitAmount", "returnVisitAmount", "teamCashInYuan", "actualExpense", "netRevenue", "业绩", "收入", "金额"],
   },
   visits: {
     label: "到院统计",
@@ -104,9 +104,9 @@ function isMoneyField(fieldId: string, fieldLabel: string): boolean {
     "actualrevenue", "expectedrevenue", "refundamount", "firstvisitamount",
     "returnvisitamount", "marketingcost", "teamcashinyuan", "adspend",
     "depositamount", "implant_amount", "ortho_amount", "restore_amount",
-    "pediatric_amount", "other_amount"
+    "pediatric_amount", "other_amount", "actualexpense", "netrevenue"
   ];
-  const moneyKeywords = ["金额", "业绩", "收入", "费用", "退费", "成交金额"];
+  const moneyKeywords = ["金额", "业绩", "收入", "费用", "退费", "成交金额", "支出", "实收"];
   
   return moneyFieldIds.includes(fieldId.toLowerCase()) ||
     moneyKeywords.some(k => fieldLabel.includes(k));
@@ -299,28 +299,42 @@ export function DataSummaryPanel({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* 标准字段 */}
+                {/* 所有指标字段 */}
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {storeFields.filter(f => !f.isCustomField).slice(0, 15).map((field) => (
+                  {storeFields.map((field) => (
                     <div
                       key={field.fieldId}
-                      className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className={cn(
+                        "flex items-center justify-between p-3 rounded-lg transition-colors",
+                        field.isCustomField 
+                          ? "bg-purple-50/50 border border-purple-100 hover:bg-purple-100/50" 
+                          : "bg-gray-50 hover:bg-gray-100"
+                      )}
                     >
                       <div className="flex-1 min-w-0">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <p className="text-sm text-gray-600 truncate cursor-help">
+                            <p className={cn(
+                              "text-sm truncate cursor-help",
+                              field.isCustomField ? "text-purple-700" : "text-gray-600"
+                            )}>
                               {field.fieldLabel}
+                              {field.isCustomField && <span className="ml-1 text-purple-400">★</span>}
                             </p>
                           </TooltipTrigger>
                           <TooltipContent>
+                            {field.isCustomField && <p className="text-purple-500 font-bold mb-1">自定义字段</p>}
                             <p>填报次数: {field.count}人</p>
                             <p>平均值: {field.average.toFixed(2)}</p>
+                            <p className="text-[10px] text-gray-400 mt-1">ID: {field.fieldId}</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
                       <div className="text-right ml-2">
-                        <p className={`text-lg font-semibold ${isMoneyField(field.fieldId, field.fieldLabel) ? "text-emerald-600" : "text-gray-900"}`}>
+                        <p className={cn(
+                          "text-lg font-semibold",
+                          isMoneyField(field.fieldId, field.fieldLabel) ? "text-emerald-600" : "text-gray-900"
+                        )}>
                           {formatFieldValue(field)}
                         </p>
                         <p className="text-xs text-gray-400">{field.count}人</p>
@@ -328,55 +342,6 @@ export function DataSummaryPanel({
                     </div>
                   ))}
                 </div>
-                
-                {/* 自定义字段区域 */}
-                {storeFields.filter(f => f.isCustomField).length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-dashed border-gray-200">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                        自定义指标
-                      </Badge>
-                      <span className="text-xs text-gray-400">
-                        {storeFields.filter(f => f.isCustomField).length} 项
-                      </span>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {storeFields.filter(f => f.isCustomField).map((field) => (
-                        <div
-                          key={field.fieldId}
-                          className="flex items-center justify-between p-3 rounded-lg bg-purple-50/50 hover:bg-purple-100/50 transition-colors border border-purple-100"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <p className="text-sm text-purple-700 truncate cursor-help">
-                                  {field.fieldLabel}
-                                </p>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>自定义字段</p>
-                                <p>填报次数: {field.count}人</p>
-                                <p>平均值: {field.average.toFixed(2)}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <div className="text-right ml-2">
-                            <p className={`text-lg font-semibold ${isMoneyField(field.fieldId, field.fieldLabel) ? "text-emerald-600" : "text-purple-900"}`}>
-                              {formatFieldValue(field)}
-                            </p>
-                            <p className="text-xs text-purple-400">{field.count}人</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {storeFields.filter(f => !f.isCustomField).length > 15 && (
-                  <p className="text-xs text-gray-400 text-center mt-4">
-                    显示前 15 项标准指标，共 {storeFields.filter(f => !f.isCustomField).length} 项
-                  </p>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

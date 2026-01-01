@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { account: accountRaw, name, password, roles, storeId, departmentId, nursingRole, customFormConfig } = body;
+  const { account: accountRaw, name, password, roles, storeId, departmentId, extraDepartmentIds, nursingRole, marketingSubDept, customFormConfig } = body;
   const account = (accountRaw || "").trim();
 
   // 验证必填字段
@@ -112,7 +112,9 @@ export async function POST(request: NextRequest) {
         roles: JSON.stringify(roleArray),
         storeId: storeId || null,
         departmentId: departmentId || null,
+        extraDepartmentIds: extraDepartmentIds || null,
         nursingRole: nursingRole || null,
+        marketingSubDept: marketingSubDept || null,
         customFormConfig: customFormConfig || null,
         isActive: true,
       },

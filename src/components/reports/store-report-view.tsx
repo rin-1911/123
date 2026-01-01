@@ -132,37 +132,55 @@ interface AggregateData {
 // 字段 ID 映射：将报表指标映射到规范化后的字段 ID
 // 注意：后端已做规范化处理，这里直接匹配规范化后的字段ID
 const FIELD_MAPPINGS: Record<string, string[]> = {
-  // 到店人数 - 规范化为 totalVisitors
+  // ========== 卡片1: 到店人数 ==========
   visits: ["totalVisitors"],
-  // 初诊人数 - 规范化为 firstVisitCount
+  newVisitors: ["newVisitors"],           // 新客人数
+  returningVisitors: ["returningVisitors"], // 老客人数
+  
+  // ========== 卡片2: 初诊人数 ==========
   newVisits: ["firstVisitCount"],
-  // 复诊人数 - 规范化为 returnVisitCount
-  returnVisits: ["returnVisitCount"],
-  // 接诊人数 - 规范化为 receptionTotal
   initial: ["firstVisitCount", "receptionTotal"],
-  // 初诊成交
-  initialDeals: ["initialDealsTotal"],
-  // 成交人数 - 规范化为 dealCount
+  firstVisitDeals: ["firstVisitDealCount"], // 初诊成交人数
+  
+  // ========== 卡片3: 成交人数 ==========
   deals: ["dealCount"],
-  // 实收业绩 - 规范化为 actualRevenue（已统一为元）
+  
+  // ========== 卡片4: 实收金额 ==========
   cash: ["actualRevenue"],
-  // 退费 - 规范化为 refundAmount
-  refunds: ["refundAmount"],
-  // 预约相关
-  appointments: ["newAppointments", "appointmentsMade"],
-  noShows: ["noShowTotal"],
+  
+  // ========== 卡片5: 预约人数 ==========
+  appointments: ["appointmentsMade"],
+  noShows: ["noShowCount"],               // 爽约人数
+  
+  // ========== 卡片6: 复诊预约 ==========
   followups: ["followupAppointments"],
-  // 线索相关
+  
+  // ========== 卡片7: 线索获取 ==========
   leads: ["newLeads"],
   validLeads: ["validLeads"],
-  // 意向相关
+  
+  // ========== 卡片8: 投诉/差评 ==========
+  complaints: ["complaintsCount"],
+  
+  // ========== 大项意向统计 ==========
   implant: ["implantIntention"],
   ortho: ["orthoIntention"],
-  // 投诉
-  complaints: ["complaintsCount"],
-  // 微信添加
+  
+  // ========== 财务对账 ==========
+  finance_cash: ["financeActualRevenue"],
+  refunds: ["refundAmount"],
+  
+  // ========== 部门人效 - 咨询部 ==========
+  receptionTotal: ["receptionTotal"],     // 人均接诊 = 此值 / 报告人数
+  // dealCount 和 actualRevenue 已在上方  // 人均成交、人均实收
+  
+  // ========== 部门人效 - 市场推广 ==========
+  // newLeads 和 validLeads 已在上方      // 总线索、有效线索
+  marketingCost: ["marketingCost"],       // 获客成本
+  
+  // ========== 其他辅助 ==========
+  returnVisits: ["returnVisitCount"],
   wechat: ["wechatAdded"],
-  // 到店人数（市场）
   arrived: ["arrivedCount"],
 };
 
@@ -507,7 +525,7 @@ export function StoreReportView({ user, stores }: StoreReportViewProps) {
                     <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg">
                       <p className="text-sm text-gray-500">财务实收</p>
                       <p className="text-2xl font-bold text-green-600 mt-1">
-                        ¥{centsToYuan(getMergedMoneyValue(data.summary.totalCashFinance, "cash"))}
+                        ¥{centsToYuan(getMergedMoneyValue(data.summary.totalCashFinance, "finance_cash"))}
                       </p>
                     </div>
                     <div className="p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg">
@@ -611,12 +629,11 @@ export function StoreReportView({ user, stores }: StoreReportViewProps) {
               summary={
                 <QuickSummary items={[
                   { label: "咨询", value: `${data.deptEfficiency.consultation.reports}份` },
-                  { label: "前台", value: `${data.deptEfficiency.frontDesk.reports}份` },
                   { label: "市场", value: `${data.deptEfficiency.marketing.reports}份` },
                 ]} />
               }
             >
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="p-4 border rounded-lg hover:shadow-sm transition-shadow">
                   <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
                     💬 咨询部
@@ -627,34 +644,15 @@ export function StoreReportView({ user, stores }: StoreReportViewProps) {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">人均接诊</span>
-                      <span className="font-medium">{data.deptEfficiency.consultation.avgReception}</span>
+                      <span className="font-medium">{formatNumber(getMergedValue(data.deptEfficiency.consultation.avgReception, "receptionTotal") / (data.deptEfficiency.consultation.reports || 1))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">人均成交</span>
-                      <span className="font-medium">{data.deptEfficiency.consultation.avgDeals}</span>
+                      <span className="font-medium">{formatNumber(getMergedValue(data.deptEfficiency.consultation.avgDeals, "deals") / (data.deptEfficiency.consultation.reports || 1))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">人均实收</span>
-                      <span className="font-medium text-green-600">¥{centsToYuan(data.deptEfficiency.consultation.avgCash)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 border rounded-lg hover:shadow-sm transition-shadow">
-                  <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    🏪 前台客服
-                    <Badge variant="outline" className="font-normal text-xs">
-                      {data.deptEfficiency.frontDesk.reports}份
-                    </Badge>
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">人均接待</span>
-                      <span className="font-medium">{data.deptEfficiency.frontDesk.avgVisits}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">人均预约</span>
-                      <span className="font-medium">{data.deptEfficiency.frontDesk.avgAppointments}</span>
+                      <span className="font-medium text-green-600">¥{centsToYuan(getMergedMoneyValue(data.deptEfficiency.consultation.avgCash * (data.deptEfficiency.consultation.reports || 1), "cash") / (data.deptEfficiency.consultation.reports || 1))}</span>
                     </div>
                   </div>
                 </div>
@@ -669,15 +667,15 @@ export function StoreReportView({ user, stores }: StoreReportViewProps) {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-500">总线索</span>
-                      <span className="font-medium">{data.deptEfficiency.marketing.totalLeads}</span>
+                      <span className="font-medium">{formatNumber(getMergedValue(data.deptEfficiency.marketing.totalLeads, "leads"))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">有效线索</span>
-                      <span className="font-medium text-green-600">{data.deptEfficiency.marketing.totalValid}</span>
+                      <span className="font-medium text-green-600">{formatNumber(getMergedValue(data.deptEfficiency.marketing.totalValid, "validLeads"))}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">获客成本</span>
-                      <span className="font-medium">¥{centsToYuan(data.deptEfficiency.marketing.costPerLead)}</span>
+                      <span className="font-medium">¥{centsToYuan(getMergedMoneyValue(0, "marketingCost"))}</span>
                     </div>
                   </div>
                 </div>

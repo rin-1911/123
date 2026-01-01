@@ -120,15 +120,23 @@ export async function DELETE(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
+  const category = searchParams.get("category");
 
-  if (!id) {
-    return NextResponse.json({ error: "ID为必填项" }, { status: 400 });
+  if (!id && !category) {
+    return NextResponse.json({ error: "ID或类别为必填项" }, { status: 400 });
   }
 
   try {
-    await prisma.dictionaryItem.delete({
-      where: { id },
-    });
+    if (id) {
+      await prisma.dictionaryItem.delete({
+        where: { id },
+      });
+    } else if (category) {
+      // 批量删除该类别下的所有项
+      await prisma.dictionaryItem.deleteMany({
+        where: { category },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -136,6 +144,9 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "删除失败" }, { status: 500 });
   }
 }
+
+
+
 
 
 

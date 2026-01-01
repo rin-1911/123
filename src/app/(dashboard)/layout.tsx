@@ -26,7 +26,8 @@ export default async function DashboardLayout({
       <Sidebar user={session.user} />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header user={session.user} />
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* 关键：强制始终显示滚动条，避免内容高度变化导致的布局左右“跳动/偏移” */}
+        <main className="flex-1 overflow-y-scroll p-6">
           {children}
         </main>
       </div>

@@ -20,14 +20,23 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const reportDate = searchParams.get("date") || getToday();
   const targetUserId = searchParams.get("targetUserId");
+  const departmentId = searchParams.get("departmentId"); // 支持指定部门
+
+  // 构建查询条件
+  const whereClause: { userId: string; reportDate: string; departmentId?: string } = {
+    userId: targetUserId || session.user.id,
+    reportDate,
+  };
+  
+  // 如果指定了部门ID，则查询该部门的日报
+  if (departmentId) {
+    whereClause.departmentId = departmentId;
+  }
 
   // 并行获取最新的日报、用户自定义配置和锁定状态
   const [report, userWithConfig, lock] = await Promise.all([
     prisma.dailyReport.findFirst({
-      where: {
-        userId: targetUserId || session.user.id,
-        reportDate,
-      },
+      where: whereClause,
       orderBy: { createdAt: "desc" },
       include: {
         ConsultationReport: true,
@@ -37,6 +46,8 @@ export async function GET(request: NextRequest) {
         MedicalReport: true,
         NursingReport: true,
         FinanceHrAdminReport: true,
+        HrReport: true,
+        AdminReport: true,
       },
     }),
     prisma.user.findUnique({
@@ -70,7 +81,7 @@ export async function POST(request: NextRequest) {
 
   const currentUser = session.user;
   const body = await request.json();
-  const { reportDate, status, data, formData, schemaId, note, targetUserId } = body;
+  const { reportDate, status, data, formData, schemaId, note, targetUserId, departmentId: requestDepartmentId } = body;
 
   // 支持两种格式：data（旧格式）和 formData（新格式）
   const reportData = formData || data;
@@ -116,7 +127,22 @@ export async function POST(request: NextRequest) {
     isAdminEdit = true;
   }
 
-  if (!user.storeId || !user.departmentId || !user.departmentCode) {
+  // 如果请求中指定了 departmentId，使用它（多部门支持）
+  let effectiveDepartmentId = user.departmentId;
+  let effectiveDepartmentCode = user.departmentCode;
+  
+  if (requestDepartmentId && requestDepartmentId !== user.departmentId) {
+    // 获取指定部门的信息
+    const dept = await prisma.department.findUnique({
+      where: { id: requestDepartmentId }
+    });
+    if (dept) {
+      effectiveDepartmentId = dept.id;
+      effectiveDepartmentCode = dept.code as DepartmentCode;
+    }
+  }
+
+  if (!user.storeId || !effectiveDepartmentId || !effectiveDepartmentCode) {
     return NextResponse.json({ error: "用户信息不完整" }, { status: 400 });
   }
 
@@ -134,9 +160,9 @@ export async function POST(request: NextRequest) {
       // 将 formData 转为 JSON 字符串存储
       const formDataJson = formData ? JSON.stringify(formData) : null;
 
-      // 查找该用户当天的最新一份日报
+      // 查找该用户当天该部门的最新一份日报
       const latestReport = await tx.dailyReport.findFirst({
-        where: { userId: user.id, reportDate },
+        where: { userId: user.id, reportDate, departmentId: effectiveDepartmentId! },
         orderBy: { createdAt: "desc" },
       });
 
@@ -152,7 +178,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: user.id,
             storeId: user.storeId!,
-            departmentId: user.departmentId!,
+            departmentId: effectiveDepartmentId!,
             reportDate,
             status: status || "DRAFT",
             submittedAt: status === "SUBMITTED" ? new Date() : null,
@@ -179,7 +205,7 @@ export async function POST(request: NextRequest) {
       // 同步更新固定表
       const dataToSync = formData || data;
       if (dataToSync) {
-        await upsertDepartmentReport(tx, user.departmentCode as DepartmentCode, report.id, dataToSync);
+        await upsertDepartmentReport(tx, effectiveDepartmentCode as DepartmentCode, report.id, dataToSync);
       }
 
       return report;
@@ -263,11 +289,12 @@ async function upsertDepartmentReport(
 
     case "FRONT_DESK":
       // 前台字段映射：
-      // Schema: actualRevenue, expectedRevenue, totalVisitors, firstVisitCount, returnVisitCount
-      // 固定表: newVisits, returningVisits, initialTriage, revisitTriage
+      // Schema: actualRevenue, expectedRevenue, totalVisitors, firstVisitCount, returnVisitCount, new_patients_count
+      // 固定表: newVisits, returningVisits, initialTriage, revisitTriage, new_patients_count
       await tx.frontDeskReport.upsert({
         where: { dailyReportId },
         update: {
+          new_patients_count: getNum(data, "new_patients_count", "new_patients_created"),
           newVisits: getNum(data, "newVisits", "firstVisitCount"),
           returningVisits: getNum(data, "returningVisits", "returnVisitCount"),
           newAppointments: getNum(data, "newAppointments"),
@@ -283,6 +310,7 @@ async function upsertDepartmentReport(
         },
         create: {
           dailyReportId,
+          new_patients_count: getNum(data, "new_patients_count", "new_patients_created"),
           newVisits: getNum(data, "newVisits", "firstVisitCount"),
           returningVisits: getNum(data, "returningVisits", "returnVisitCount"),
           newAppointments: getNum(data, "newAppointments"),
@@ -330,41 +358,31 @@ async function upsertDepartmentReport(
       break;
 
     case "ONLINE_GROWTH":
-      // 网络新媒体字段映射
+      // 网络部字段映射
       await tx.onlineGrowthReport.upsert({
         where: { dailyReportId },
         update: {
-          videosPublished: getNum(data, "videosPublished"),
-          liveSessions: getNum(data, "liveSessions"),
-          postsPublished: getNum(data, "postsPublished"),
-          leadsNew: getNum(data, "leadsNew", "newLeads", "wechatAdded"),
-          leadsValid: getNum(data, "leadsValid", "validLeads", "validInfoCollected"),
-          appointmentsBooked: getNum(data, "appointmentsBooked", "appointmentsMade"),
-          visitsArrived: getNum(data, "visitsArrived", "arrivedCount"),
-          adSpendInCents: getMoneyInCents(data, "adSpendInCents", "adSpend"),
-          followupsDone: getNum(data, "followupsDone"),
-          unreachableCount: getNum(data, "unreachableCount"),
-          todayRevenue: getMoneyInCents(data, "revenueDaily"),
-          monthlyRevenue: getMoneyInCents(data, "revenueMonth"),
-          followUpCount: getNum(data, "followupCount"),
-          phoneCallCount: getNum(data, "callCount"),
+          leads_today: getNum(data, "leads_today"),
+          leads_month: getNum(data, "leads_month"),
+          visits_today: getNum(data, "visits_today"),
+          deals_today: getNum(data, "deals_today"),
+          visits_month: getNum(data, "visits_month"),
+          deals_month: getNum(data, "deals_month"),
+          revenue_today: getMoneyInCents(data, "revenue_today"),
+          followup_today: getNum(data, "followup_today"),
+          intentional_tomorrow: getNum(data, "intentional_tomorrow"),
         },
         create: {
           dailyReportId,
-          videosPublished: getNum(data, "videosPublished"),
-          liveSessions: getNum(data, "liveSessions"),
-          postsPublished: getNum(data, "postsPublished"),
-          leadsNew: getNum(data, "leadsNew", "newLeads", "wechatAdded"),
-          leadsValid: getNum(data, "leadsValid", "validLeads", "validInfoCollected"),
-          appointmentsBooked: getNum(data, "appointmentsBooked", "appointmentsMade"),
-          visitsArrived: getNum(data, "visitsArrived", "arrivedCount"),
-          adSpendInCents: getMoneyInCents(data, "adSpendInCents", "adSpend"),
-          followupsDone: getNum(data, "followupsDone"),
-          unreachableCount: getNum(data, "unreachableCount"),
-          todayRevenue: getMoneyInCents(data, "revenueDaily"),
-          monthlyRevenue: getMoneyInCents(data, "revenueMonth"),
-          followUpCount: getNum(data, "followupCount"),
-          phoneCallCount: getNum(data, "callCount"),
+          leads_today: getNum(data, "leads_today"),
+          leads_month: getNum(data, "leads_month"),
+          visits_today: getNum(data, "visits_today"),
+          deals_today: getNum(data, "deals_today"),
+          visits_month: getNum(data, "visits_month"),
+          deals_month: getNum(data, "deals_month"),
+          revenue_today: getMoneyInCents(data, "revenue_today"),
+          followup_today: getNum(data, "followup_today"),
+          intentional_tomorrow: getNum(data, "intentional_tomorrow"),
           updatedAt: new Date(),
         },
       });

@@ -1,145 +1,85 @@
-// 网络新媒体日报 Schema
+// 网络部日报 Schema - 深度实战版
 import { DailyReportSchema } from "./types";
 
-// 网络客服日报
 export const onlineStaffSchema: DailyReportSchema = {
   id: "online_staff",
-  title: "网络客服日报",
-  description: "网络客服每日必填 - 线索处理SOP",
+  title: "网络部日报",
+  description: "网络部每日必填 - 核心转化与全渠道监控",
   sections: [
     {
-      id: "leadProcessing",
-      title: "一、线索来源与处理",
+      id: "core_metrics",
+      title: "今日核心数据",
+      description: "转化全链路监控",
       fields: [
-        { id: "newLeadsTotal", label: "新线索数", type: "number", required: true },
-        { id: "leadsDouyin", label: "抖音线索", type: "number" },
-        { id: "leadsXiaohongshu", label: "小红书线索", type: "number" },
-        { id: "leadsBaidu", label: "百度线索", type: "number" },
-        { id: "leadsWechat", label: "企微线索", type: "number" },
-        { id: "leadsOther", label: "其他平台线索", type: "number" },
-        { id: "firstResponseCount", label: "首响及时数", type: "number", required: true, hint: "X分钟内响应" },
-        { id: "firstResponseRate", label: "首响及时率", type: "calculated", formula: "firstResponseCount / newLeadsTotal * 100", suffix: "%" },
-        { id: "validLeads", label: "有效线索数", type: "number", required: true },
-        { id: "invalidLeads", label: "无效线索数", type: "number", required: true },
-        { id: "invalidReason", label: "无效原因", type: "textarea" },
-        { id: "followingLeads", label: "跟进中线索数", type: "number", required: true, hint: "未约到诊但可持续" },
-        { id: "lostLeads", label: "丢单数", type: "number", required: true, hint: "明确不来/拉黑/去竞对" },
-        { id: "todayRevenue", label: "当日业绩汇总", type: "money", required: true, hint: "元" },
-        { id: "monthlyRevenue", label: "本月累计业绩汇总", type: "money", required: true, hint: "元" },
-        { id: "followUpCount", label: "回访数量", type: "number", required: true, hint: "个" },
-        { id: "phoneCallCount", label: "电话拨打数量", type: "number", required: true, hint: "个" },
+        { id: "leads_today", label: "今日建档", type: "number", required: true },
+        { id: "leads_month", label: "月建档", type: "number", required: true },
+        { id: "visits_today", label: "今日到店", type: "number", required: true },
+        { id: "visits_month", label: "本月到店", type: "number", required: true },
+        { id: "deals_today", label: "到店成交", type: "number", required: true },
+        { id: "deals_month", label: "本月成交", type: "number", required: true },
+        { id: "revenue_today", label: "今日业绩", type: "money", required: true },
+        { id: "followup_today", label: "今日回访", type: "number", required: true },
+        { id: "intentional_tomorrow", label: "明日意向顾客", type: "number", required: true },
       ],
     },
     {
-      id: "appointmentVisit",
-      title: "二、预约与到诊",
+      id: "channel_performance",
+      title: "渠道表现",
+      description: "监控各渠道到店与成交质量",
       fields: [
-        { id: "appointmentsBooked", label: "预约数", type: "number", required: true, hint: "已约时间" },
-        { id: "appointmentsConfirmed", label: "已确认预约数", type: "number", required: true },
-        { id: "visitsArrived", label: "当日到诊数", type: "number", required: true, hint: "网络归因" },
-        { id: "noShowCount", label: "爽约数", type: "number", required: true, hint: "网络预约未到" },
-      ],
-    },
-    {
-      id: "scriptContent",
-      title: "三、话术与内容",
-      fields: [
-        { id: "scriptVersion", label: "今日使用主话术版本", type: "text", hint: "编号" },
-        { id: "topQuestions", label: "高频问题Top5", type: "textarea", required: true, hint: "用于内容迭代" },
-        { id: "competitorInfo", label: "竞对咨询对比信息", type: "textarea", hint: "价格/活动/承诺" },
-      ],
-    },
-  ],
-};
+        // 抖音
+        { id: "dy_v", label: "抖音-到店", type: "number" },
+        { id: "dy_d", label: "抖音-成交", type: "number" },
+        { id: "dy_a", label: "抖音-金额", type: "money" },
+        
+        // 动态三方渠道行
+        { 
+          id: "third_party_channels", 
+          label: "三方渠道明细", 
+          type: "dynamic_rows",
+          rowFields: [
+            { id: "name", label: "渠道名称", type: "text" },
+            { id: "visits", label: "到店人数", type: "number" },
+            { id: "deals", label: "成交人数", type: "number" },
+            { id: "amount", label: "成交金额", type: "money" },
+          ]
+        },
 
-// 网络主管日报
-export const onlineLeadSchema: DailyReportSchema = {
-  id: "online_lead",
-  title: "网络主管日报",
-  description: "网络主管每日必填",
-  sections: [
-    {
-      id: "kpiSummary",
-      title: "一、客服KPI汇总",
-      fields: [
-        { id: "teamFirstResponseRate", label: "首响及时率", type: "number", required: true, suffix: "%" },
-        { id: "teamValidLeads", label: "有效线索数", type: "number", required: true },
-        { id: "teamAppointments", label: "预约数", type: "number", required: true },
-        { id: "teamVisits", label: "到诊数", type: "number", required: true },
-        { id: "teamNoShow", label: "爽约数", type: "number", required: true },
+        // 高德
+        { id: "gd_v", label: "高德-到店", type: "number" },
+        { id: "gd_d", label: "高德-成交", type: "number" },
+        { id: "gd_a", label: "高德-金额", type: "money" },
+        
+        // 介绍
+        { id: "ref_v", label: "介绍-到店", type: "number" },
+        { id: "ref_d", label: "介绍-成交", type: "number" },
+        { id: "ref_a", label: "介绍-金额", type: "money" },
+        
+        // 信息流
+        { id: "ads_v", label: "信息流-到店", type: "number" },
+        { id: "ads_d", label: "信息流-成交", type: "number" },
+        { id: "ads_a", label: "信息流-金额", type: "money" },
+        
+        // 补款/再消费
+        { id: "chan_balance", label: "补款金额", type: "money" },
+        { id: "chan_respend", label: "再消费金额", type: "money" },
       ],
     },
     {
-      id: "funnelAnalysis",
-      title: "二、线索漏斗断点分析",
+      id: "work_summary",
+      title: "工作总结",
       fields: [
-        { id: "bottleneck", label: "卡在哪个环节", type: "select", required: true, options: [
-          { value: "valid_check", label: "有效判定" },
-          { value: "appointment", label: "预约" },
-          { value: "confirm", label: "确认" },
-          { value: "visit", label: "到诊" },
-        ]},
-        { id: "bottleneckDetail", label: "断点详情", type: "textarea", required: true },
+        { id: "main_tasks", label: "主要工作", type: "textarea", required: true },
+        { id: "main_issues", label: "主要问题", type: "textarea", required: true },
       ],
     },
     {
-      id: "improvement",
-      title: "三、明日改进动作",
+      id: "tomorrow_plan",
+      title: "明日计划",
       fields: [
-        { id: "scriptAdjustment", label: "话术调整", type: "textarea" },
-        { id: "followupRhythm", label: "跟进节奏调整", type: "textarea" },
-        { id: "followupList", label: "复访清单", type: "textarea" },
-      ],
-    },
-    {
-      id: "urgent",
-      title: "四、紧急问题",
-      fields: [
-        { id: "urgentIssues", label: "平台差评/投诉/违规风险", type: "textarea", hint: "如广告用语" },
-      ],
-    },
-  ],
-};
-
-// 网络总监日报
-export const onlineDirectorSchema: DailyReportSchema = {
-  id: "online_director",
-  title: "网络总监日报",
-  description: "网络总监每日必填",
-  sections: [
-    {
-      id: "platformOverview",
-      title: "一、平台维度总览",
-      fields: [
-        { id: "totalLeads", label: "总线索", type: "number", required: true },
-        { id: "totalValid", label: "总有效", type: "number", required: true },
-        { id: "totalVisits", label: "总到诊", type: "number", required: true },
-        { id: "totalDeals", label: "总成交", type: "number", required: true },
-        { id: "totalCost", label: "总成本", type: "money", hint: "若有投放" },
-      ],
-    },
-    {
-      id: "adStructure",
-      title: "二、投放结构建议",
-      fields: [
-        { id: "budgetIncrease", label: "加预算渠道", type: "textarea", required: true },
-        { id: "budgetDecrease", label: "减预算渠道", type: "textarea", required: true },
-        { id: "adjustReason", label: "调整原因", type: "textarea", required: true },
-      ],
-    },
-    {
-      id: "contentNeeds",
-      title: "三、素材/内容需求",
-      fields: [
-        { id: "contentPlan", label: "明日产出计划", type: "textarea", required: true, hint: "标题方向、案例方向" },
-      ],
-    },
-    {
-      id: "reputation",
-      title: "四、品牌舆情",
-      fields: [
-        { id: "negativeReviewProgress", label: "差评处理进度", type: "textarea" },
-        { id: "reputationOwner", label: "责任人", type: "text" },
+        { id: "primary_task", label: "首要任务", type: "textarea", required: true },
+        { id: "core_goal", label: "核心目标", type: "textarea", required: true, hint: "请详细描述明日要达成的业务指标" },
+        { id: "daily_notes", label: "备注", type: "textarea" },
       ],
     },
   ],
@@ -147,15 +87,6 @@ export const onlineDirectorSchema: DailyReportSchema = {
 
 export const onlineGrowthSchemas = {
   staff: onlineStaffSchema,
-  lead: onlineLeadSchema,
-  director: onlineDirectorSchema,
+  lead: onlineStaffSchema,
+  director: onlineStaffSchema,
 };
-
-
-
-
-
-
-
-
-

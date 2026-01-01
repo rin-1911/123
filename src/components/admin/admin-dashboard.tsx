@@ -291,23 +291,39 @@ export function AdminDashboard({
       </div>
 
       {/* 快捷入口 */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/users">
-          <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Users className="h-5 w-5 text-blue-500" />
                 用户管理
               </CardTitle>
               <CardDescription>
-                添加、编辑、删除用户，配置用户权限和日报字段
+                添加、编辑、删除用户，配置用户权限
               </CardDescription>
             </CardHeader>
           </Card>
         </Link>
 
+        {isHQAdmin && (
+          <Link href="/admin/daily-templates">
+            <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full border-cyan-200 bg-cyan-50/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-cyan-600" />
+                  日报配置中心
+                </CardTitle>
+                <CardDescription>
+                  统一管理全院日报字段：新增/删除/排序
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+        )}
+
         <Link href="/consultations">
-          <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <ClipboardList className="h-5 w-5 text-orange-500" />
@@ -321,7 +337,7 @@ export function AdminDashboard({
         </Link>
 
         <Link href="/reports/store">
-          <Card className="hover:bg-gray-50 transition-colors cursor-pointer">
+          <Card className="hover:bg-gray-50 transition-colors cursor-pointer h-full">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="h-5 w-5 text-green-500" />

@@ -165,17 +165,66 @@ export const financeManagerSchema: DailyReportSchema = {
   ],
 };
 
+// 综合财务对账报表 (何总及财务部要求)
+export const detailedFinanceSchema: DailyReportSchema = {
+  id: "detailed_finance",
+  title: "财务收支对账日报",
+  description: "全院收支明细与风险控制对账",
+  sections: [
+    {
+      id: "module_a",
+      title: "成本支出",
+      description: "录入材料、加工费等明细",
+      fields: [
+        { id: "exp_materials", label: "材料费", type: "money" },
+        { id: "exp_marketing", label: "市场部支出", type: "money" },
+        { id: "exp_daily", label: "日常支出", type: "money" },
+        { id: "exp_online", label: "网络部支出", type: "money" },
+        { id: "exp_processing", label: "加工费", type: "money" },
+        { id: "exp_refund", label: "退费支出", type: "money" },
+        { id: "exp_water", label: "水费", type: "money" },
+        { id: "exp_electricity", label: "电费", type: "money" },
+      ],
+    },
+    {
+      id: "module_b",
+      title: "总支出",
+      description: "支付方式汇总",
+      fields: [
+        { id: "pay_wechat", label: "微信支出", type: "money" },
+        { id: "pay_cash", label: "现金支出", type: "money" },
+        { id: "pay_public", label: "对公支出", type: "money" },
+      ],
+    },
+    {
+      id: "module_c",
+      title: "总收入",
+      description: "收入方式汇总",
+      fields: [
+        { id: "inc_wechat", label: "微信（工作机）收入", type: "money" },
+        { id: "inc_cash", label: "现金收入", type: "money" },
+        { id: "inc_med", label: "医保卡收入", type: "money" },
+        { id: "inc_pos", label: "刷卡机收入", type: "money" },
+        { id: "inc_platform", label: "平台收入", type: "money" },
+        { id: "inc_public", label: "对公收入", type: "money" },
+      ],
+    },
+    {
+      id: "module_d",
+      title: "大项",
+      description: "风险合规说明",
+      fields: [
+        { id: "risk_control_desc", label: "风险控制说明", type: "textarea" },
+        { id: "large_refund_reason", label: "大额退费原因", type: "textarea" },
+        { id: "other_notes", label: "备注", type: "textarea" },
+      ],
+    },
+  ],
+};
+
 export const financeSchemas = {
   cashier: cashierSchema,
   accountant: accountantSchema,
-  manager: financeManagerSchema,
+  manager: detailedFinanceSchema, // 将综合报表设为 manager 的默认报表
+  detailed: detailedFinanceSchema,
 };
-
-
-
-
-
-
-
-
-

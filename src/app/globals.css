@@ -73,6 +73,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* 解决切换选项卡时滚动条出现/消失导致的布局左右跳动 */
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 
 /* 自定义滚动条样式 */

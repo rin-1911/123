@@ -465,8 +465,10 @@ export function FormConfigModal({
                         className="w-full mt-1 h-10 px-3 border rounded-md text-sm"
                       >
                         <option value="number">数字</option>
+                        <option value="money">金额</option>
                         <option value="text">文本</option>
                         <option value="textarea">多行文本</option>
+                        <option value="dynamic_rows">动态记录行 (FieldArray)</option>
                       </select>
                     </div>
                   </div>

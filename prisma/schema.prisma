@@ -97,10 +97,32 @@ model DailyReport {
   NursingReport          NursingReport?
   OfflineMarketingReport OfflineMarketingReport?
   OnlineGrowthReport     OnlineGrowthReport?
+  HrReport               HrReport?
+  AdminReport            AdminReport?
 
   @@index([userId, reportDate])
   @@index([departmentId, reportDate])
   @@index([storeId, reportDate])
+}
+
+model HrReport {
+  dailyReportId String      @id
+  attendance    String?     // JSON: 考勤明细
+  recruitment   String?     // JSON: 招聘明细
+  personnel     String?     // JSON: 人员管理明细
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  DailyReport   DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
+}
+
+model AdminReport {
+  dailyReportId String      @id
+  assets        String?     // JSON: 资产办公
+  hygiene       String?     // JSON: 卫生安全
+  logistics     String?     // JSON: 后勤
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  DailyReport   DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
 }
 
 model Department {
@@ -111,6 +133,24 @@ model Department {
   updatedAt   DateTime      @updatedAt
   DailyReport DailyReport[]
   User        User[]
+  DailyReportTemplate DailyReportTemplate[]
+}
+
+// 日报模板：按【角色 + 部门 + 子部门(schemaId)】存储动态表单配置
+model DailyReportTemplate {
+  id           String     @id @default(cuid())
+  role         String
+  departmentId String
+  // 子部门/岗位标识（护理岗位、线下市场子部门等），没有则空字符串
+  schemaId     String     @default("")
+  configJson   Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([role, departmentId, schemaId])
+  @@index([departmentId])
+  @@index([role])
 }
 
 model DictionaryItem {
@@ -154,6 +194,7 @@ model FinanceHrAdminReport {
 
 model FrontDeskReport {
   dailyReportId           String      @id
+  new_patients_count      Int         @default(0) // 新增：新增患者(建档)
   newVisits               Int         @default(0)
   returningVisits         Int         @default(0)
   newAppointments         Int         @default(0)
@@ -224,22 +265,38 @@ model OfflineMarketingReport {
 
 model OnlineGrowthReport {
   dailyReportId      String      @id
-  videosPublished    Int         @default(0)
-  liveSessions       Int         @default(0)
-  postsPublished     Int         @default(0)
-  leadsNew           Int         @default(0)
-  leadsValid         Int         @default(0)
-  appointmentsBooked Int         @default(0)
-  visitsArrived      Int         @default(0)
-  adSpendInCents     Int         @default(0)
-  followupsDone      Int         @default(0)
-  unreachableCount   Int         @default(0)
-  todayRevenue       Int         @default(0) // 新增：当日业绩汇总
-  monthlyRevenue     Int         @default(0) // 新增：本月累计业绩汇总
-  followUpCount      Int         @default(0) // 新增：回访数量
-  phoneCallCount     Int         @default(0) // 新增：电话拨打数量
+  leads_today        Int         @default(0) // 今日建档
+  leads_month        Int         @default(0) // 月建档
+  visits_today       Int         @default(0) // 今日到店
+  deals_today        Int         @default(0) // 到店成交
+  visits_month       Int         @default(0) // 本月到店
+  deals_month        Int         @default(0) // 本月成交
+  revenue_today      Int         @default(0) // 今日业绩
+  followup_today     Int         @default(0) // 今日回访
+  intentional_tomorrow Int       @default(0) // 明日意向
+
+  // ==========================================================
+  // 兼容字段（生产库历史列保留）
+  // 说明：线上库已存在这些列且有数据。为了避免 prisma db push 触发 DROP 导致数据丢失，
+  // 先在 schema 中保留它们。后续如果确认不再需要，可做“数据迁移/归档”后再安全下线。
+  // ==========================================================
+  adSpendInCents      Int         @default(0) // 广告费用（分）
+  appointmentsBooked  Int         @default(0) // 预约（旧口径）
+  followUpCount       Int         @default(0) // 回访次数（旧口径）
+  followupsDone       Int         @default(0) // 已回访数（旧口径）
+  leadsNew            Int         @default(0) // 新增线索（旧口径）
+  leadsValid          Int         @default(0) // 有效线索（旧口径）
+  liveSessions        Int         @default(0) // 直播场次（旧口径）
+  monthlyRevenue      Int         @default(0) // 月业绩（旧口径，分/元由历史数据决定）
+  phoneCallCount      Int         @default(0) // 电话量（旧口径）
+  postsPublished      Int         @default(0) // 发帖量（旧口径）
+  todayRevenue        Int         @default(0) // 今日业绩（旧口径，可能与 revenue_today 重叠）
+  unreachableCount    Int         @default(0) // 未接通数（旧口径）
+  videosPublished     Int         @default(0) // 视频发布数（旧口径）
+  visitsArrived       Int         @default(0) // 到店人数（旧口径）
+
   createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  updatedAt          DateTime
   DailyReport        DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)
 }
 
@@ -324,9 +381,11 @@ model User {
   roles                                                                   String                       @default("[\"STAFF\"]")
   isActive                                                                Boolean                      @default(true)
   nursingRole                                                             String?
+  marketingSubDept                                                        String?  // 线下市场子部门: expansion | customerService
   customFormConfig                                                        String?
   storeId                                                                 String?
   departmentId                                                            String?
+  extraDepartmentIds                                                      String?                      // JSON数组，存储额外的部门ID
   createdAt                                                               DateTime                     @default(now())
   updatedAt                                                               DateTime                     @updatedAt
   ConsultationViewPermission_ConsultationViewPermission_grantedByIdToUser ConsultationViewPermission[] @relation("ConsultationViewPermission_grantedByIdToUser")
