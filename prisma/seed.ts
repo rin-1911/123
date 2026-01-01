@@ -91,12 +91,17 @@ async function main() {
     prisma.department.upsert({
       where: { code: "FINANCE_HR_ADMIN" },
       update: {},
-      create: { code: "FINANCE_HR_ADMIN", name: "财务" },
+      create: { code: "FINANCE_HR_ADMIN", name: "财务部" },
     }),
     prisma.department.upsert({
       where: { code: "HR" },
       update: {},
-      create: { code: "HR", name: "人事行政" },
+      create: { code: "HR", name: "人事部" },
+    }),
+    prisma.department.upsert({
+      where: { code: "ADMIN" },
+      update: {},
+      create: { code: "ADMIN", name: "行政部" },
     }),
   ]);
   console.log(`✅ ${departments.length} 个部门架构已就绪`);
@@ -131,8 +136,12 @@ async function main() {
   // ============ 4. 创建超级管理员账号 ============
   console.log("\n👤 创建超级管理员账号...");
   
-  // 管理员密码 - 生产环境强密码（字母+数字+特殊字符）
-  const adminPassword = "Defu@2025";
+  // 管理员密码 - 不要在代码里硬编码生产密码（避免泄露）
+  // 通过环境变量传入：ADMIN_INITIAL_PASSWORD
+  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD;
+  if (!adminPassword) {
+    throw new Error("缺少环境变量 ADMIN_INITIAL_PASSWORD，请在执行 seed 时提供初始管理员密码。");
+  }
   const passwordHash = await bcrypt.hash(adminPassword, 12); // 使用更高的加密强度
 
   const admin = await prisma.user.upsert({

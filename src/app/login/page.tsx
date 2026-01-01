@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,9 +14,7 @@ function LoginForm() {
   const { toast } = useToast();
 
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const devHelperEnabled =
-    process.env.NODE_ENV !== "production" &&
-    process.env.NEXT_PUBLIC_ENABLE_TEST_ACCOUNTS === "1";
+  // 安全：生产环境不提供“一键填充账号密码”等调试入口，避免误提交与泄露风险
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,32 +110,11 @@ function LoginForm() {
               ) : "登录"}
             </button>
           </form>
-
-          {/* 本地开发辅助：快捷填充（线上永远不显示） */}
-          {devHelperEnabled && (
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-slate-400 text-xs">
-                  开发模式快捷填充（仅本地可开）
-                </p>
-                <button
-                  type="button"
-                  className="text-xs text-cyan-400 hover:text-cyan-300"
-                  onClick={() => {
-                    setAccount("admin");
-                    setPassword("Defu@2025");
-                  }}
-                >
-                  填入管理员账号
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* 底部 */}
         <p className="text-center text-slate-600 text-xs mt-6">
-          © 2024 德弗口腔运营管理系统
+          © 2026 德弗口腔运营管理系统
         </p>
       </div>
     </div>
