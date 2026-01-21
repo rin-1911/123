@@ -36,23 +36,41 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // 构建查询条件
-    const where: {
-      storeId: string;
-      isActive: boolean;
-      Department?: { code: { not: string } };
-      departmentId?: string;
-    } = {
-      storeId,
-      isActive: true,
-      Department: { code: { not: "MANAGEMENT" } },
+    const allDepartments = await prisma.department.findMany({
+      orderBy: { code: "asc" },
+    });
+    const departmentById = new Map(allDepartments.map((d) => [d.id, d]));
+    const departmentRankById = new Map(allDepartments.map((d, idx) => [d.id, idx]));
+
+    const parseExtraDepartmentIds = (raw: string | null | undefined): string[] => {
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
+      } catch {
+        return [];
+      }
     };
 
-    // 部门负责人只能看自己部门
-    if (hasAnyRole(user.roles, ["DEPT_LEAD"]) && !hasAnyRole(user.roles, ["STORE_MANAGER", "HQ_ADMIN"]) && user.departmentId) {
-      where.departmentId = user.departmentId;
-    } else if (departmentId && departmentId !== "all") {
-      where.departmentId = departmentId;
+    const effectiveDepartmentId =
+      hasAnyRole(user.roles, ["DEPT_LEAD"]) &&
+      !hasAnyRole(user.roles, ["STORE_MANAGER", "HQ_ADMIN"]) &&
+      user.departmentId
+        ? user.departmentId
+        : departmentId && departmentId !== "all"
+          ? departmentId
+          : undefined;
+
+    const where: any = {
+      storeId,
+      isActive: true,
+    };
+
+    if (effectiveDepartmentId) {
+      where.OR = [
+        { departmentId: effectiveDepartmentId },
+        { extraDepartmentIds: { contains: `"${effectiveDepartmentId}"` } },
+      ];
     }
 
     // 获取成员列表
@@ -62,12 +80,15 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         account: true,
+        departmentId: true,
+        extraDepartmentIds: true,
         Department: {
           select: { id: true, code: true, name: true },
         },
         DailyReport: {
           where: { reportDate },
           select: {
+            departmentId: true,
             status: true,
             submittedAt: true,
           },
@@ -76,13 +97,36 @@ export async function GET(request: NextRequest) {
       orderBy: [{ Department: { code: "asc" } }, { name: "asc" }],
     });
 
-    const formattedMembers = members.map((m) => ({
-      id: m.id,
-      name: m.name,
-      account: m.account,
-      departmentName: m.Department?.name || "",
-      report: m.DailyReport[0] || null,
-    }));
+    const relevantMembers = members.filter((m) => {
+      if (effectiveDepartmentId) return true;
+      if (m.departmentId) return true;
+      return parseExtraDepartmentIds(m.extraDepartmentIds).length > 0;
+    });
+
+    const formattedMembers = relevantMembers.map((m) => {
+      const primaryDepartmentId = m.departmentId || m.Department?.id || null;
+      const report =
+        effectiveDepartmentId
+          ? m.DailyReport.find((r) => r.departmentId === effectiveDepartmentId) || null
+          : primaryDepartmentId
+            ? m.DailyReport.find((r) => r.departmentId === primaryDepartmentId) || null
+            : null;
+
+      const departmentName =
+        effectiveDepartmentId
+          ? departmentById.get(effectiveDepartmentId)?.name || ""
+          : primaryDepartmentId
+            ? departmentById.get(primaryDepartmentId)?.name || m.Department?.name || ""
+            : "";
+
+      return {
+        id: m.id,
+        name: m.name,
+        account: m.account,
+        departmentName,
+        report,
+      };
+    });
 
     // 计算部门汇总
     const deptMap = new Map<
@@ -97,33 +141,57 @@ export async function GET(request: NextRequest) {
       }
     >();
 
-    for (const m of members) {
-      if (!m.Department) continue;
-
-      const key = m.Department.id;
-      if (!deptMap.has(key)) {
-        deptMap.set(key, {
-          departmentId: m.Department.id,
-          departmentCode: m.Department.code,
-          departmentName: m.Department.name,
+    if (!effectiveDepartmentId) {
+      for (const dept of allDepartments) {
+        deptMap.set(dept.id, {
+          departmentId: dept.id,
+          departmentCode: dept.code,
+          departmentName: dept.name,
           totalUsers: 0,
           submittedCount: 0,
           draftCount: 0,
         });
       }
+    }
 
-      const summary = deptMap.get(key)!;
-      summary.totalUsers++;
+    for (const m of relevantMembers) {
+      const primaryId = m.departmentId || m.Department?.id || null;
+      const extraIds = parseExtraDepartmentIds(m.extraDepartmentIds);
+      const departmentIds = Array.from(new Set([primaryId, ...extraIds].filter(Boolean))) as string[];
 
-      const report = m.DailyReport[0];
-      if (report?.status === "SUBMITTED") {
-        summary.submittedCount++;
-      } else if (report?.status === "DRAFT") {
-        summary.draftCount++;
+      for (const deptId of departmentIds) {
+        const dept = departmentById.get(deptId);
+        if (!dept) continue;
+
+        if (!deptMap.has(deptId)) {
+          deptMap.set(deptId, {
+            departmentId: dept.id,
+            departmentCode: dept.code,
+            departmentName: dept.name,
+            totalUsers: 0,
+            submittedCount: 0,
+            draftCount: 0,
+          });
+        }
+
+        const summary = deptMap.get(deptId)!;
+        summary.totalUsers++;
+
+        const report = m.DailyReport.find((r) => r.departmentId === deptId);
+        if (report?.status === "SUBMITTED") {
+          summary.submittedCount++;
+        } else if (report?.status === "DRAFT") {
+          summary.draftCount++;
+        }
       }
     }
 
-    const summaries = Array.from(deptMap.values());
+    const summaries = Array.from(deptMap.values()).sort((a, b) => {
+      const aRank = departmentRankById.get(a.departmentId) ?? Number.MAX_SAFE_INTEGER;
+      const bRank = departmentRankById.get(b.departmentId) ?? Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.departmentName.localeCompare(b.departmentName, "zh-CN");
+    });
 
     return NextResponse.json({
       members: formattedMembers,
@@ -134,4 +202,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "获取数据失败" }, { status: 500 });
   }
 }
-

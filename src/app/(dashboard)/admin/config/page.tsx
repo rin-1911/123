@@ -8,6 +8,8 @@ import { hasAnyRole } from "@/lib/types";
 import { AlertCircle, Settings, ToggleLeft, ToggleRight, Hash } from "lucide-react";
 import { StoreManagement } from "@/components/admin/store-management";
 import { DictionaryManagement } from "@/components/admin/dictionary-management";
+import { DeptReportRoleConfig } from "@/components/admin/dept-report-role-config";
+import { DepartmentManagement } from "@/components/admin/department-management";
 
 export default async function ConfigPage() {
   const session = await getServerSession(authOptions);
@@ -35,38 +37,68 @@ export default async function ConfigPage() {
     );
   }
 
-  // 获取配置列表
-  const configs = await prisma.configFlag.findMany({
-    include: {
-      Store: true,
-    },
-    orderBy: [{ scope: "asc" }, { key: "asc" }],
-  });
+  let configs: any[] = [];
+  let stores: any[] = [];
+  let channels: any[] = [];
+  let departments: any[] = [];
+  try {
+    configs = await prisma.configFlag.findMany({
+      include: {
+        Store: true,
+      },
+      orderBy: [{ scope: "asc" }, { key: "asc" }],
+    });
 
-  // 获取门店列表（带计数，供"能否删除"判断）
-  const stores = await prisma.store.findMany({
-    orderBy: { code: "asc" },
-    include: {
-      _count: {
-        select: {
-          User: true,
-          StoreDayLock: true,
-          DailyReport: true,
-          ChannelSource: true,
-          ConfigFlag: true,
-          UserStoreAccess: true,
+    stores = await prisma.store.findMany({
+      orderBy: { code: "asc" },
+      include: {
+        _count: {
+          select: {
+            User: true,
+            StoreDayLock: true,
+            DailyReport: true,
+            ChannelSource: true,
+            ConfigFlag: true,
+            UserStoreAccess: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  // 获取渠道来源
-  const channels = await prisma.channelSource.findMany({
-    include: {
-      Store: true,
-    },
-    orderBy: [{ storeId: "asc" }, { sortOrder: "asc" }],
-  });
+    channels = await prisma.channelSource.findMany({
+      include: {
+        Store: true,
+      },
+      orderBy: [{ storeId: "asc" }, { sortOrder: "asc" }],
+    });
+
+    departments = await prisma.department.findMany({
+      orderBy: { code: "asc" },
+      include: {
+        _count: {
+          select: {
+            User: true,
+            DailyReport: true,
+            DailyReportTemplate: true,
+          },
+        },
+      },
+    });
+  } catch {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-5 w-5" />
+            数据库连接失败
+          </CardTitle>
+          <CardDescription>
+            当前无法连接数据库服务，请检查 DATABASE_URL 配置或数据库是否可访问。
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -82,8 +114,16 @@ export default async function ConfigPage() {
       {/* 门店信息 */}
       <StoreManagement initialStores={stores} />
 
+      {/* 部门管理 */}
+      <DepartmentManagement initialDepartments={departments} />
+
       {/* 字典管理 */}
       <DictionaryManagement />
+
+      <DeptReportRoleConfig
+        stores={stores.map((s) => ({ id: s.id, code: s.code, name: s.name }))}
+        departments={departments.map((d) => ({ code: d.code, name: d.name }))}
+      />
 
       {/* 功能开关配置 */}
       <Card>
@@ -94,7 +134,7 @@ export default async function ConfigPage() {
             <Badge variant="secondary">{configs.length} 项</Badge>
           </CardTitle>
           <CardDescription>
-            系统功能开关配置，支持"可降档、可停"
+            系统功能开关配置，支持&quot;可降档、可停&quot;
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -195,13 +235,12 @@ export default async function ConfigPage() {
           <CardTitle className="text-base">使用说明</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-gray-600 space-y-2">
-          <p>• 系统配置功能正在开发中，目前仅支持查看配置项</p>
-          <p>• 功能开关支持"可降档、可停"，可根据业务需要启用或停用</p>
-          <p>• 配置修改功能将在后续版本中提供</p>
-          <p>• 如需修改配置，请联系技术支持</p>
+          <p>• 当前支持配置“门店报表汇总口径（按角色）”，用于统一报表口径</p>
+          <p>• 其他配置项目前仅支持查看</p>
+          <p>• 功能开关支持&quot;可降档、可停&quot;，可根据业务需要启用或停用</p>
+          <p>• 如需增加更多配置项的可视化编辑，请联系技术支持</p>
         </CardContent>
       </Card>
     </div>
   );
 }
-

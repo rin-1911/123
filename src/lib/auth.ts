@@ -41,13 +41,9 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        // 调试日志：看是否找到了用户
         if (!user) {
-          console.log(`[AUTH DEBUG] 找不到账号: "${account}"`);
-          throw new Error("账号不存在 (调试用)");
+          throw new Error("账号不存在");
         }
-
-        console.log(`[AUTH DEBUG] 找到账号: "${account}", 开始对比密码...`);
 
         if (!user.isActive) {
           throw new Error("账号已被禁用，请联系管理员");
@@ -56,11 +52,8 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(password, user.passwordHash);
         
         if (!isValid) {
-          console.log(`[AUTH DEBUG] 密码错误: 账号为 "${account}"`);
-          throw new Error("密码错误 (调试用)");
+          throw new Error("密码错误");
         }
-
-        console.log(`[AUTH DEBUG] 登录成功: "${account}"`);
 
         // 解析多角色
         const roles = parseRoles(user.roles);
@@ -147,4 +140,3 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-

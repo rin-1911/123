@@ -36,31 +36,42 @@ export default async function StoreReportPage() {
 
   // 获取门店列表
   let stores: Store[] = [];
-  if (hasAnyRole(user.roles, ["HQ_ADMIN", "REGION_MANAGER"])) {
-    stores = await prisma.store.findMany({
-      where: { isActive: true },
-      orderBy: { code: "asc" },
-    });
-  } else if (user.storeId) {
-    const store = await prisma.store.findUnique({
-      where: { id: user.storeId },
-    });
-    if (store) {
-      stores = [store];
+  try {
+    if (hasAnyRole(user.roles, ["HQ_ADMIN", "REGION_MANAGER", "FINANCE"])) {
+      stores = await prisma.store.findMany({
+        where: {
+          isActive: true,
+          NOT: [{ code: "HQ" }, { name: { contains: "总部" } }],
+        },
+        orderBy: { code: "asc" },
+      });
+    } else if (user.storeId) {
+      const store = await prisma.store.findUnique({
+        where: { id: user.storeId },
+      });
+      if (store) {
+        stores = [store];
+      }
     }
+  } catch {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <AlertCircle className="h-5 w-5" />
+            数据库连接失败
+          </CardTitle>
+          <CardDescription>
+            当前无法连接数据库服务，请检查 DATABASE_URL 配置或数据库是否可访问。
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">门店报表</h1>
-        <p className="text-gray-500 mt-1">
-          查看门店经营数据汇总
-        </p>
-      </div>
-
       <StoreReportView user={user} stores={stores} />
     </div>
   );
 }
-

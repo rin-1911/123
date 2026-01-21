@@ -52,9 +52,6 @@ export default async function TeamDailyReportPage() {
 
   // 获取部门列表
   const departments = await prisma.department.findMany({
-    where: {
-      code: { not: "MANAGEMENT" },
-    },
     orderBy: { code: "asc" },
   });
 
@@ -75,4 +72,3 @@ export default async function TeamDailyReportPage() {
     </div>
   );
 }
-

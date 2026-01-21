@@ -14,7 +14,15 @@ function LoginForm() {
   const { toast } = useToast();
 
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  // 安全：生产环境不提供“一键填充账号密码”等调试入口，避免误提交与泄露风险
+  const devHelperEnabled =
+    typeof process !== "undefined" &&
+    process.env.NEXT_PUBLIC_DEV_HELP_ENABLED === "1" &&
+    process.env.NODE_ENV !== "production";
+
+  const fillAdmin = () => {
+    setAccount("admin");
+    setPassword("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +118,38 @@ function LoginForm() {
               ) : "登录"}
             </button>
           </form>
+
+          {/* 本地开发辅助：快捷填充 */}
+          {devHelperEnabled && (
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-slate-400 text-xs">
+                  开发模式快捷填充
+                </p>
+                <button
+                  type="button"
+                  className="text-xs text-cyan-400 hover:text-cyan-300"
+                  onClick={() => {
+                    fillAdmin();
+                  }}
+                >
+                  填入管理员账号
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* 右下角独立按钮：快速填入管理员账号 */}
+        {devHelperEnabled && (
+          <button
+            type="button"
+            onClick={fillAdmin}
+            className="fixed bottom-6 right-6 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm hover:bg-white/15 transition-all shadow-lg"
+          >
+            填入管理员账号
+          </button>
+        )}
 
         {/* 底部 */}
         <p className="text-center text-slate-600 text-xs mt-6">

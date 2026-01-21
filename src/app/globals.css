@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 强制触发样式重建 */
 @layer base {
   :root {
     --background: 0 0% 100%;

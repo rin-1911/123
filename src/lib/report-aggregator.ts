@@ -10,8 +10,17 @@
  */
 
 import { prisma } from "./db";
-import { getSchemaForRole, DailyReportSchema, FormField } from "./schemas";
+import {
+  getSchemaForRole,
+  type MarketingSubDept,
+  MARKETING_SUB_DEPT_LABELS,
+  type NursingRole,
+  NURSING_ROLE_LABELS,
+  DailyReportSchema,
+  FormField,
+} from "./schemas";
 import type { DepartmentCode, Role } from "./types";
+import { buildSchemaFromTemplateV2, isTemplateV2 } from "./templates/template-schema";
 
 // ============================================================
 // 字段规范化映射系统
@@ -27,38 +36,28 @@ interface NormalizedField {
 
 // 字段规范化映射表：将各种字段名映射到统一的规范字段
 const FIELD_NORMALIZATION: Record<string, NormalizedField> = {
-  // ====== 到店人数 (卡片1) ======
-  totalVisitors: { normalizedId: "totalVisitors", label: "到店人数", type: "number" },
-  totalArrival: { normalizedId: "totalVisitors", label: "到店人数", type: "number" },
+  // ====== 到店/到诊人数 ======
+  totalVisitors: { normalizedId: "totalVisitors", label: "总到院人数", type: "number" },
+  totalArrival: { normalizedId: "totalVisitors", label: "总到院人数", type: "number" },
   
-  // ====== 新客/老客 (卡片1子指标) ======
-  newVisitors: { normalizedId: "newVisitors", label: "新客人数", type: "number" },
-  newCustomers: { normalizedId: "newVisitors", label: "新客人数", type: "number" },
-  returningVisitors: { normalizedId: "returningVisitors", label: "老客人数", type: "number" },
-  oldCustomers: { normalizedId: "returningVisitors", label: "老客人数", type: "number" },
-  
-  // ====== 初诊人数 (卡片2) ======
+  // ====== 初诊人数 ======
   firstVisitCount: { normalizedId: "firstVisitCount", label: "初诊人数", type: "number" },
   initialTotal: { normalizedId: "firstVisitCount", label: "初诊人数", type: "number" },
   initialCount: { normalizedId: "firstVisitCount", label: "初诊人数", type: "number" },
   newVisits: { normalizedId: "firstVisitCount", label: "初诊人数", type: "number" },
   teamFirstVisit: { normalizedId: "teamFirstVisit", label: "团队首诊人数", type: "number" },
   
-  // ====== 初诊成交人数 (卡片2子指标) ======
-  firstVisitDealCount: { normalizedId: "firstVisitDealCount", label: "初诊成交人数", type: "number" },
-  initialDealCount: { normalizedId: "firstVisitDealCount", label: "初诊成交人数", type: "number" },
-  
   // ====== 复诊人数 ======
   returnVisitCount: { normalizedId: "returnVisitCount", label: "复诊人数", type: "number" },
   returningVisits: { normalizedId: "returnVisitCount", label: "复诊人数", type: "number" },
   teamReturnVisit: { normalizedId: "teamReturnVisit", label: "团队复诊人数", type: "number" },
   
-  // ====== 接诊总数 (咨询部人效) ======
+  // ====== 接诊人数 ======
   receptionTotal: { normalizedId: "receptionTotal", label: "接诊总数", type: "number" },
   receptionCount: { normalizedId: "receptionTotal", label: "接诊总数", type: "number" },
   teamReceptionTotal: { normalizedId: "teamReceptionTotal", label: "团队接诊总数", type: "number" },
   
-  // ====== 成交人数 (卡片3) ======
+  // ====== 成交人数 ======
   dealCount: { normalizedId: "dealCount", label: "成交人数", type: "number" },
   dealsTotal: { normalizedId: "dealCount", label: "成交人数", type: "number" },
   teamDealCount: { normalizedId: "teamDealCount", label: "团队成交人数", type: "number" },
@@ -66,8 +65,8 @@ const FIELD_NORMALIZATION: Record<string, NormalizedField> = {
   // ====== 未成交人数 ======
   noDealCount: { normalizedId: "noDealCount", label: "未成交人数", type: "number" },
   
-  // ====== 实收金额 (卡片4) ======
-  actualRevenue: { normalizedId: "actualRevenue", label: "实收金额", type: "money" },
+  // ====== 实收金额（统一为元）======
+  actualRevenue: { normalizedId: "actualRevenue", label: "实收业绩", type: "money" },
   cashInYuan: { normalizedId: "actualRevenue", label: "实收业绩", type: "money" },
   cashAmount: { normalizedId: "actualRevenue", label: "实收业绩", type: "money" },
   cashInCents: { normalizedId: "actualRevenue", label: "实收业绩", type: "money", isMoneyInCents: true },
@@ -87,31 +86,26 @@ const FIELD_NORMALIZATION: Record<string, NormalizedField> = {
   // ====== 复诊消费金额 ======
   returnVisitAmount: { normalizedId: "returnVisitAmount", label: "复诊消费金额", type: "money" },
   
-  // ====== 线索获取 (卡片7) ======
-  newLeads: { normalizedId: "newLeads", label: "线索获取", type: "number" },
-  leadsNew: { normalizedId: "newLeads", label: "线索获取", type: "number" },
-  newLeadsTotal: { normalizedId: "newLeads", label: "线索获取", type: "number" },
-  
-  // ====== 有效线索 (卡片7子指标) ======
+  // ====== 线索相关 ======
+  newLeads: { normalizedId: "newLeads", label: "新增线索", type: "number" },
+  leadsNew: { normalizedId: "newLeads", label: "新增线索", type: "number" },
+  newLeadsTotal: { normalizedId: "newLeads", label: "新增线索", type: "number" },
   validLeads: { normalizedId: "validLeads", label: "有效线索", type: "number" },
   leadsValid: { normalizedId: "validLeads", label: "有效线索", type: "number" },
   validInfoCollected: { normalizedId: "validLeads", label: "有效线索", type: "number" },
   wechatAdded: { normalizedId: "wechatAdded", label: "微信添加数", type: "number" },
   
-  // ====== 预约人数 (卡片5) ======
-  appointmentsMade: { normalizedId: "appointmentsMade", label: "预约人数", type: "number" },
-  appointmentsBooked: { normalizedId: "appointmentsMade", label: "预约人数", type: "number" },
-  newAppointments: { normalizedId: "appointmentsMade", label: "预约人数", type: "number" },
-  
-  // ====== 爽约人数 (卡片5子指标) ======
-  noShowCount: { normalizedId: "noShowCount", label: "爽约人数", type: "number" },
-  noShowTotal: { normalizedId: "noShowCount", label: "爽约人数", type: "number" },
-  noShowAppointments: { normalizedId: "noShowCount", label: "爽约人数", type: "number" },
-  
-  // ====== 复诊预约 (卡片6) ======
+  // ====== 预约相关 ======
+  appointmentsMade: { normalizedId: "appointmentsMade", label: "预约成功", type: "number" },
+  appointmentsBooked: { normalizedId: "appointmentsMade", label: "预约成功", type: "number" },
+  newAppointments: { normalizedId: "newAppointments", label: "新增预约", type: "number" },
   followupAppointments: { normalizedId: "followupAppointments", label: "复诊预约", type: "number" },
   followupAppt: { normalizedId: "followupAppointments", label: "复诊预约", type: "number" },
   nextAppointment: { normalizedId: "followupAppointments", label: "复诊预约", type: "number" },
+  
+  // ====== 爽约相关 ======
+  noShowTotal: { normalizedId: "noShowTotal", label: "爽约总数", type: "number" },
+  noShowAppointments: { normalizedId: "noShowTotal", label: "爽约总数", type: "number" },
   
   // ====== 到店人数（市场）======
   arrivedCount: { normalizedId: "arrivedCount", label: "到店人数", type: "number" },
@@ -175,8 +169,10 @@ const FIELD_NORMALIZATION: Record<string, NormalizedField> = {
   chan_balance: { normalizedId: "revenueBalance", label: "补款金额", type: "money" },
   chan_respend: { normalizedId: "revenueRespend", label: "再消费金额", type: "money" },
 
-  // ====== 财务对账 (严格对应 UI) ======
-  financeActualRevenue: { normalizedId: "financeActualRevenue", label: "财务实收", type: "money" },
+  // ====== 财务对账 (综合报表) ======
+  total_expense: { normalizedId: "actualExpense", label: "总支出", type: "money" },
+  total_income: { normalizedId: "actualRevenue", label: "总收入", type: "money" },
+  net_income: { normalizedId: "netRevenue", label: "净收入", type: "money" },
 };
 
 // 字段名称获取辅助函数
@@ -197,14 +193,20 @@ export interface FieldAggregation {
   fieldId: string;
   fieldLabel: string;
   fieldType: string;
+  rowFields?: { id: string; label: string; type: string; dynamicOptionsKey?: string; fullWidth?: boolean }[];
+  containerId?: string;
+  containerTitle?: string;
+  containerOrder?: number;
+  fieldOrder?: number;
   total: number;
   count: number;
   average: number;
-  values: { userId: string; userName: string; value: unknown }[];
+  values: { userId: string; userName: string; reportDate: string; value: unknown }[];
   // 智能分类信息
   isCustomField: boolean;     // 是否为自定义字段
   category: string;           // 字段类别：revenue/visits/deals/leads/appointments/other
   sourceType: "formData" | "fixedTable" | "mixed";  // 数据来源
+  subCategory?: string;
 }
 
 export interface DepartmentAggregation {
@@ -234,7 +236,8 @@ export interface StoreAggregation {
 export async function aggregateDepartmentData(
   storeId: string,
   departmentId: string,
-  dateRange: string[]
+  dateRange: string[],
+  roleMap?: Record<string, unknown>
 ): Promise<DepartmentAggregation | null> {
   // 获取部门信息
   const department = await prisma.department.findUnique({
@@ -243,24 +246,140 @@ export async function aggregateDepartmentData(
 
   if (!department) return null;
 
+  const defaultRoleForDept = (deptCode: string): string => {
+    if (deptCode === "FRONT_DESK") return "DEPT_LEAD";
+    if (deptCode === "FINANCE_HR_ADMIN" || deptCode === "FINANCE") return "FINANCE";
+    if (deptCode === "MANAGEMENT") return "STORE_MANAGER";
+    return "STAFF";
+  };
+
+  const resolveRoleFromConfig = (deptCode: string): string | null => {
+    const specific = roleMap?.[deptCode];
+    const fallback = roleMap?.default ?? roleMap?.["*"];
+    const roleRaw = (typeof specific === "string" ? specific : typeof fallback === "string" ? fallback : null) as string | null;
+    const role = roleRaw && roleRaw.trim() ? roleRaw.trim() : null;
+    if (!role || role === "AUTO") return null;
+    if ((deptCode === "FINANCE_HR_ADMIN" || deptCode === "FINANCE") && role === "STAFF") return "FINANCE";
+    return role;
+  };
+
+  const roleFromConfig = resolveRoleFromConfig(department.code);
+  const roleContains = roleFromConfig ? `"${roleFromConfig}"` : null;
+  const roleForTemplate = roleFromConfig || defaultRoleForDept(department.code);
+
+  const normalizeSchemaId = (raw: string): string => {
+    const v = (raw || "").trim();
+    if (!v) return "";
+    if (department.code === "OFFLINE_MARKETING") {
+      if (v === "expansion" || v === "marketing_expansion" || v === "marketingExpansion") return "expansion";
+      if (v === "customerService" || v === "customer_service" || v === "customerServiceLead" || v === "customer_service_lead") return "customerService";
+      return v;
+    }
+    if (department.code === "NURSING") {
+      if (v === "assistant" || v === "assistantLead" || v === "hygienist" || v === "hygienistLead" || v === "headNurse") return v;
+      return v;
+    }
+    return v;
+  };
+
+  const knownSchemaIds: string[] = (() => {
+    if (department.code === "NURSING") {
+      return ["assistant", "assistantLead", "hygienist", "hygienistLead", "headNurse"];
+    }
+    if (department.code === "OFFLINE_MARKETING") {
+      return ["expansion", "customerService"];
+    }
+    return [""];
+  })();
+
+  const getSubCategoryLabel = (schemaId: string): string | undefined => {
+    const sid = normalizeSchemaId(schemaId);
+    if (!sid) return undefined;
+    if (department.code === "NURSING") {
+      const key = sid as NursingRole;
+      return NURSING_ROLE_LABELS[key] || sid;
+    }
+    if (department.code === "OFFLINE_MARKETING") {
+      const key = sid as MarketingSubDept;
+      return MARKETING_SUB_DEPT_LABELS[key] || sid;
+    }
+    return sid;
+  };
+
   // 获取该部门下的所有员工
   const users = await prisma.user.findMany({
     where: {
       storeId,
       departmentId,
       isActive: true,
+      ...(roleContains ? { roles: { contains: roleContains } } : {}),
     },
-    select: { id: true, name: true, roles: true, nursingRole: true, customFormConfig: true },
+    select: { id: true, name: true, roles: true, nursingRole: true, marketingSubDept: true, customFormConfig: true },
   });
 
   if (users.length === 0) {
+    const enabledBySchemaId: Array<{ schemaId: string; fields: Array<{ id: string; label: string; type: string }> }> = [];
+
+    for (const sid of knownSchemaIds) {
+      const tpl = await prisma.dailyReportTemplate.findUnique({
+        where: {
+          role_departmentId_schemaId: {
+            role: roleForTemplate,
+            departmentId,
+            schemaId: normalizeSchemaId(sid) || "",
+          },
+        },
+      });
+      let schema: DailyReportSchema | null = null;
+      if (tpl) {
+        const rawConfig = typeof (tpl as any).configJson === "string" ? JSON.parse((tpl as any).configJson) : (tpl as any).configJson;
+        if (isTemplateV2(rawConfig)) {
+          schema = buildSchemaFromTemplateV2(rawConfig, `tpl_v2_${roleForTemplate}_${departmentId}_${normalizeSchemaId(sid) || "default"}`);
+        }
+      }
+      if (!schema) {
+        if (department.code === "NURSING") {
+          schema = getSchemaForRole(department.code, [roleForTemplate], (normalizeSchemaId(sid) as NursingRole), undefined);
+        } else if (department.code === "OFFLINE_MARKETING") {
+          schema = getSchemaForRole(department.code, [roleForTemplate], undefined, (normalizeSchemaId(sid) as MarketingSubDept));
+        } else {
+          schema = getSchemaForRole(department.code, [roleForTemplate]);
+        }
+      }
+      const fields: Array<{ id: string; label: string; type: string }> = [];
+      if (schema) {
+        for (const sec of schema.sections) {
+          for (const f of sec.fields) {
+            if (f.type === "divider") continue;
+            if (f.reportEnabled === false) continue;
+            fields.push({ id: f.id, label: f.label, type: f.type });
+          }
+        }
+      }
+      enabledBySchemaId.push({ schemaId: normalizeSchemaId(sid), fields });
+    }
+
     return {
       departmentId,
       departmentCode: department.code,
       departmentName: department.name,
       userCount: 0,
       submittedCount: 0,
-      fields: [],
+      fields: enabledBySchemaId.flatMap(({ schemaId, fields }) =>
+        fields.map((f) => ({
+          fieldId: f.id,
+          fieldLabel: f.label,
+          fieldType: f.type,
+          total: 0,
+          count: 0,
+          average: 0,
+          values: [],
+          isCustomField: false,
+          category: inferFieldCategory(f.label, f.type),
+          sourceType: "formData",
+          subCategory: getSubCategoryLabel(schemaId),
+        }))
+      ),
     };
   }
 
@@ -273,7 +392,7 @@ export async function aggregateDepartmentData(
     },
     include: {
       User: {
-        select: { name: true, roles: true, nursingRole: true, customFormConfig: true },
+        select: { name: true, roles: true, nursingRole: true, marketingSubDept: true, customFormConfig: true },
       },
       // 包含所有固定表数据
       ConsultationReport: true,
@@ -289,18 +408,128 @@ export async function aggregateDepartmentData(
   // 调试日志
   console.log(`[Aggregate] 部门 ${department.name}: 查询到 ${reports.length} 份日报`);
 
-  // 1. 获取该部门的默认 schema 来确定字段标签
-  const sampleUser = users[0];
-  let defaultSchema: DailyReportSchema | null = null;
-  if (sampleUser) {
-    const roles = JSON.parse(sampleUser.roles || '["STAFF"]') as Role[];
-    defaultSchema = getSchemaForRole(
-      department.code,
-      roles,
-      sampleUser.nursingRole as any || undefined
-    );
+  const isFieldEnabledForReport = (field: FormField): boolean => {
+    if (field.type === "divider") return false;
+    const defaultEnabledTypes = new Set(["number", "money", "select", "dynamic_select", "calculated", "dynamic_rows"]);
+    const defaultEnabled = defaultEnabledTypes.has(field.type);
+    if (field.reportEnabled !== undefined) return !!field.reportEnabled;
+    return defaultEnabled;
+  };
+
+  const buildEnabledFieldMap = (
+    schema: DailyReportSchema | null
+  ): Map<
+    string,
+    {
+      label: string;
+      type: string;
+      rowFields?: { id: string; label: string; type: string; dynamicOptionsKey?: string; fullWidth?: boolean }[];
+      containerId?: string;
+      containerTitle?: string;
+      containerOrder?: number;
+      fieldOrder?: number;
+    }
+  > => {
+    const inferContainer = (label: string, type: string) => {
+      if (type === "dynamic_rows") return { id: "dynamic_list", title: "数据清单", order: 100 };
+      const textKeywords = ["总结", "计划", "说明", "备注"];
+      if (type === "text" || type === "textarea" || textKeywords.some((k) => (label || "").includes(k))) {
+        return { id: "summary", title: "当日总结", order: 0 };
+      }
+      return { id: "details", title: "数据详情", order: 10 };
+    };
+    const map = new Map<
+      string,
+      {
+        label: string;
+        type: string;
+        rowFields?: { id: string; label: string; type: string; dynamicOptionsKey?: string; fullWidth?: boolean }[];
+        containerId?: string;
+        containerTitle?: string;
+        containerOrder?: number;
+        fieldOrder?: number;
+      }
+    >();
+    if (!schema) return map;
+    for (let secIndex = 0; secIndex < schema.sections.length; secIndex++) {
+      const sec = schema.sections[secIndex];
+      for (let fIndex = 0; fIndex < sec.fields.length; fIndex++) {
+        const f = sec.fields[fIndex];
+        if (!isFieldEnabledForReport(f)) continue;
+        if (f.type === "divider") continue;
+        const fallback = inferContainer(f.label, f.type);
+        map.set(f.id, {
+          label: f.label,
+          type: f.type,
+          rowFields: f.type === "dynamic_rows" ? ((f as any).rowFields || undefined) : undefined,
+          containerId: sec.id || fallback.id,
+          containerTitle: sec.title || fallback.title,
+          containerOrder: typeof secIndex === "number" ? secIndex : fallback.order,
+          fieldOrder: fIndex,
+        });
+      }
+    }
+    if (map.size === 0) {
+      const fallbackEnabledTypes = new Set(["number", "money", "select", "dynamic_select", "calculated", "dynamic_rows"]);
+      for (let secIndex = 0; secIndex < schema.sections.length; secIndex++) {
+        const sec = schema.sections[secIndex];
+        for (let fIndex = 0; fIndex < sec.fields.length; fIndex++) {
+          const f = sec.fields[fIndex];
+          if (f.type === "divider") continue;
+          if (!fallbackEnabledTypes.has(f.type)) continue;
+          const fb = inferContainer(f.label, f.type);
+          map.set(f.id, {
+            label: f.label,
+            type: f.type,
+            rowFields: f.type === "dynamic_rows" ? ((f as any).rowFields || undefined) : undefined,
+            containerId: sec.id || fb.id,
+            containerTitle: sec.title || fb.title,
+            containerOrder: typeof secIndex === "number" ? secIndex : fb.order,
+            fieldOrder: fIndex,
+          });
+        }
+      }
+    }
+    return map;
+  };
+
+  const loadSchemaForGroup = async (schemaId: string): Promise<DailyReportSchema | null> => {
+    const normalizedSchemaId = normalizeSchemaId(schemaId);
+    const tpl = await prisma.dailyReportTemplate.findUnique({
+      where: {
+        role_departmentId_schemaId: {
+          role: roleForTemplate,
+          departmentId,
+          schemaId: normalizedSchemaId || "",
+        },
+      },
+    });
+
+    if (tpl) {
+      const rawConfig = typeof (tpl as any).configJson === "string" ? JSON.parse((tpl as any).configJson) : (tpl as any).configJson;
+      if (isTemplateV2(rawConfig)) {
+        return buildSchemaFromTemplateV2(rawConfig, `tpl_v2_${roleForTemplate}_${departmentId}_${normalizedSchemaId || "default"}`);
+      }
+    }
+
+    if (department.code === "NURSING") {
+      return getSchemaForRole(department.code, [roleForTemplate], (normalizedSchemaId || undefined) as NursingRole | undefined, undefined);
+    }
+    if (department.code === "OFFLINE_MARKETING") {
+      return getSchemaForRole(department.code, [roleForTemplate], undefined, (normalizedSchemaId || undefined) as MarketingSubDept | undefined);
+    }
+    return getSchemaForRole(department.code, [roleForTemplate]);
+  };
+
+  const reportGroups: Record<string, any[]> = {};
+  for (const r of reports) {
+    const key = normalizeSchemaId((r as any).schemaId || "");
+    (reportGroups[key] ??= []).push(r);
   }
-  const fieldLabelMap = buildFieldLabelMap(defaultSchema);
+  for (const sid of knownSchemaIds.map((s) => normalizeSchemaId(s))) {
+    (reportGroups[sid] ??= []);
+  }
+  if (Object.keys(reportGroups).length === 0) reportGroups[""] = [];
 
   // 2. 预先解析所有用户的自定义配置
   const userConfigMap = new Map<string, { 
@@ -354,128 +583,103 @@ export async function aggregateDepartmentData(
     }
   }
 
-  // 4. 获取所有可能的字段 ID (Schema + 实际数据中出现的)
-  const fieldIds = new Set<string>();
-  if (defaultSchema) {
-    defaultSchema.sections.forEach(s => s.fields.forEach(f => fieldIds.add(f.id)));
-  }
-  for (const report of reports) {
-    const formData = parseFormData(report.formData as string | null);
-    Object.keys(formData).forEach(id => {
-      if (!id.startsWith("__")) fieldIds.add(id);
+  const allFields: FieldAggregation[] = [];
+
+  for (const [schemaId, groupReports] of Object.entries(reportGroups)) {
+    const schema = await loadSchemaForGroup(schemaId);
+    const enabledFieldMap = buildEnabledFieldMap(schema);
+    const enabledFieldIds = new Set(enabledFieldMap.keys());
+
+    const fieldAggMap = new Map<string, FieldAggregation>();
+    enabledFieldMap.forEach((schemaInfo, id) => {
+      const label = schemaInfo?.label || id;
+      const type = schemaInfo?.type || "number";
+      fieldAggMap.set(id, {
+        fieldId: id,
+        fieldLabel: label,
+        fieldType: type,
+        rowFields: schemaInfo?.rowFields,
+        containerId: schemaInfo?.containerId,
+        containerTitle: schemaInfo?.containerTitle,
+        containerOrder: schemaInfo?.containerOrder,
+        fieldOrder: schemaInfo?.fieldOrder,
+        total: 0,
+        count: 0,
+        average: 0,
+        values: [],
+        isCustomField: false,
+        category: inferFieldCategory(label, type),
+        sourceType: "formData",
+        subCategory: getSubCategoryLabel(schemaId),
+      });
     });
-  }
 
-  // 5. 构建并预填充字段汇总 Map
-  const fieldAggMap = new Map<string, FieldAggregation>();
-  fieldIds.forEach(id => {
-    const isCustom = isCustomField(id);
-    const customInfo = allCustomFields.get(id);
-    const schemaInfo = fieldLabelMap.get(id);
-    
-    const label = customInfo?.label || schemaInfo?.label || id;
-    const type = customInfo?.type || schemaInfo?.type || "number";
-    
-    fieldAggMap.set(id, {
-      fieldId: id,
-      fieldLabel: label,
-      fieldType: type,
-      total: 0,
-      count: 0,
-      average: 0,
-      values: [],
-      isCustomField: isCustom,
-      category: customInfo?.category || inferFieldCategory(label, type),
-      sourceType: "formData",
-    });
-  });
+    const userProcessedFields = new Map<string, Set<string>>();
 
-  // 6. 处理每份日报
-  const userProcessedFields = new Map<string, Set<string>>();
-  
-  for (const report of reports) {
-    const formData = parseFormData(report.formData as string | null);
-    const userName = report.User?.name || "未知";
-    const userConfig = userConfigMap.get(report.userId);
+    for (const report of groupReports) {
+      const formData = parseFormData(report.formData as string | null);
+      const userName = report.User?.name || "未知";
 
-    if (!userProcessedFields.has(report.userId)) {
-      userProcessedFields.set(report.userId, new Set());
-    }
-    const processedFields = userProcessedFields.get(report.userId)!;
+      if (!userProcessedFields.has(report.userId)) {
+        userProcessedFields.set(report.userId, new Set());
+      }
+      const processedFields = userProcessedFields.get(report.userId)!;
 
-    let dataToProcess: Record<string, unknown> = { ...formData };
-    
-    // 特殊处理：dynamic_rows (展开为平铺字段以供统计)
-    Object.entries(formData).forEach(([key, value]) => {
-      if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
-        const schemaInfo = fieldLabelMap.get(key);
-        const parentLabel = schemaInfo?.label || key;
+      const dataToProcess: Record<string, unknown> = { ...formData };
 
-        value.forEach((row: any) => {
-          Object.entries(row).forEach(([subKey, subVal]) => {
-            if (typeof subVal === "number") {
-              const flatKey = `${key}_${subKey}`;
-              dataToProcess[flatKey] = (Number(dataToProcess[flatKey]) || 0) + subVal;
-              
-              if (!fieldAggMap.has(flatKey)) {
-                fieldAggMap.set(flatKey, {
-                  fieldId: flatKey,
-                  fieldLabel: `${parentLabel}-${subKey}`,
-                  fieldType: "number",
-                  total: 0, count: 0, average: 0, values: [],
-                  isCustomField: false,
-                  category: inferFieldCategory(subKey, "number"),
-                  sourceType: "formData",
-                });
-              }
+      const fixedTableData = extractFixedTableData(report, department.code);
+      for (const [key, value] of Object.entries(fixedTableData)) {
+        if (dataToProcess[key] === undefined || dataToProcess[key] === null || dataToProcess[key] === "") {
+          dataToProcess[key] = value;
+        }
+      }
+
+      for (const [fieldId, value] of Object.entries(dataToProcess)) {
+        if (value === null || value === undefined || value === "") continue;
+        if (fieldId.startsWith("__")) continue;
+
+        const normalized = normalizeField(fieldId, value);
+        if (normalized) {
+          if (!enabledFieldIds.has(normalized.normalizedId)) continue;
+          if (processedFields.has(normalized.normalizedId)) continue;
+          processedFields.add(normalized.normalizedId);
+          const agg = fieldAggMap.get(normalized.normalizedId);
+          if (agg) {
+            agg.values.push({ userId: report.userId, userName, reportDate: report.reportDate, value: normalized.normalizedValue });
+            agg.count++;
+            if (isNumericField(agg.fieldType)) {
+              agg.total += normalized.normalizedValue;
+              agg.average = agg.total / agg.count;
             }
-          });
-        });
-      }
-    });
-    
-    const fixedTableData = extractFixedTableData(report, department.code);
-    for (const [key, value] of Object.entries(fixedTableData)) {
-      if (dataToProcess[key] === undefined || dataToProcess[key] === null || dataToProcess[key] === "") {
-        dataToProcess[key] = value;
-      }
-    }
-
-    for (const [fieldId, value] of Object.entries(dataToProcess)) {
-      if (value === null || value === undefined || value === "") continue;
-      
-      const numValue = getNumericValue(value);
-      if (numValue === 0 && typeof value !== 'number') continue;
-
-      const schemaInfo = fieldLabelMap.get(fieldId);
-      const normalized = normalizeField(fieldId, value, schemaInfo?.metricKey);
-      let useFieldId: string;
-      let useValue: number;
-      
-      if (normalized) {
-        if (processedFields.has(normalized.normalizedId)) continue;
-        processedFields.add(normalized.normalizedId);
-        useFieldId = normalized.normalizedId;
-        useValue = normalized.normalizedValue;
-      } else {
-        if (isCustomField(fieldId)) {
-          if (processedFields.has(fieldId)) continue;
-          processedFields.add(fieldId);
+          }
+          continue;
         }
-        useFieldId = fieldId;
-        useValue = numValue;
-      }
 
-      const agg = fieldAggMap.get(useFieldId);
-      if (agg) {
-        agg.values.push({ userId: report.userId, userName, value: useValue });
+        if (!enabledFieldIds.has(fieldId)) continue;
+        if (processedFields.has(fieldId) && !Array.isArray(value)) continue;
+        processedFields.add(fieldId);
+
+        const agg = fieldAggMap.get(fieldId);
+        if (!agg) continue;
+
+        agg.values.push({ userId: report.userId, userName, reportDate: report.reportDate, value });
         agg.count++;
-        if (isNumericField(agg.fieldType)) {
-          agg.total += useValue;
-          agg.average = agg.total / agg.count;
+
+        if (agg.fieldType === "dynamic_rows" && Array.isArray(value)) {
+          agg.total += value.length;
+          agg.average = agg.count > 0 ? agg.total / agg.count : 0;
+        } else if (isNumericField(agg.fieldType)) {
+          const numValue = getNumericValue(value);
+          agg.total += numValue;
+          agg.average = agg.count > 0 ? agg.total / agg.count : 0;
+        } else {
+          agg.total = agg.count;
+          agg.average = 0;
         }
       }
     }
+
+    allFields.push(...Array.from(fieldAggMap.values()));
   }
 
   return {
@@ -484,7 +688,7 @@ export async function aggregateDepartmentData(
     departmentName: department.name,
     userCount: users.length,
     submittedCount: reports.length,
-    fields: Array.from(fieldAggMap.values()),
+    fields: allFields,
   };
 }
 
@@ -506,12 +710,35 @@ export async function aggregateStoreData(
   }
 
   const departments = await prisma.department.findMany({
-    where: { User: { some: { storeId, isActive: true } } },
+    orderBy: { code: "asc" },
   });
+
+  const deptReportRoleKey = "DEPT_REPORT_ROLE_BY_DEPT_CODE";
+  const storeCfg = await prisma.configFlag.findFirst({
+    where: { scope: "STORE", storeId, key: deptReportRoleKey, isActive: true },
+    select: { value: true },
+  });
+  const globalCfg = storeCfg
+    ? null
+    : await prisma.configFlag.findFirst({
+        where: { scope: "GLOBAL", storeId: null, key: deptReportRoleKey, isActive: true },
+        select: { value: true },
+      });
+  const parseJsonObject = (raw: string | null | undefined): Record<string, unknown> => {
+    if (!raw) return {};
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>;
+      return {};
+    } catch {
+      return {};
+    }
+  };
+  const roleMap = parseJsonObject(storeCfg?.value ?? globalCfg?.value ?? null);
   
   const departmentAggregations: DepartmentAggregation[] = [];
   for (const dept of departments) {
-    const agg = await aggregateDepartmentData(storeId, dept.id, dateRange);
+    const agg = await aggregateDepartmentData(storeId, dept.id, dateRange, roleMap);
     if (agg) departmentAggregations.push(agg);
   }
 
@@ -613,7 +840,7 @@ function parseFormData(formData: string | null): Record<string, unknown> {
   try {
     const parsed = JSON.parse(formData);
 
-    // V2：容器化存储（只展开非数组字段，数组/清单不参与报表列）
+    // V2：容器化存储
     if (parsed && typeof parsed === "object" && (parsed as any).version === 2 && (parsed as any).containers) {
       const flat: Record<string, unknown> = {};
       const containers = (parsed as any).containers || {};
@@ -621,8 +848,15 @@ function parseFormData(formData: string | null): Record<string, unknown> {
         for (const [cid, obj] of Object.entries(containers)) {
           if (!obj || typeof obj !== "object") continue;
           for (const [fid, val] of Object.entries(obj as any)) {
-            if (Array.isArray(val)) continue; // 动态清单跳过（避免报表列爆炸）
-            flat[`${cid}.${fid}`] = val;
+            const key = `${cid}.${fid}`;
+            const existing = flat[key];
+            if (existing === undefined) {
+              flat[key] = val;
+            } else if (typeof existing === "number" && typeof val === "number") {
+              flat[key] = existing + val;
+            } else if (Array.isArray(existing) && Array.isArray(val)) {
+              flat[key] = [...existing, ...val];
+            }
           }
         }
       }
@@ -635,25 +869,10 @@ function parseFormData(formData: string | null): Record<string, unknown> {
   }
 }
 
-function buildFieldLabelMap(schema: DailyReportSchema | null): Map<string, { label: string; type: string; metricKey?: string }> {
-  const map = new Map<string, { label: string; type: string; metricKey?: string }>();
+function buildFieldLabelMap(schema: DailyReportSchema | null): Map<string, { label: string; type: string }> {
+  const map = new Map<string, { label: string; type: string }>();
   if (!schema) return map;
-  schema.sections.forEach((s) => s.fields.forEach((f) => {
-    // 1. 添加顶级字段映射
-    map.set(f.id, { label: f.label, type: f.type, metricKey: f.metricKey });
-    
-    // 2. 如果是清单字段，添加其内部子列的映射（用于扁平化统计）
-    if (f.type === "dynamic_rows" && f.rowFields) {
-      f.rowFields.forEach(rf => {
-        const flatId = `${f.id}_${rf.id}`;
-        map.set(flatId, { 
-          label: `${f.label}-${rf.label}`, 
-          type: rf.type, 
-          metricKey: rf.metricKey 
-        });
-      });
-    }
-  }));
+  schema.sections.forEach((s) => s.fields.forEach((f) => map.set(f.id, { label: f.label, type: f.type })));
   return map;
 }
 
@@ -684,20 +903,7 @@ function inferFieldCategory(label: string, type: string): string {
   return "other";
 }
 
-function normalizeField(
-  fieldId: string, 
-  value: unknown, 
-  metricKey?: string
-): { normalizedId: string; label: string; type: string; normalizedValue: number } | null {
-  // 1. 优先使用显式绑定的标准指标
-  if (metricKey && FIELD_NORMALIZATION[metricKey]) {
-    const config = FIELD_NORMALIZATION[metricKey];
-    let numVal = getNumericValue(value);
-    if (config.isMoneyInCents) numVal = numVal / 100;
-    return { normalizedId: config.normalizedId, label: config.label, type: config.type, normalizedValue: numVal };
-  }
-
-  // 2. 备选：使用字段 ID 映射
+function normalizeField(fieldId: string, value: unknown): { normalizedId: string; label: string; type: string; normalizedValue: number } | null {
   const config = FIELD_NORMALIZATION[fieldId];
   if (!config) return null;
   let numVal = getNumericValue(value);

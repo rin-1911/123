@@ -18,7 +18,7 @@ export const frontDeskStaffSchema: DailyReportSchema = {
         
         // 二、到院统计
         { id: "section_2", label: "二、到院统计", type: "divider" },
-        { id: "new_patients_count", label: "新增患者(建档)", type: "number", required: true, hint: "今日新建立档案的患者数" },
+        { id: "new_patients_count", label: "新增患者", type: "number", required: true, hint: "今日新建立档案的患者数" },
         { id: "totalVisitors", label: "总到院人数", type: "number", required: true },
         { id: "firstVisitCount", label: "初诊人数", type: "number", required: true },
         { id: "returnVisitCount", label: "复诊人数", type: "number", required: true },

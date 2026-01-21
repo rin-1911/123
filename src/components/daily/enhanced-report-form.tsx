@@ -409,8 +409,15 @@ export function EnhancedReportForm({
         for (const field of section.fields) {
           if (field.required) {
             const value = formData[field.id];
-            if (value === undefined || value === null || value === "" || 
-                (typeof value === "number" && isNaN(value))) {
+            const isEmptyDynamicRows =
+              field.type === "dynamic_rows" && (!Array.isArray(value) || value.length === 0);
+            if (
+              value === undefined ||
+              value === null ||
+              value === "" ||
+              (typeof value === "number" && isNaN(value)) ||
+              isEmptyDynamicRows
+            ) {
               errors.push(`"${field.label}" 为必填项`);
             }
           }
@@ -568,6 +575,13 @@ export function EnhancedReportForm({
         ? nestFlatFormDataToContainers(materialized)
         : materialized;
 
+      const submissionSchemaId = (() => {
+        if (isAdminEdit) return schema?.id;
+        if (departmentCode === "NURSING") return selectedNursingRole || "";
+        if (departmentCode === "OFFLINE_MARKETING") return selectedMarketingSubDept || "";
+        return "";
+      })();
+
       const res = await fetch("/api/daily", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -575,7 +589,7 @@ export function EnhancedReportForm({
           reportDate: isAdminEdit && propReportDate ? propReportDate : reportDate,
           status: submitStatus,
           formData: payloadFormData,
-          schemaId: schema?.id,
+          schemaId: submissionSchemaId || undefined,
           note,
           // 管理员编辑模式：指定目标用户ID
           targetUserId: isAdminEdit ? targetUserId : undefined,
@@ -969,11 +983,11 @@ export function EnhancedReportForm({
     // 网络部特殊处理：不再使用硬编码的排版，统一遵循配置中心逻辑
     const isOnlineGrowth = departmentCode === "ONLINE_GROWTH";
 
-    // 财务特有：支出对账校验
-    const isFinance = departmentCode === "FINANCE_HR_ADMIN";
-    const moduleASum = isFinance ? Number(calculateField("SECTION_SUM:module_a")) : 0;
-    const moduleBSum = isFinance ? Number(calculateField("SECTION_SUM:module_b")) : 0;
-    const isMismatch = isFinance && section.id === "module_d" && Math.abs(moduleASum - moduleBSum) > 0.01;
+    // 财务特有：支出对账校验 - 已根据需求移除警告逻辑
+    // const isFinance = departmentCode === "FINANCE_HR_ADMIN";
+    // const moduleASum = isFinance ? Number(calculateField("SECTION_SUM:module_a")) : 0;
+    // const moduleBSum = isFinance ? Number(calculateField("SECTION_SUM:module_b")) : 0;
+    // const isMismatch = isFinance && section.id === "module_d" && Math.abs(moduleASum - moduleBSum) > 0.01;
 
     return (
       <div key={section.id} className="space-y-4">
@@ -990,13 +1004,13 @@ export function EnhancedReportForm({
           </div>
         </div>
 
-        {/* 财务对账警告 */}
-        {isMismatch && (
+        {/* 财务对账警告 - 已移除 */}
+        {/* {isMismatch && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-pulse">
             <AlertTriangle className="h-4 w-4" />
             <span>警告：支出明细总计(¥{moduleASum.toFixed(2)})与支付方式总计(¥{moduleBSum.toFixed(2)})不一致，请仔细核对！</span>
           </div>
-        )}
+        )} */}
         
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {sectionFields.map((field, fieldIdx) => {
@@ -1224,6 +1238,4 @@ export function EnhancedReportForm({
     </TooltipProvider>
   );
 }
-
-
 

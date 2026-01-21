@@ -102,6 +102,11 @@ export const departmentSchemaMap: DepartmentSchemaMapping = {
     // 总监使用财务主管表单
     director: financeSchemas.manager,
   },
+  FINANCE: {
+    staff: financeSchemas.cashier,
+    lead: financeSchemas.manager,
+    director: financeSchemas.manager,
+  },
   HR: hrSchemas,
   ADMIN: adminSchemas,
   MANAGEMENT: {
@@ -181,7 +186,7 @@ export function getSchemaForRole(
   }
 
   // 财务部门特殊处理：统一使用何总要求的"财务收支对账日报"
-  if (departmentCode === "FINANCE_HR_ADMIN") {
+  if (departmentCode === "FINANCE_HR_ADMIN" || departmentCode === "FINANCE") {
     // 只要属于财务部门，就使用财务对账报表
     return financeSchemas.detailed;
   }

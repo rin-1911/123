@@ -45,6 +45,43 @@ export async function GET(request: NextRequest) {
       current.setDate(current.getDate() + 1);
     }
 
+    const deptReportRoleKey = "DEPT_REPORT_ROLE_BY_DEPT_CODE";
+    const parseJsonObject = (raw: string | null | undefined): Record<string, unknown> => {
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>;
+        return {};
+      } catch {
+        return {};
+      }
+    };
+
+    const storeCfg = await prisma.configFlag.findFirst({
+      where: { scope: "STORE", storeId, key: deptReportRoleKey, isActive: true },
+      select: { value: true },
+    });
+    const globalCfg = storeCfg
+      ? null
+      : await prisma.configFlag.findFirst({
+          where: { scope: "GLOBAL", storeId: null, key: deptReportRoleKey, isActive: true },
+          select: { value: true },
+        });
+    const roleMap = parseJsonObject(storeCfg?.value ?? globalCfg?.value ?? null);
+    const getRoleContains = (deptCode: string): string | null => {
+      const specific = roleMap[deptCode];
+      const fallback = roleMap.default ?? roleMap["*"];
+      const role = (typeof specific === "string" ? specific : typeof fallback === "string" ? fallback : null) as string | null;
+      if (!role || !role.trim() || role === "AUTO") return null;
+      return `"${role.trim()}"`;
+    };
+
+    const consultRole = getRoleContains("CONSULTATION");
+    const frontDeskRole = getRoleContains("FRONT_DESK");
+    const marketingRole = getRoleContains("OFFLINE_MARKETING");
+    const onlineRole = getRoleContains("ONLINE_GROWTH");
+    const financeRole = getRoleContains("FINANCE_HR_ADMIN");
+
     // 获取咨询部数据
     const consultReports = await prisma.consultationReport.findMany({
       where: {
@@ -52,6 +89,7 @@ export async function GET(request: NextRequest) {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
+          ...(consultRole ? { User: { roles: { contains: consultRole } } } : {}),
         },
       },
       include: {
@@ -68,6 +106,7 @@ export async function GET(request: NextRequest) {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
+          ...(frontDeskRole ? { User: { roles: { contains: frontDeskRole } } } : {}),
         },
       },
       include: {
@@ -84,6 +123,7 @@ export async function GET(request: NextRequest) {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
+          ...(marketingRole ? { User: { roles: { contains: marketingRole } } } : {}),
         },
       },
       include: {
@@ -100,6 +140,7 @@ export async function GET(request: NextRequest) {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
+          ...(onlineRole ? { User: { roles: { contains: onlineRole } } } : {}),
         },
       },
       include: {
@@ -116,6 +157,7 @@ export async function GET(request: NextRequest) {
           storeId,
           reportDate: { in: dateRange },
           status: "SUBMITTED",
+          ...(financeRole ? { User: { roles: { contains: financeRole } } } : {}),
         },
       },
       include: {
@@ -246,7 +288,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "获取数据失败" }, { status: 500 });
   }
 }
-
 
 
 

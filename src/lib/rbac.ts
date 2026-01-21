@@ -77,18 +77,20 @@ export function canAccessDepartment(
 export async function canEditReport(
   user: UserSession,
   reportUserId: string,
-  storeId: string,
+  storeId: string | null,
   reportDate: string
 ): Promise<PermissionCheck> {
   // 检查是否锁定
-  const lock = await prisma.storeDayLock.findUnique({
-    where: {
-      storeId_reportDate: {
-        storeId,
-        reportDate,
-      },
-    },
-  });
+  const lock = storeId
+    ? await prisma.storeDayLock.findUnique({
+        where: {
+          storeId_reportDate: {
+            storeId,
+            reportDate,
+          },
+        },
+      })
+    : null;
 
   if (lock?.isLocked) {
     // 只有店长可以在锁定后操作

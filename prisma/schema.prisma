@@ -274,27 +274,6 @@ model OnlineGrowthReport {
   revenue_today      Int         @default(0) // 今日业绩
   followup_today     Int         @default(0) // 今日回访
   intentional_tomorrow Int       @default(0) // 明日意向
-
-  // ==========================================================
-  // 兼容字段（生产库历史列保留）
-  // 说明：线上库已存在这些列且有数据。为了避免 prisma db push 触发 DROP 导致数据丢失，
-  // 先在 schema 中保留它们。后续如果确认不再需要，可做“数据迁移/归档”后再安全下线。
-  // ==========================================================
-  adSpendInCents      Int         @default(0) // 广告费用（分）
-  appointmentsBooked  Int         @default(0) // 预约（旧口径）
-  followUpCount       Int         @default(0) // 回访次数（旧口径）
-  followupsDone       Int         @default(0) // 已回访数（旧口径）
-  leadsNew            Int         @default(0) // 新增线索（旧口径）
-  leadsValid          Int         @default(0) // 有效线索（旧口径）
-  liveSessions        Int         @default(0) // 直播场次（旧口径）
-  monthlyRevenue      Int         @default(0) // 月业绩（旧口径，分/元由历史数据决定）
-  phoneCallCount      Int         @default(0) // 电话量（旧口径）
-  postsPublished      Int         @default(0) // 发帖量（旧口径）
-  todayRevenue        Int         @default(0) // 今日业绩（旧口径，可能与 revenue_today 重叠）
-  unreachableCount    Int         @default(0) // 未接通数（旧口径）
-  videosPublished     Int         @default(0) // 视频发布数（旧口径）
-  visitsArrived       Int         @default(0) // 到店人数（旧口径）
-
   createdAt          DateTime    @default(now())
   updatedAt          DateTime
   DailyReport        DailyReport @relation(fields: [dailyReportId], references: [id], onDelete: Cascade)

@@ -23,9 +23,9 @@ export interface TemplateFieldV2 {
   hint?: string;
   suffix?: string;
   dynamicOptionsKey?: string; // dynamic_select 下拉关联（字典 key）
-  metricKey?: string; // 标准指标关联
   formula?: string; // calculated 公式
   options?: { value: string; label: string }[]; // select 下拉选项
+  reportEnabled?: boolean;
   // 动态清单行字段（配置中心格式）
   rowFields?: {
     id: string;
@@ -41,6 +41,7 @@ export interface TemplateContainerV2 {
   id: string; // 稳定 ID
   title: string;
   type: TemplateContainerType;
+  reportEnabled?: boolean;
   // 容器内字段：
   // - auto_summary/normal/long_plan: fields 直接就是输入字段
   // - dynamic_list: fields 表示“列定义”
@@ -63,6 +64,7 @@ export function isTemplateV2(config: unknown): config is DailyReportTemplateV2 {
 export function buildSchemaFromTemplateV2(template: DailyReportTemplateV2, schemaId = "template_v2"): DailyReportSchema {
   // 过滤掉没有字段的空容器
   const validContainers = template.containers.filter((c) => c.fields && c.fields.length > 0);
+  const defaultEnabledTypes = new Set(["number", "money", "select", "dynamic_select", "calculated", "dynamic_rows"]);
   
   return {
     id: schemaId,
@@ -71,22 +73,28 @@ export function buildSchemaFromTemplateV2(template: DailyReportTemplateV2, schem
     sections: validContainers.map((c) => {
       // 统一处理所有类型的容器：字段直接展开；fieldId 统一前缀 `${containerId}.${fieldId}`
       const fields: FormField[] = c.fields.map((f) => {
+        const containerEnabled = (c as any).reportEnabled === false ? false : true;
+        const defaultReportEnabled = f.type !== "divider" && defaultEnabledTypes.has(f.type);
+        const fieldEnabled = f.reportEnabled !== undefined ? !!f.reportEnabled : defaultReportEnabled;
+        const reportEnabled = containerEnabled ? fieldEnabled : false;
+
         // 处理清单字段类型
         if (f.type === "dynamic_rows" && f.rowFields && Array.isArray(f.rowFields) && f.rowFields.length > 0) {
           return {
             id: `${c.id}.${f.id}`,
             label: f.label,
             type: "dynamic_rows" as const,
+            required: !!f.required,
             hint: f.hint,
             addRowLabel: f.addRowLabel || "+ 新增记录",
+            reportEnabled,
             rowFields: f.rowFields.map((rf: any) => ({
               id: rf.id,
               label: rf.label,
-                type: rf.type === "dynamic_select" ? "dynamic_select" : rf.type,
-                dynamicOptionsKey: rf.dynamicOptionsKey,
-                metricKey: rf.metricKey,
-                fullWidth: rf.fullWidth,
-              })),
+              type: rf.type === "dynamic_select" ? "dynamic_select" : rf.type,
+              dynamicOptionsKey: rf.dynamicOptionsKey,
+              fullWidth: rf.fullWidth,
+            })),
           };
         }
         
@@ -98,9 +106,9 @@ export function buildSchemaFromTemplateV2(template: DailyReportTemplateV2, schem
           required: !!f.required,
           hint: f.hint,
           dynamicOptionsKey: (f as any).dynamicOptionsKey,
-          metricKey: (f as any).metricKey,
           formula: (f as any).formula,
           suffix: (f as any).suffix,
+          reportEnabled,
         };
       });
 
@@ -152,5 +160,3 @@ export function flattenContainerizedFormData(data: unknown): Record<string, unkn
   }
   return flat;
 }
-
-

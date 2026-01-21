@@ -15,9 +15,9 @@ export interface FormField {
   formula?: string; // 用于 calculated 类型
   options?: FieldOption[]; // 用于 select/multiselect 类型
   dynamicOptionsKey?: string; // 用于 dynamic_select 类型，指定从哪个配置获取选项
-  metricKey?: string; // 用于关联标准指标
-  rowFields?: { id: string; label: string; type: "text" | "number" | "money" | "dynamic_select"; fullWidth?: boolean; dynamicOptionsKey?: string; metricKey?: string }[]; // 用于 dynamic_rows 类型
+  rowFields?: { id: string; label: string; type: "text" | "number" | "money" | "dynamic_select"; fullWidth?: boolean; dynamicOptionsKey?: string }[]; // 用于 dynamic_rows 类型
   addRowLabel?: string; // 用于 dynamic_rows 类型，自定义“新增一行”按钮文案
+  reportEnabled?: boolean;
 }
 
 export interface FormSection {
@@ -48,7 +48,6 @@ export type DepartmentSchemaMapping = {
     hygienistLead?: DailyReportSchema;
   };
 };
-
 
 
 

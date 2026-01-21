@@ -4,6 +4,7 @@ node_modules/
 
 # Next.js
 .next/
+.next-dev/
 out/
 
 # Environment files (包含敏感信息)
@@ -30,6 +31,18 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Debug scripts
+debug-db.js
+debug-db.ts
+test-agg.js
+seed-roles.js
+
+# Ops/debug scripts
+scripts/debug-aggregate-store.ts
+scripts/debug-store-report-diff.js
+scripts/check-data.ts
+scripts/reset-admin.ts
+
 # Build
 dist/
 build/
@@ -51,4 +64,5 @@ env.template.txt
 # 其他
 dental-clinic-ops/
 代码汇总.txt
+tsconfig.tsbuildinfo
 

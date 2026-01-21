@@ -173,11 +173,13 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {stores.map((store) => (
-                      <SelectItem key={store.id} value={store.id}>
-                        {store.name}
-                      </SelectItem>
-                    ))}
+                    {stores
+                      .filter((store) => store.code !== "HQ" && !store.name.includes("总部"))
+                      .map((store) => (
+                        <SelectItem key={store.id} value={store.id}>
+                          {store.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -524,4 +526,3 @@ export function TeamReportView({ user, stores, departments }: TeamReportViewProp
     </div>
   );
 }
-

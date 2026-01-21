@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Popover,
   PopoverContent,
@@ -22,6 +23,8 @@ import { useToast } from "@/components/ui/use-toast";
 import type { UserSession, Role } from "@/lib/types";
 import { ROLE_LABELS, hasAnyRole } from "@/lib/types";
 import { useSearchParams, useRouter } from "next/navigation";
+import { DepartmentManagement } from "@/components/admin/department-management";
+import { DictionaryManagement } from "@/components/admin/dictionary-management";
 import { 
   Users, 
   Plus, 
@@ -51,6 +54,11 @@ interface Department {
   id: string;
   code: string;
   name: string;
+  _count?: {
+    User: number;
+    DailyReport: number;
+    DailyReportTemplate: number;
+  };
 }
 
 interface UserData {
@@ -127,13 +135,16 @@ function parseRoles(rolesJson: string): Role[] {
   }
 }
 
-export function UserManagement({ currentUser, stores, departments }: UserManagementProps) {
+export function UserManagement({ currentUser, stores, departments: initialDepartments }: UserManagementProps) {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const currentSearch = searchParams.toString();
 
   const [users, setUsers] = useState<UserData[]>([]);
+  const [dynamicRoles, setDynamicRoles] = useState<{ value: Role; label: string; level: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "users");
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
@@ -147,6 +158,23 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">((searchParams.get("status") as any) || "all");
   const [showFilters, setShowFilters] = useState(!!(searchParams.get("dept") || searchParams.get("store")));
   const [filterStore, setFilterStore] = useState(searchParams.get("store") || "all");
+  const [managedDepartments, setManagedDepartments] = useState<Department[]>(initialDepartments);
+  const departmentsForManagement = useMemo(
+    () =>
+      managedDepartments.map((d) => ({
+        id: d.id,
+        code: d.code,
+        name: d.name,
+        _count: d._count || { User: 0, DailyReport: 0, DailyReportTemplate: 0 },
+      })),
+    [managedDepartments]
+  );
+
+  useEffect(() => {
+    if (filterDept === "all") return;
+    if (managedDepartments.some((d) => d.id === filterDept)) return;
+    setFilterDept("all");
+  }, [filterDept, managedDepartments]);
 
   // 同步 URL 参数
   useEffect(() => {
@@ -155,9 +183,14 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
     if (filterStore !== "all") params.set("store", filterStore);
     if (filterDept !== "all") params.set("dept", filterDept);
     if (filterStatus !== "all") params.set("status", filterStatus);
-    
-    router.replace(`/admin/users?${params.toString()}`, { scroll: false });
-  }, [searchQuery, filterStore, filterDept, filterStatus, router]);
+    if (activeTab !== "users") params.set("tab", activeTab);
+
+    const qs = params.toString();
+    const nextUrl = qs ? `/admin/users?${qs}` : "/admin/users";
+    const currentUrl = currentSearch ? `/admin/users?${currentSearch}` : "/admin/users";
+    if (nextUrl === currentUrl) return;
+    router.replace(nextUrl, { scroll: false });
+  }, [searchQuery, filterStore, filterDept, filterStatus, activeTab, router, currentSearch]);
   
   // 过滤后的用户列表
   const filteredUsers = users.filter((user) => {
@@ -204,6 +237,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   // 🔒 生产环境：只有 HQ_ADMIN 可以创建/删除用户
   const canManage = hasAnyRole(currentUser.roles, ["HQ_ADMIN"]);
   const canView = hasAnyRole(currentUser.roles, ["STORE_MANAGER", "HQ_ADMIN"]);
+  const canManageDeptAndRoles = hasAnyRole(currentUser.roles, ["HQ_ADMIN"]);
 
   // 加载用户列表
   const loadUsers = useCallback(async () => {
@@ -238,6 +272,41 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  const loadRoleDictionary = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dictionary?category=user_roles", { cache: "no-store" });
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      const nextRoles = items
+        .filter((it: any) => it && it.isActive !== false)
+        .map((it: any) => ({
+          value: String(it.value || it.name) as Role,
+          label: String(it.name || it.value),
+          level: 1,
+        }))
+        .filter((it: any) => ALL_ROLES.some((r) => r.value === it.value));
+      setDynamicRoles(nextRoles);
+    } catch {
+      setDynamicRoles([]);
+    }
+  }, []);
+
+  const loadDepartments = useCallback(async () => {
+    try {
+      const res = await fetch("/api/departments", { cache: "no-store" });
+      const data = await res.json();
+      const list = Array.isArray(data?.departments) ? data.departments : [];
+      setManagedDepartments(list);
+    } catch {
+      setManagedDepartments((prev) => prev);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRoleDictionary();
+    loadDepartments();
+  }, [loadRoleDictionary, loadDepartments]);
 
   // 打开新增弹窗
   const handleCreate = () => {
@@ -356,7 +425,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
       const method = modalMode === "create" ? "POST" : "PUT";
 
       // 获取选中的部门代码
-      const selectedDept = departments.find(d => d.id === formData.departmentId);
+      const selectedDept = managedDepartments.find(d => d.id === formData.departmentId);
       const deptCode = selectedDept?.code || "";
 
       const res = await fetch(url, {
@@ -465,17 +534,37 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
     }
   };
 
-  // 可用角色（根据当前用户权限过滤）
+  const roleLabelLookup = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const r of dynamicRoles) map[r.value] = r.label;
+    return map;
+  }, [dynamicRoles]);
+
+  const getRoleLabel = useCallback(
+    (role: string) => roleLabelLookup[role] || (ROLE_LABELS as any)[role] || role,
+    [roleLabelLookup]
+  );
+
+  const activeRoleSet = useMemo(() => {
+    if (!dynamicRoles.length) return null;
+    return new Set(dynamicRoles.map((r) => r.value));
+  }, [dynamicRoles]);
+
   const availableRoles = ALL_ROLES.filter((r) => {
-    if (hasAnyRole(currentUser.roles, ["HQ_ADMIN"])) return true;
-    // 店长不能创建区域经理和总部管理员
-    return !["REGION_MANAGER", "HQ_ADMIN"].includes(r.value);
-  });
+    if (!hasAnyRole(currentUser.roles, ["HQ_ADMIN"]) && ["REGION_MANAGER", "HQ_ADMIN"].includes(r.value)) {
+      return false;
+    }
+    if (activeRoleSet && !activeRoleSet.has(r.value)) return false;
+    return true;
+  }).map((r) => ({
+    ...r,
+    label: getRoleLabel(r.value),
+  }));
 
   // 格式化角色显示
   const formatRoles = (rolesJson: string) => {
     const roles = parseRoles(rolesJson);
-    return roles.map(r => ROLE_LABELS[r] || r).join(", ");
+    return roles.map((r) => getRoleLabel(r)).join(", ");
   };
 
   // 判断是否可以编辑某用户
@@ -533,305 +622,326 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
 
   return (
     <>
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-4">
-            {/* 标题行 */}
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                用户管理
-                <Badge variant="secondary">{filteredUsers.length}/{users.length} 人</Badge>
-              </CardTitle>
-              {canManage ? (
-                <Button onClick={handleCreate} className="bg-gradient-to-r from-cyan-500 to-blue-600">
-                  <Plus className="h-4 w-4 mr-2" />
-                  新增用户
-                </Button>
-              ) : (
-                <Badge variant="outline" className="text-gray-500">
-                  <Shield className="h-3 w-3 mr-1" />
-                  只读模式
-                </Badge>
-              )}
-            </div>
-            
-            {/* 搜索和筛选栏 */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* 搜索框 */}
-              <div className="relative flex-1 min-w-[200px] max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="搜索姓名或账号..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              
-              {/* 筛选按钮 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className={showFilters ? "bg-gray-100" : ""}
-              >
-                <Filter className="h-4 w-4 mr-1" />
-                筛选
-                {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
-              </Button>
-              
-              {/* 快速状态筛选 */}
-              <div className="flex gap-1">
-                <Badge 
-                  variant={filterStatus === "all" ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-gray-100"
-                  onClick={() => setFilterStatus("all")}
-                >
-                  全部
-                </Badge>
-                <Badge 
-                  variant={filterStatus === "active" ? "success" : "outline"}
-                  className="cursor-pointer hover:bg-green-50"
-                  onClick={() => setFilterStatus("active")}
-                >
-                  启用
-                </Badge>
-                <Badge 
-                  variant={filterStatus === "inactive" ? "destructive" : "outline"}
-                  className="cursor-pointer hover:bg-red-50"
-                  onClick={() => setFilterStatus("inactive")}
-                >
-                  禁用
-                </Badge>
-              </div>
-            </div>
-            
-            {/* 展开的筛选选项 */}
-            {showFilters && (
-              <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                {/* 门店筛选（HQ_ADMIN 才显示） */}
-                {hasAnyRole(currentUser.roles, ["HQ_ADMIN"]) && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">门店：</span>
-                    <Select value={filterStore} onValueChange={setFilterStore}>
-                      <SelectTrigger className="w-[180px] h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">全部门店</SelectItem>
-                        <SelectItem value="HQ">总部（无门店）</SelectItem>
-                        {stores.map((store) => (
-                          <SelectItem key={store.id} value={store.id}>
-                            {store.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="users">用户</TabsTrigger>
+          <TabsTrigger value="departments">部门</TabsTrigger>
+          <TabsTrigger value="roles">角色</TabsTrigger>
+        </TabsList>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">部门：</span>
-                  <Select value={filterDept} onValueChange={setFilterDept}>
-                    <SelectTrigger className="w-[140px] h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">全部部门</SelectItem>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id}>
-                          {dept.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+        <TabsContent value="users">
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    用户管理
+                    <Badge variant="secondary">{filteredUsers.length}/{users.length} 人</Badge>
+                  </CardTitle>
+                  {canManage ? (
+                    <Button onClick={handleCreate} className="bg-gradient-to-r from-cyan-500 to-blue-600">
+                      <Plus className="h-4 w-4 mr-2" />
+                      新增用户
+                    </Button>
+                  ) : (
+                    <Badge variant="outline" className="text-gray-500">
+                      <Shield className="h-3 w-3 mr-1" />
+                      只读模式
+                    </Badge>
+                  )}
                 </div>
                 
-                {/* 清除筛选 */}
-                {(filterStore !== "all" || filterDept !== "all" || filterStatus !== "all" || searchQuery) && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 min-w-[200px] max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="搜索姓名或账号..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setFilterStore("all");
-                      setFilterDept("all");
-                      setFilterStatus("all");
-                    }}
-                    className="text-gray-500"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={showFilters ? "bg-gray-100" : ""}
                   >
-                    <X className="h-3 w-3 mr-1" />
-                    清除筛选
+                    <Filter className="h-4 w-4 mr-1" />
+                    筛选
+                    {showFilters ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
                   </Button>
+                  
+                  <div className="flex gap-1">
+                    <Badge 
+                      variant={filterStatus === "all" ? "default" : "outline"}
+                      className="cursor-pointer hover:bg-gray-100"
+                      onClick={() => setFilterStatus("all")}
+                    >
+                      全部
+                    </Badge>
+                    <Badge 
+                      variant={filterStatus === "active" ? "success" : "outline"}
+                      className="cursor-pointer hover:bg-green-50"
+                      onClick={() => setFilterStatus("active")}
+                    >
+                      启用
+                    </Badge>
+                    <Badge 
+                      variant={filterStatus === "inactive" ? "destructive" : "outline"}
+                      className="cursor-pointer hover:bg-red-50"
+                      onClick={() => setFilterStatus("inactive")}
+                    >
+                      禁用
+                    </Badge>
+                  </div>
+                </div>
+                
+                {showFilters && (
+                  <div className="flex flex-wrap items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    {hasAnyRole(currentUser.roles, ["HQ_ADMIN"]) && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">门店：</span>
+                        <Select value={filterStore} onValueChange={setFilterStore}>
+                          <SelectTrigger className="w-[180px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">全部门店</SelectItem>
+                            <SelectItem value="HQ">总部（无门店）</SelectItem>
+                            {stores
+                              .filter((store) => store.code !== "HQ" && !store.name.includes("总部"))
+                              .map((store) => (
+                                <SelectItem key={store.id} value={store.id}>
+                                  {store.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">部门：</span>
+                      <Select value={filterDept} onValueChange={setFilterDept}>
+                        <SelectTrigger className="w-[140px] h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">全部部门</SelectItem>
+                          {managedDepartments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {(filterStore !== "all" || filterDept !== "all" || filterStatus !== "all" || searchQuery) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setFilterStore("all");
+                          setFilterDept("all");
+                          setFilterStatus("all");
+                        }}
+                        className="text-gray-500"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600" />
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              {users.length === 0 ? (
-                <>
-                  <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>暂无用户数据</p>
-                </>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600" />
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  {users.length === 0 ? (
+                    <>
+                      <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                      <p>暂无用户数据</p>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                      <p>没有符合筛选条件的用户</p>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setFilterStore("all");
+                          setFilterDept("all");
+                          setFilterStatus("all");
+                        }}
+                      >
+                        清除筛选条件
+                      </Button>
+                    </>
+                  )}
+                </div>
               ) : (
-                <>
-                  <Search className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>没有符合筛选条件的用户</p>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setFilterStore("all");
-                      setFilterDept("all");
-                      setFilterStatus("all");
-                    }}
-                  >
-                    清除筛选条件
-                  </Button>
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">用户</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">账号</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden lg:table-cell">门店</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">部门</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden xl:table-cell">日报类型</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">角色</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">状态</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {filteredUsers.map((user) => {
-                    const userRoles = parseRoles(user.roles);
-                    const canEdit = canEditUser(user);
-                    
-                    return (
-                      <tr key={user.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-medium">
-                              {user.name.charAt(0)}
-                            </div>
-                            <span className="font-medium">{user.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 font-mono text-sm text-gray-600 hidden md:table-cell">
-                          {user.account}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
-                          <Badge variant="outline" className="font-normal">
-                            {user.Store?.name || "总部"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge variant="secondary" className="font-normal">
-                            {user.Department?.name || "-"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 hidden xl:table-cell">
-                          {user.Department?.code === "NURSING" && user.nursingRole ? (
-                            <div className="flex flex-wrap gap-1">
-                              {user.nursingRole.split(",").filter(Boolean).map(role => (
-                                <Badge key={role} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                                  {NURSING_ROLES.find(r => r.value === role)?.label || role}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : user.Department?.code === "OFFLINE_MARKETING" && user.marketingSubDept ? (
-                            <div className="flex flex-wrap gap-1">
-                              {user.marketingSubDept.split(",").filter(Boolean).map(subDept => (
-                                <Badge key={subDept} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
-                                  {MARKETING_SUB_DEPTS.find(r => r.value === subDept)?.label || subDept}
-                                </Badge>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-gray-400 text-sm">-</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-4 hidden md:table-cell">
-                          <div className="flex flex-wrap gap-1">
-                            {userRoles.slice(0, 2).map((role) => (
-                              <Badge
-                                key={role}
-                                variant={
-                                  ["HQ_ADMIN", "STORE_MANAGER", "REGION_MANAGER"].includes(role)
-                                    ? "default"
-                                    : "secondary"
-                                }
-                                className="text-xs"
-                              >
-                                {ROLE_LABELS[role] || role}
-                              </Badge>
-                            ))}
-                            {userRoles.length > 2 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{userRoles.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            onClick={() => handleToggleActive(user)}
-                            disabled={user.id === currentUser.id || !canEdit}
-                            className="disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Badge 
-                              variant={user.isActive ? "success" : "destructive"}
-                              className={canEdit ? "cursor-pointer hover:opacity-80" : ""}
-                            >
-                              {user.isActive ? "✓" : "✗"}
-                            </Badge>
-                          </button>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(user)}
-                              disabled={!canEdit}
-                              className="h-7 px-2 text-cyan-600 border-cyan-200 hover:bg-cyan-50"
-                            >
-                              <Pencil className="h-3.5 w-3.5 mr-1" />
-                              编辑
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(user)}
-                              disabled={user.id === currentUser.id || !canEdit}
-                              className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-gray-50">
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700">用户</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">账号</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden lg:table-cell">门店</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700">部门</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden xl:table-cell">日报类型</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700 hidden md:table-cell">角色</th>
+                        <th className="text-center py-3 px-4 font-semibold text-gray-700">状态</th>
+                        <th className="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredUsers.map((user) => {
+                        const userRoles = parseRoles(user.roles);
+                        const canEdit = canEditUser(user);
+                        
+                        return (
+                          <tr key={user.id} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                  {user.name.charAt(0)}
+                                </div>
+                                <span className="font-medium">{user.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-sm text-gray-600 hidden md:table-cell">
+                              {user.account}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
+                              <Badge variant="outline" className="font-normal">
+                                {user.Store?.name || "总部"}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4">
+                              <Badge variant="secondary" className="font-normal">
+                                {user.Department?.name || "-"}
+                              </Badge>
+                            </td>
+                            <td className="py-3 px-4 hidden xl:table-cell">
+                              {user.Department?.code === "NURSING" && user.nursingRole ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.nursingRole.split(",").filter(Boolean).map(role => (
+                                    <Badge key={role} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                      {NURSING_ROLES.find(r => r.value === role)?.label || role}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : user.Department?.code === "OFFLINE_MARKETING" && user.marketingSubDept ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.marketingSubDept.split(",").filter(Boolean).map(subDept => (
+                                    <Badge key={subDept} variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                                      {MARKETING_SUB_DEPTS.find(r => r.value === subDept)?.label || subDept}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-sm">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 hidden md:table-cell">
+                              <div className="flex flex-wrap gap-1">
+                                {userRoles.slice(0, 2).map((role) => (
+                                  <Badge
+                                    key={role}
+                                    variant={
+                                      ["HQ_ADMIN", "STORE_MANAGER", "REGION_MANAGER"].includes(role)
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                    className="text-xs"
+                                  >
+                                    {getRoleLabel(role)}
+                                  </Badge>
+                                ))}
+                                {userRoles.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{userRoles.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                onClick={() => handleToggleActive(user)}
+                                disabled={user.id === currentUser.id || !canEdit}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Badge 
+                                  variant={user.isActive ? "success" : "destructive"}
+                                  className={canEdit ? "cursor-pointer hover:opacity-80" : ""}
+                                >
+                                  {user.isActive ? "✓" : "✗"}
+                                </Badge>
+                              </button>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEdit(user)}
+                                  disabled={!canEdit}
+                                  className="h-7 px-2 text-cyan-600 border-cyan-200 hover:bg-cyan-50"
+                                >
+                                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                                  编辑
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDelete(user)}
+                                  disabled={user.id === currentUser.id || !canEdit}
+                                  className="h-7 w-7 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="departments">
+          <DepartmentManagement
+            initialDepartments={departmentsForManagement}
+            canManage={canManageDeptAndRoles}
+            onDepartmentsChanged={(next) => setManagedDepartments(next)}
+          />
+        </TabsContent>
+
+        <TabsContent value="roles">
+          <DictionaryManagement
+            initialCategory="user_roles"
+            onlyCategory="user_roles"
+            canManage={canManageDeptAndRoles}
+            onItemsChanged={loadRoleDictionary}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* 新增/编辑弹窗 */}
       {showModal && (
@@ -905,7 +1015,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     <div className="flex flex-wrap gap-2">
                       {formData.roles.map((role) => (
                         <Badge key={role} variant="secondary">
-                          {ROLE_LABELS[role] || role}
+                          {getRoleLabel(role)}
                         </Badge>
                       ))}
                     </div>
@@ -949,12 +1059,14 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                     <SelectValue placeholder="选择门店" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">总部（无门店）</SelectItem>
-                    {stores.map((store) => (
-                      <SelectItem key={store.id} value={store.id}>
-                        {store.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="none">无门店（总部用户）</SelectItem>
+                    {stores
+                      .filter((store) => store.code !== "HQ" && !store.name.includes("总部"))
+                      .map((store) => (
+                        <SelectItem key={store.id} value={store.id}>
+                          {store.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -975,7 +1087,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">无</SelectItem>
-                    {departments.map((dept) => (
+                    {managedDepartments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
                       </SelectItem>
@@ -1004,7 +1116,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0" align="start">
                     <div className="max-h-60 overflow-y-auto p-2">
-                      {departments
+                      {managedDepartments
                         .filter(dept => dept.id !== formData.departmentId) // 排除主部门
                         .map((dept) => {
                           const isSelected = formData.extraDepartmentIds.includes(dept.id);
@@ -1044,7 +1156,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
                 {formData.extraDepartmentIds.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {formData.extraDepartmentIds.map(id => {
-                      const dept = departments.find(d => d.id === id);
+                      const dept = managedDepartments.find(d => d.id === id);
                       return dept ? (
                         <Badge key={id} variant="secondary" className="text-xs">
                           {dept.name}
@@ -1067,7 +1179,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
 
               {/* 护理部子部门选择（多选） */}
               {(() => {
-                const selectedDept = departments.find(d => d.id === formData.departmentId);
+                const selectedDept = managedDepartments.find(d => d.id === formData.departmentId);
                 if (selectedDept?.code === "NURSING") {
                   const selectedRoles = formData.nursingRole ? formData.nursingRole.split(",").filter(Boolean) : [];
                   return (
@@ -1114,7 +1226,7 @@ export function UserManagement({ currentUser, stores, departments }: UserManagem
 
               {/* 线下市场子部门选择（多选） */}
               {(() => {
-                const selectedDept = departments.find(d => d.id === formData.departmentId);
+                const selectedDept = managedDepartments.find(d => d.id === formData.departmentId);
                 if (selectedDept?.code === "OFFLINE_MARKETING") {
                   const selectedSubDepts = formData.marketingSubDept ? formData.marketingSubDept.split(",").filter(Boolean) : [];
                   return (

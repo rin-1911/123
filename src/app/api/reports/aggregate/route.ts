@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { canAccessStore } from "@/lib/rbac";
 import { formatDate } from "@/lib/utils";
-import { aggregateStoreData, getKeyMetrics } from "@/lib/report-aggregator";
+import { prisma } from "@/lib/db";
+import { aggregateDepartmentData, aggregateStoreData, getKeyMetrics } from "@/lib/report-aggregator";
 
 /**
  * GET: 获取智能汇总报表数据
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
   const storeId = searchParams.get("storeId") || user.storeId;
   const period = searchParams.get("period") || "day"; // day, week, month
   const dateParam = searchParams.get("date") || formatDate(new Date());
+  const departmentId = searchParams.get("departmentId");
 
   if (!storeId) {
     return NextResponse.json({ error: "缺少门店参数" }, { status: 400 });
@@ -53,6 +55,91 @@ export async function GET(request: NextRequest) {
       current.setDate(current.getDate() + 1);
     }
 
+    if (departmentId && departmentId !== "all") {
+      const store = await prisma.store.findUnique({ where: { id: storeId } });
+
+      const deptReportRoleKey = "DEPT_REPORT_ROLE_BY_DEPT_CODE";
+      const storeCfg = await prisma.configFlag.findFirst({
+        where: { scope: "STORE", storeId, key: deptReportRoleKey, isActive: true },
+        select: { value: true },
+      });
+      const globalCfg = storeCfg
+        ? null
+        : await prisma.configFlag.findFirst({
+            where: { scope: "GLOBAL", storeId: null, key: deptReportRoleKey, isActive: true },
+            select: { value: true },
+          });
+      const parseJsonObject = (raw: string | null | undefined): Record<string, unknown> => {
+        if (!raw) return {};
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>;
+          return {};
+        } catch {
+          return {};
+        }
+      };
+      const roleMap = parseJsonObject(storeCfg?.value ?? globalCfg?.value ?? null);
+
+      const deptAgg = await aggregateDepartmentData(
+        storeId,
+        departmentId,
+        dateRange,
+        roleMap
+      );
+
+      if (!deptAgg) {
+        return NextResponse.json({ error: "部门不存在" }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        period,
+        dateRange: { start: startDateStr, end: endDateStr },
+        store: {
+          id: storeId,
+          name: store?.name || "未知门店",
+        },
+        department: {
+          departmentId: deptAgg.departmentId,
+          departmentCode: deptAgg.departmentCode,
+          departmentName: deptAgg.departmentName,
+          userCount: deptAgg.userCount,
+          submittedCount: deptAgg.submittedCount,
+          completionRate:
+            deptAgg.userCount > 0 ? Math.round((deptAgg.submittedCount / deptAgg.userCount) * 100) : 0,
+          fields: deptAgg.fields
+            .map((f) => ({
+              fieldId: f.fieldId,
+              fieldLabel: f.fieldLabel,
+              total: f.total,
+              count: f.count,
+              average: Math.round(f.average * 100) / 100,
+              isCustomField: f.isCustomField || false,
+              category: f.category || "other",
+              sourceType: f.sourceType || "formData",
+              fieldType: f.fieldType,
+              subCategory: (f as any).subCategory || undefined,
+              values: (f as any).values || [],
+              rowFields: (f as any).rowFields || undefined,
+              containerId: (f as any).containerId || undefined,
+              containerTitle: (f as any).containerTitle || undefined,
+              containerOrder: (f as any).containerOrder ?? undefined,
+              fieldOrder: (f as any).fieldOrder ?? undefined,
+            }))
+            .sort((a, b) => {
+              if (a.isCustomField !== b.isCustomField) {
+                return a.isCustomField ? 1 : -1;
+              }
+              if ((a.total || 0) !== (b.total || 0)) {
+                return (b.total || 0) - (a.total || 0);
+              }
+              return (a.fieldLabel || "").localeCompare(b.fieldLabel || "");
+            }),
+        },
+      });
+    }
+
     // 获取智能汇总数据
     const [aggregation, keyMetrics] = await Promise.all([
       aggregateStoreData(storeId, startDateStr, endDateStr),
@@ -61,25 +148,34 @@ export async function GET(request: NextRequest) {
 
     // 构建部门字段汇总（每个部门的关键字段）
     const departmentSummaries = aggregation.departments.map((dept) => {
-      // 提取数值类型字段的汇总（包含智能分类信息）
-      const numericFields = dept.fields
-        .filter((f) => ["number", "money", "calculated"].includes(f.fieldType))
+      const deptFields = dept.fields
         .map((f) => ({
-          fieldId: f.fieldId,
-          fieldLabel: f.fieldLabel,
-          total: f.total,
-          count: f.count,
-          average: Math.round(f.average * 100) / 100,
-          isCustomField: f.isCustomField || false,
-          category: f.category || "other",
-        }));
+        fieldId: f.fieldId,
+        fieldLabel: f.fieldLabel,
+        total: f.total,
+        count: f.count,
+        average: Math.round(f.average * 100) / 100,
+        isCustomField: f.isCustomField || false,
+        category: f.category || "other",
+        sourceType: f.sourceType || "formData",
+        fieldType: f.fieldType,
+        subCategory: (f as any).subCategory || undefined,
+        values: (f as any).values || [],
+        rowFields: (f as any).rowFields || undefined,
+        containerId: (f as any).containerId || undefined,
+        containerTitle: (f as any).containerTitle || undefined,
+        containerOrder: (f as any).containerOrder ?? undefined,
+        fieldOrder: (f as any).fieldOrder ?? undefined,
+      }));
 
-      // 按分类和是否自定义排序：标准字段在前，自定义字段在后
-      numericFields.sort((a, b) => {
+      deptFields.sort((a, b) => {
         if (a.isCustomField !== b.isCustomField) {
           return a.isCustomField ? 1 : -1;
         }
-        return b.total - a.total;
+        if ((a.total || 0) !== (b.total || 0)) {
+          return (b.total || 0) - (a.total || 0);
+        }
+        return (a.fieldLabel || "").localeCompare(b.fieldLabel || "");
       });
 
       return {
@@ -91,13 +187,12 @@ export async function GET(request: NextRequest) {
         completionRate: dept.userCount > 0 
           ? Math.round((dept.submittedCount / dept.userCount) * 100) 
           : 0,
-        fields: numericFields,
+        fields: deptFields,
       };
     });
 
-    // 构建全店字段汇总
+    // 构建全店字段汇总（不再按类型过滤，保证所有开启字段都能返回）
     const storeFieldSummary = Object.values(aggregation.totals)
-      .filter((f) => ["number", "money", "calculated"].includes(f.fieldType))
       .map((f) => ({
         fieldId: f.fieldId,
         fieldLabel: f.fieldLabel,
@@ -107,22 +202,28 @@ export async function GET(request: NextRequest) {
         isCustomField: f.isCustomField || false,
         category: f.category || "other",
         sourceType: f.sourceType || "formData",
+        fieldType: f.fieldType,
+        values: (f as any).values || [],
+        rowFields: (f as any).rowFields || undefined,
+        containerId: (f as any).containerId || undefined,
+        containerTitle: (f as any).containerTitle || undefined,
+        containerOrder: (f as any).containerOrder ?? undefined,
+        fieldOrder: (f as any).fieldOrder ?? undefined,
       }))
-      // 智能排序：按分类分组，标准字段在前，自定义字段在后，各组内按总数降序
       .sort((a, b) => {
-        // 先按是否自定义分组
         if (a.isCustomField !== b.isCustomField) {
           return a.isCustomField ? 1 : -1;
         }
-        // 再按分类排序
         const categoryOrder = ["revenue", "visits", "deals", "leads", "appointments", "other"];
         const catA = categoryOrder.indexOf(a.category);
         const catB = categoryOrder.indexOf(b.category);
         if (catA !== catB) {
           return catA - catB;
         }
-        // 最后按总数降序
-        return b.total - a.total;
+        if ((a.total || 0) !== (b.total || 0)) {
+          return (b.total || 0) - (a.total || 0);
+        }
+        return (a.fieldLabel || "").localeCompare(b.fieldLabel || "");
       });
 
     // 字段来源统计
@@ -187,4 +288,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "获取数据失败" }, { status: 500 });
   }
 }
-

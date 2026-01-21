@@ -379,7 +379,7 @@ export function AdminDashboard({
             <div className="text-center py-8 text-gray-500">
               <Shield className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p>暂无授权记录</p>
-              <p className="text-sm">点击"添加授权"为其他部门人员开通查看权限</p>
+              <p className="text-sm">点击&quot;添加授权&quot;为其他部门人员开通查看权限</p>
             </div>
           ) : (
             <div className="space-y-3">

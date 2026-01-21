@@ -47,6 +47,8 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   dynamic_rows: "清单字段",
 };
 
+const REPORTABLE_FIELD_TYPES = new Set<FieldType>(["number", "money", "select", "dynamic_select", "dynamic_rows"]);
+
 const DICTIONARY_CATEGORY_LABELS: Record<string, string> = {
   marketing_spots: "市场点位",
   first_visit_sources: "初诊来源",
@@ -399,6 +401,7 @@ interface ContainerField {
   label: string;
   type: FieldType;
   required?: boolean;
+  reportEnabled?: boolean; // 是否汇集到报表
   hint?: string;
   suffix?: string;
   formula?: string;
@@ -414,6 +417,7 @@ interface ContainerConfig {
   title: string;
   type: ContainerType;
   description?: string;
+  reportEnabled?: boolean;
   fields: ContainerField[];
   expanded?: boolean;
 }
@@ -473,11 +477,13 @@ function schemaToContainers(schema: DailyReportSchema): ContainerConfig[] {
     for (const group of fieldGroups) {
       const containerFields: ContainerField[] = [];
       for (const field of group.fields) {
+        const isReportable = REPORTABLE_FIELD_TYPES.has(field.type as FieldType);
         const cf: ContainerField = {
           id: field.id,
           label: field.label,
           type: field.type as FieldType,
           required: field.required,
+          reportEnabled: field.reportEnabled !== undefined ? !!field.reportEnabled : isReportable,
           hint: field.hint,
           suffix: field.suffix,
           formula: field.formula,
@@ -503,6 +509,7 @@ function schemaToContainers(schema: DailyReportSchema): ContainerConfig[] {
         id: `${section.id}_${group.id}`,
         title: group.title,
         type: "general", // 统一为 general
+        reportEnabled: true,
         fields: containerFields,
         expanded: false,
       });
@@ -745,6 +752,14 @@ export function DailyTemplateCenter({ departments }: Props) {
           setContainers(config.containers.map((c) => ({
             ...c,
             type: "general", // 加载时统一设为 general，向下兼容
+            reportEnabled: c.reportEnabled ?? true,
+            fields: (c.fields || []).map((f: any) => ({
+              ...f,
+              reportEnabled:
+                f.type === "divider"
+                  ? false
+                  : (f.reportEnabled ?? REPORTABLE_FIELD_TYPES.has(f.type as FieldType)),
+            })),
             expanded: false,
           })));
         } else {
@@ -814,6 +829,7 @@ export function DailyTemplateCenter({ departments }: Props) {
       id: `container_${Date.now()}`,
       title: `新${CONTAINER_TYPE_LABELS[type]}`,
       type,
+      reportEnabled: true,
       fields: [],
       expanded: true,
     };
@@ -848,6 +864,7 @@ export function DailyTemplateCenter({ departments }: Props) {
       label: forcedType === "dynamic_rows" ? "新清单" : "新字段",
       type: forcedType,
       required: false,
+      reportEnabled: forcedType === "divider" ? false : REPORTABLE_FIELD_TYPES.has(forcedType),
       ...(forcedType === "dynamic_rows" ? { rowFields: [], addRowLabel: "+ 新增记录" } : {}),
     };
 
@@ -864,10 +881,16 @@ export function DailyTemplateCenter({ departments }: Props) {
       fields: container.fields.map((f) => {
         if (f.id !== fieldId) return f;
         const updated = { ...f, ...updates };
+        if (updates.type) {
+          const isReportable = updates.type !== "divider" && REPORTABLE_FIELD_TYPES.has(updates.type as FieldType);
+          updated.reportEnabled = isReportable ? (updated.reportEnabled ?? true) : false;
+        } else if (updated.type === "divider") {
+          updated.reportEnabled = false;
+        }
         // 当类型变为 dynamic_rows 时，确保初始化 rowFields
-        if (updates.type === "dynamic_rows" && !updated.rowFields) {
-          updated.rowFields = [];
-          updated.addRowLabel = "+ 新增";
+        if (updates.type === "dynamic_rows") {
+          if (!updated.rowFields) updated.rowFields = [];
+          if (!updated.addRowLabel) updated.addRowLabel = "+ 新增";
         }
         return updated;
       }),
@@ -1091,6 +1114,17 @@ export function DailyTemplateCenter({ departments }: Props) {
                         className="flex-1 h-8 max-w-md"
                         placeholder="容器标题"
                       />
+                      <div
+                        className="flex items-center gap-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Switch
+                          checked={container.reportEnabled ?? true}
+                          onCheckedChange={(v) => updateContainer(container.id, { reportEnabled: v })}
+                          className="data-[state=checked]:bg-cyan-600"
+                        />
+                        <span className="text-xs text-gray-500">报表</span>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1152,14 +1186,28 @@ export function DailyTemplateCenter({ departments }: Props) {
                                       ))}
                                     </SelectContent>
                                   </Select>
-                                  {field.type !== "dynamic_rows" && field.type !== "divider" && (
-                                    <div className="flex items-center gap-1">
-                                      <Switch
-                                        checked={field.required || false}
-                                        onCheckedChange={(v) => updateField(container.id, field.id, { required: v })}
-                                      />
-                                      <span className="text-xs text-gray-500">必填</span>
-                                    </div>
+                                  {field.type !== "divider" && (
+                                    <>
+                                      <div className="flex items-center gap-1">
+                                        <Switch
+                                          checked={field.required || false}
+                                          onCheckedChange={(v) => updateField(container.id, field.id, { required: v })}
+                                        />
+                                        <span className="text-xs text-gray-500">必填</span>
+                                      </div>
+                                      {REPORTABLE_FIELD_TYPES.has(field.type) && (
+                                        <div className="flex items-center gap-1">
+                                          <Switch
+                                            checked={!!field.reportEnabled}
+                                            onCheckedChange={(v) => updateField(container.id, field.id, { reportEnabled: v })}
+                                            className="data-[state=checked]:bg-cyan-600"
+                                          />
+                                          <span className="text-xs text-gray-500" title="开启后，该字段将自动显示在对应部门的报表汇总中">
+                                            报表
+                                          </span>
+                                        </div>
+                                      )}
+                                    </>
                                   )}
                                   {field.type === "dynamic_select" && (
                                     <div className="w-40">

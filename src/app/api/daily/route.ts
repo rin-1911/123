@@ -6,6 +6,7 @@ import { canEditReport } from "@/lib/rbac";
 import { getToday } from "@/lib/utils";
 import type { DepartmentCode } from "@/lib/types";
 import { hasAnyRole } from "@/lib/types";
+import { flattenContainerizedFormData } from "@/lib/templates/template-schema";
 
 // 强制不缓存，确保数据实时
 export const dynamic = "force-dynamic";
@@ -142,13 +143,47 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!user.storeId || !effectiveDepartmentId || !effectiveDepartmentCode) {
-    return NextResponse.json({ error: "用户信息不完整" }, { status: 400 });
+  // 补救措施：如果 session 中没有 departmentCode，但有 departmentId，尝试从数据库获取
+  if (effectiveDepartmentId && !effectiveDepartmentCode) {
+    const dept = await prisma.department.findUnique({
+      where: { id: effectiveDepartmentId }
+    });
+    if (dept) {
+      effectiveDepartmentCode = dept.code as DepartmentCode;
+    }
+  }
+
+  // 补救措施：如果用户没有 storeId（例如总部用户），尝试查找"总部"门店
+  let effectiveStoreId = user.storeId;
+  if (!effectiveStoreId) {
+    // 尝试查找现有的“总部（无门店）”记录，避免将总部当作门店创建
+    const hqStore = await prisma.store.findFirst({
+      where: {
+        OR: [
+          { code: "HQ" },
+          { name: "总部（无门店）" },
+          { name: "总部" },
+          { name: "Headquarters" }
+        ]
+      },
+      orderBy: { updatedAt: "desc" }
+    });
+    effectiveStoreId = hqStore?.id ?? null;
+  }
+
+  if (!effectiveDepartmentId || !effectiveDepartmentCode) {
+    const missing = [];
+    if (!effectiveDepartmentId) missing.push("部门ID(departmentId)");
+    if (!effectiveDepartmentCode) missing.push("部门代码(departmentCode)");
+    
+    return NextResponse.json({ 
+      error: `用户信息不完整: 缺少 ${missing.join(", ")}` 
+    }, { status: 400 });
   }
 
   // 检查权限（管理员可以跳过锁定检查）
   if (!isAdminEdit) {
-    const permCheck = await canEditReport(currentUser, user.id, user.storeId, reportDate);
+    const permCheck = await canEditReport(currentUser, user.id, effectiveStoreId ?? null, reportDate);
     if (!permCheck.allowed) {
       return NextResponse.json({ error: permCheck.reason }, { status: 403 });
     }
@@ -177,7 +212,7 @@ export async function POST(request: NextRequest) {
         report = await tx.dailyReport.create({
           data: {
             userId: user.id,
-            storeId: user.storeId!,
+            storeId: effectiveStoreId ?? null,
             departmentId: effectiveDepartmentId!,
             reportDate,
             status: status || "DRAFT",
@@ -203,7 +238,12 @@ export async function POST(request: NextRequest) {
       }
 
       // 同步更新固定表
-      const dataToSync = formData || data;
+      const dataToSync = (() => {
+        const raw = formData || data;
+        if (!raw) return null;
+        const flat = flattenContainerizedFormData(raw);
+        return (flat || raw) as Record<string, unknown>;
+      })();
       if (dataToSync) {
         await upsertDepartmentReport(tx, effectiveDepartmentCode as DepartmentCode, report.id, dataToSync);
       }
@@ -508,4 +548,3 @@ async function upsertDepartmentReport(
       break;
   }
 }
-
