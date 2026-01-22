@@ -1,0 +1,33 @@
+[
+  {
+    "id": "cmjy959r8000110ycjhrkkilp",
+    "patientName": "213",
+    "patientPhone": "19922255251",
+    "patientAge": 11,
+    "patientGender": "MALE",
+    "visitDate": "2026-01-03",
+    "visitType": "INITIAL",
+    "source": "123",
+    "referrer": null,
+    "toothPositions": "[\"12\",\"47\"]",
+    "chiefComplaint": "123",
+    "diagnosis": null,
+    "intendedProjects": "[]",
+    "intentionLevel": null,
+    "dealStatus": "PENDING",
+    "dealProjects": "[]",
+    "dealAmount": 0,
+    "depositAmount": 0,
+    "paymentMethod": null,
+    "noDealReason": null,
+    "noDealDetail": null,
+    "nextFollowDate": null,
+    "nextFollowNote": null,
+    "followHistory": null,
+    "remark": null,
+    "consultantId": "cmjcjpael0003we3p0i6trpw3",
+    "storeId": "cmjaewkql0009p8bi4i938lcd",
+    "createdAt": "2026-01-03T12:01:26.948Z",
+    "updatedAt": "2026-01-03T12:01:26.948Z"
+  }
+]

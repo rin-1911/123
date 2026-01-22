@@ -1,0 +1,110 @@
+[
+  {
+    "id": "cmjavf46y001o6z81bmdgg9b4",
+    "name": "自然到店",
+    "isActive": true,
+    "sortOrder": 0,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:29.627Z",
+    "updatedAt": "2025-12-18T03:18:29.627Z"
+  },
+  {
+    "id": "cmjavf4j2001q6z81i3v3nhts",
+    "name": "老客转介绍",
+    "isActive": true,
+    "sortOrder": 1,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:30.062Z",
+    "updatedAt": "2025-12-18T03:18:30.062Z"
+  },
+  {
+    "id": "cmjavf4uo001s6z81pc1xoptk",
+    "name": "美团/大众点评",
+    "isActive": true,
+    "sortOrder": 2,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:30.480Z",
+    "updatedAt": "2025-12-18T03:18:30.480Z"
+  },
+  {
+    "id": "cmjavf56b001u6z81idjpn5wc",
+    "name": "抖音",
+    "isActive": true,
+    "sortOrder": 3,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:30.899Z",
+    "updatedAt": "2025-12-18T03:18:30.899Z"
+  },
+  {
+    "id": "cmjavf5hy001w6z811mcd1vij",
+    "name": "小红书",
+    "isActive": true,
+    "sortOrder": 4,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:31.319Z",
+    "updatedAt": "2025-12-18T03:18:31.319Z"
+  },
+  {
+    "id": "cmjavf5tl001y6z814ol8ed0l",
+    "name": "微信公众号",
+    "isActive": true,
+    "sortOrder": 5,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:31.737Z",
+    "updatedAt": "2025-12-18T03:18:31.737Z"
+  },
+  {
+    "id": "cmjavf65500206z81fd1awcyc",
+    "name": "朋友圈广告",
+    "isActive": true,
+    "sortOrder": 6,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:32.153Z",
+    "updatedAt": "2025-12-18T03:18:32.153Z"
+  },
+  {
+    "id": "cmjavf6gp00226z815iuuitg5",
+    "name": "地推活动",
+    "isActive": true,
+    "sortOrder": 7,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:32.569Z",
+    "updatedAt": "2025-12-18T03:18:32.569Z"
+  },
+  {
+    "id": "cmjavf6sc00246z81b20ayc3z",
+    "name": "社区合作",
+    "isActive": true,
+    "sortOrder": 8,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:32.988Z",
+    "updatedAt": "2025-12-18T03:18:32.988Z"
+  },
+  {
+    "id": "cmjavf73y00266z81tel4gj2u",
+    "name": "企业合作",
+    "isActive": true,
+    "sortOrder": 9,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:33.407Z",
+    "updatedAt": "2025-12-18T03:18:33.407Z"
+  },
+  {
+    "id": "cmjavf7fk00286z81va7wbj9l",
+    "name": "学校合作",
+    "isActive": true,
+    "sortOrder": 10,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:33.824Z",
+    "updatedAt": "2025-12-18T03:18:33.824Z"
+  },
+  {
+    "id": "cmjavf7r4002a6z81m7t6q9se",
+    "name": "其他",
+    "isActive": true,
+    "sortOrder": 11,
+    "storeId": null,
+    "createdAt": "2025-12-18T03:18:34.241Z",
+    "updatedAt": "2025-12-18T03:18:34.241Z"
+  }
+]

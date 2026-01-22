@@ -1,0 +1,25 @@
+[
+  {
+    "dailyReportId": "cmjzrjvgh00031r1fhun25sqx",
+    "cashInCents": 0,
+    "refundsInCents": 0,
+    "cashPayInCents": 0,
+    "cardPayInCents": 0,
+    "onlinePayInCents": 0,
+    "expenseTotalInCents": 0,
+    "expenseMaterialInCents": 0,
+    "expenseProcessingInCents": 0,
+    "expenseMarketingInCents": 0,
+    "expenseAdminInCents": 0,
+    "reconciliationIssues": 0,
+    "staffScheduled": 0,
+    "staffPresent": 0,
+    "staffAbsent": 0,
+    "hiresCount": 0,
+    "resignationsCount": 0,
+    "trainingSessions": 0,
+    "traineesCount": 0,
+    "createdAt": "2026-01-04T13:24:27.695Z",
+    "updatedAt": "2026-01-04T13:24:27.693Z"
+  }
+]

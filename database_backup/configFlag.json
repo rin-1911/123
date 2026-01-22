@@ -1,0 +1,35 @@
+[
+  {
+    "id": "cmjavf8eg002b6z819qfmigcj",
+    "scope": "GLOBAL",
+    "key": "implant_incentive",
+    "storeId": null,
+    "isActive": true,
+    "value": "{\"enabled\":true,\"rate\":0.05}",
+    "description": "种植激励开关",
+    "createdAt": "2025-12-18T03:18:35.080Z",
+    "updatedAt": "2025-12-18T03:18:35.080Z"
+  },
+  {
+    "id": "cmjavf8q2002c6z81yl9be8up",
+    "scope": "GLOBAL",
+    "key": "ortho_incentive",
+    "storeId": null,
+    "isActive": true,
+    "value": "{\"enabled\":true,\"rate\":0.03}",
+    "description": "正畸激励开关",
+    "createdAt": "2025-12-18T03:18:35.499Z",
+    "updatedAt": "2025-12-18T03:18:35.499Z"
+  },
+  {
+    "id": "cmkfi79y500019vnx3zy6hp4q",
+    "scope": "GLOBAL",
+    "key": "DEPT_REPORT_ROLE_BY_DEPT_CODE",
+    "storeId": null,
+    "isActive": true,
+    "value": "{\"FRONT_DESK\":\"DEPT_LEAD\"}",
+    "description": "部门报表口径角色配置",
+    "createdAt": "2026-01-15T13:47:02.045Z",
+    "updatedAt": "2026-01-15T13:47:02.045Z"
+  }
+]

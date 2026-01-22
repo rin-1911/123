@@ -1,0 +1,65 @@
+[
+  {
+    "id": "cmjaewjqq0000p8bidt3kbbec",
+    "code": "CONSULTATION",
+    "name": "咨询部",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk6t0001p8biaxwq7y1l",
+    "code": "OFFLINE_MARKETING",
+    "name": "线下市场",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk6w0002p8bis94wbri5",
+    "code": "FINANCE_HR_ADMIN",
+    "name": "财务",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk710003p8bi3vp1b6sf",
+    "code": "MANAGEMENT",
+    "name": "管理层",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk740004p8bi3m3k6dv8",
+    "code": "HR",
+    "name": "人事行政",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk7d0005p8bi32n2xvpd",
+    "code": "ONLINE_GROWTH",
+    "name": "网络新媒体",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk7m0006p8bi2n1aup8s",
+    "code": "FRONT_DESK",
+    "name": "前台客服",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk7q0007p8bi8otrtkrt",
+    "code": "MEDICAL",
+    "name": "医疗部",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  },
+  {
+    "id": "cmjaewk7s0008p8biksd7sbgm",
+    "code": "NURSING",
+    "name": "护理部",
+    "createdAt": "2025-12-17T19:36:09.458Z",
+    "updatedAt": "2025-12-17T19:36:09.458Z"
+  }
+]

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "cmjaewkql0009p8bi4i938lcd",
+    "code": "XJ",
+    "name": "鑫洁口腔",
+    "city": "文山",
+    "address": "文山市某某路123号",
+    "chairCnt": 10,
+    "isActive": true,
+    "createdAt": "2025-12-17T19:36:10.749Z",
+    "updatedAt": "2025-12-17T19:36:10.749Z"
+  },
+  {
+    "id": "cmjaewl9e000ap8bijmphhg1l",
+    "code": "DF-CN",
+    "name": "德弗口腔城南店",
+    "city": "文山",
+    "address": "文山市城南新区456号",
+    "chairCnt": 12,
+    "isActive": true,
+    "createdAt": "2025-12-17T19:36:11.426Z",
+    "updatedAt": "2025-12-17T19:36:11.426Z"
+  },
+  {
+    "id": "cmjzrjunc00001r1fj1zejg0o",
+    "code": "HQ",
+    "name": "总部",
+    "city": null,
+    "address": null,
+    "chairCnt": 0,
+    "isActive": true,
+    "createdAt": "2026-01-04T13:24:25.885Z",
+    "updatedAt": "2026-01-04T13:24:25.885Z"
+  }
+]

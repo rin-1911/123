@@ -1,0 +1,41 @@
+[
+  {
+    "dailyReportId": "cmjmpfoit0005h9wbmdt6rkx5",
+    "touchpoints": 0,
+    "leadsNew": 0,
+    "leadsValid": 0,
+    "appointmentsBooked": 0,
+    "visitsArrived": 0,
+    "costInCents": 0,
+    "partnershipsNew": 0,
+    "partnershipsMaintained": 0,
+    "createdAt": "2025-12-26T10:04:12.693Z",
+    "updatedAt": "2025-12-26T10:04:12.692Z"
+  },
+  {
+    "dailyReportId": "cmjzkqiuk0008fn9zaoy0b1rr",
+    "touchpoints": 0,
+    "leadsNew": 0,
+    "leadsValid": 0,
+    "appointmentsBooked": 0,
+    "visitsArrived": 0,
+    "costInCents": 0,
+    "partnershipsNew": 0,
+    "partnershipsMaintained": 0,
+    "createdAt": "2026-01-04T10:13:40.767Z",
+    "updatedAt": "2026-01-04T10:13:40.766Z"
+  },
+  {
+    "dailyReportId": "cmk0z52bz000261yj4402ixkg",
+    "touchpoints": 0,
+    "leadsNew": 0,
+    "leadsValid": 0,
+    "appointmentsBooked": 0,
+    "visitsArrived": 0,
+    "costInCents": 0,
+    "partnershipsNew": 0,
+    "partnershipsMaintained": 0,
+    "createdAt": "2026-01-05T09:44:40.020Z",
+    "updatedAt": "2026-01-05T09:44:40.019Z"
+  }
+]

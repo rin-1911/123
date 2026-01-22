@@ -1,0 +1,3766 @@
+[
+  {
+    "id": "cmjy5p3rc000hlikdfgyqjcg6",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7d0005p8bi32n2xvpd",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "core_metrics_core_metrics",
+          "type": "general",
+          "title": "今日核心数据",
+          "fields": [
+            {
+              "id": "leads_today",
+              "type": "number",
+              "label": "今日建档",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "leads_month",
+              "type": "number",
+              "label": "月建档",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "visits_today",
+              "type": "number",
+              "label": "今日到店",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "visits_month",
+              "type": "number",
+              "label": "本月到店",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "deals_today",
+              "type": "number",
+              "label": "到店成交",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "deals_month",
+              "type": "number",
+              "label": "本月成交",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "revenue_today",
+              "type": "money",
+              "label": "今日业绩",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435300230",
+              "type": "money",
+              "label": "补款金额",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435368366",
+              "type": "money",
+              "label": "再消费金额",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435416638",
+              "type": "number",
+              "label": "今日初诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435427558",
+              "type": "number",
+              "label": "今日复诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435437205",
+              "type": "number",
+              "label": "本月初诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435448053",
+              "type": "number",
+              "label": "本月复诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "followup_today",
+              "type": "number",
+              "label": "今日回访",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "intentional_tomorrow",
+              "type": "number",
+              "label": "明日意向顾客",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "channel_performance_channel_performance",
+          "type": "general",
+          "title": "渠道表现",
+          "fields": [
+            {
+              "id": "field_1767435543408",
+              "type": "dynamic_rows",
+              "label": "信息流明细",
+              "required": false,
+              "rowFields": [
+                {
+                  "id": "rf_1767435604685",
+                  "type": "dynamic_select",
+                  "label": "渠道名称",
+                  "dynamicOptionsKey": "AD"
+                },
+                {
+                  "id": "rf_1767435704893",
+                  "type": "number",
+                  "label": "到店人数"
+                },
+                {
+                  "id": "rf_1767435748613",
+                  "type": "number",
+                  "label": "成交人数"
+                },
+                {
+                  "id": "rf_1767435755253",
+                  "type": "number",
+                  "label": "成交金额"
+                }
+              ],
+              "addRowLabel": "+ 新增",
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435768270",
+              "type": "dynamic_rows",
+              "label": "团购明细",
+              "required": false,
+              "rowFields": [
+                {
+                  "id": "rf_1767435780837",
+                  "type": "dynamic_select",
+                  "label": "渠道明细",
+                  "dynamicOptionsKey": "buy"
+                },
+                {
+                  "id": "rf_1767435850526",
+                  "type": "number",
+                  "label": "到店人数"
+                },
+                {
+                  "id": "rf_1767435864182",
+                  "type": "number",
+                  "label": "成交人数"
+                },
+                {
+                  "id": "rf_1767435873678",
+                  "type": "number",
+                  "label": "成交金额"
+                }
+              ],
+              "addRowLabel": "+ 新增",
+              "reportEnabled": true
+            },
+            {
+              "id": "third_party_channels",
+              "type": "dynamic_rows",
+              "label": "三方渠道明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "渠道名称"
+                },
+                {
+                  "id": "visits",
+                  "type": "number",
+                  "label": "到店人数"
+                },
+                {
+                  "id": "deals",
+                  "type": "number",
+                  "label": "成交人数"
+                },
+                {
+                  "id": "amount",
+                  "type": "money",
+                  "label": "成交金额"
+                }
+              ],
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "work_summary_work_summary",
+          "type": "general",
+          "title": "工作总结",
+          "fields": [
+            {
+              "id": "main_tasks",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "main_issues",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767435520622",
+              "type": "text",
+              "label": "备注",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T10:24:53.682Z",
+    "updatedAt": "2026-01-15T13:46:53.973Z"
+  },
+  {
+    "id": "cmjxyh4h6000fo7zo5lbvdwhz",
+    "role": "STAFF",
+    "departmentId": "cmjaewk6t0001p8biaxwq7y1l",
+    "schemaId": "expansion",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "daily_spots",
+          "type": "general",
+          "title": "多点位清单",
+          "fields": [
+            {
+              "id": "spot_details",
+              "type": "dynamic_rows",
+              "label": "点位明细",
+              "rowFields": [
+                {
+                  "id": "spot_name",
+                  "type": "text",
+                  "label": "点位名称",
+                  "dynamicOptionsKey": "marketing_spots"
+                },
+                {
+                  "id": "valid_leads_phone",
+                  "type": "number",
+                  "label": "有效线索(电话)"
+                },
+                {
+                  "id": "direct_visits",
+                  "type": "number",
+                  "label": "现场引流到诊"
+                },
+                {
+                  "id": "visit_deal",
+                  "type": "number",
+                  "label": "到诊成交"
+                },
+                {
+                  "id": "cash_expected",
+                  "type": "money",
+                  "label": "应收"
+                },
+                {
+                  "id": "cash_received",
+                  "type": "money",
+                  "label": "实收"
+                },
+                {
+                  "id": "remark",
+                  "type": "text",
+                  "label": "备注",
+                  "fullWidth": true
+                }
+              ],
+              "addRowLabel": "+ 新增点位",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "daily_plan",
+          "type": "general",
+          "title": "计划",
+          "fields": [
+            {
+              "id": "today_plan",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "tomorrow_plan",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T07:02:44.051Z",
+    "updatedAt": "2026-01-15T13:46:54.615Z"
+  },
+  {
+    "id": "cmjxyge88000do7zoettstrn0",
+    "role": "STAFF",
+    "departmentId": "cmjaewk6t0001p8biaxwq7y1l",
+    "schemaId": "customerService",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "dailyWork_dailyWork",
+          "type": "general",
+          "title": "今日工作汇报",
+          "fields": [
+            {
+              "id": "followUpCount",
+              "hint": "总拨打次数",
+              "type": "number",
+              "label": "今日回访量",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "validCallCount",
+              "hint": "接通并有效沟通",
+              "type": "number",
+              "label": "有效通话数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "invalidCallCount",
+              "hint": "未接通/挂断",
+              "type": "number",
+              "label": "无效通话数",
+              "reportEnabled": true
+            },
+            {
+              "id": "appointmentCount",
+              "hint": "成功预约到店",
+              "type": "number",
+              "label": "预约人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "classACount",
+              "hint": "高意向、近期可转化",
+              "type": "number",
+              "label": "A类高意向客户(新增)",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "classBCount",
+              "hint": "有意向需跟进",
+              "type": "number",
+              "label": "B类普通客户(新增)",
+              "reportEnabled": true
+            },
+            {
+              "id": "classCCount",
+              "hint": "长期跟进培育",
+              "type": "number",
+              "label": "C类待培育客户(新增)",
+              "reportEnabled": true
+            },
+            {
+              "id": "todayRecordsCount",
+              "hint": "新建客户档案数",
+              "type": "number",
+              "label": "今日建档量",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "dealCount",
+              "hint": "今日成交客户数",
+              "type": "number",
+              "label": "成交人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "todayExpected",
+              "type": "money",
+              "label": "当日应收",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "todayActual",
+              "type": "money",
+              "label": "当日实收",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "todayProblems",
+              "hint": "客户拒接、异议处理等",
+              "type": "textarea",
+              "label": "今日遇到问题",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "tomorrowPlan",
+              "hint": "重点客户跟进等",
+              "type": "textarea",
+              "label": "明日工作计划",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T07:02:10.184Z",
+    "updatedAt": "2026-01-15T13:46:54.766Z"
+  },
+  {
+    "id": "cmjxyfc970005o7zoyroyyhyj",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "assistantLead",
+    "configJson": {
+      "version": 2,
+      "containers": []
+    },
+    "createdAt": "2026-01-03T07:01:20.050Z",
+    "updatedAt": "2026-01-15T13:26:45.240Z"
+  },
+  {
+    "id": "cmjxyfng70009o7zoaemzuv7x",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "hygienistLead",
+    "configJson": {
+      "version": 2,
+      "containers": []
+    },
+    "createdAt": "2026-01-03T07:01:35.479Z",
+    "updatedAt": "2026-01-15T13:26:45.423Z"
+  },
+  {
+    "id": "cmjxyfuy0000bo7zox9trmiml",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "headNurse",
+    "configJson": {
+      "version": 2,
+      "containers": []
+    },
+    "createdAt": "2026-01-03T07:01:45.192Z",
+    "updatedAt": "2026-01-15T13:26:45.512Z"
+  },
+  {
+    "id": "cmjzk1n2w0009s9rbbhtk4hic",
+    "role": "STORE_MANAGER",
+    "departmentId": "cmjaewk710003p8bi3vp1b6sf",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "daily_daily",
+          "type": "general",
+          "title": "店长经营日报",
+          "fields": [
+            {
+              "id": "totalVisits",
+              "type": "number",
+              "label": "当日总到诊",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "firstVisits",
+              "type": "number",
+              "label": "首诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "returnVisits",
+              "type": "number",
+              "label": "复诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "dealCount",
+              "type": "number",
+              "label": "当日成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "cashInYuan",
+              "type": "money",
+              "label": "实收金额",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "avgTicket",
+              "type": "money",
+              "label": "客单价",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreCount",
+              "type": "number",
+              "label": "综合-人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreAmount",
+              "type": "money",
+              "label": "综合-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "todayIssues",
+              "hint": "请输入...",
+              "type": "textarea",
+              "label": "今日异常/风险/需协调",
+              "reportEnabled": false
+            },
+            {
+              "id": "tomorrowKeyFocus",
+              "hint": "请输入...",
+              "type": "textarea",
+              "label": "明日重点安排",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-04T09:54:19.393Z",
+    "updatedAt": "2026-01-15T13:26:45.965Z"
+  },
+  {
+    "id": "cmjzjqo7m0005s9rbdmyl3avm",
+    "role": "STAFF",
+    "departmentId": "cmjaewjqq0000p8bidt3kbbec",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "daily_data_daily_data",
+          "type": "general",
+          "title": "当日总结",
+          "fields": [
+            {
+              "id": "receptionTotal",
+              "hint": "到咨询台完成初诊沟通的总人数",
+              "type": "number",
+              "label": "当日接诊人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "firstVisitCount",
+              "type": "number",
+              "label": "首诊接诊人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "returnVisitCount",
+              "type": "number",
+              "label": "复诊接诊人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "dealCount",
+              "hint": "含定金/预付",
+              "type": "number",
+              "label": "成交人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "noDealCount",
+              "type": "number",
+              "label": "未成交人数",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "cashInYuan",
+              "hint": "个人贡献口径",
+              "type": "money",
+              "label": "当日实收金额",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "noDealReason",
+              "hint": "请详细填写未成交的具体原因，如价格、方案、信任度等",
+              "type": "textarea",
+              "label": "未成交原因说明",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "today_plan",
+              "hint": "今日工作完成情况总结",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "tomorrow_plan",
+              "hint": "明日重点跟进客户及工作安排",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "daily_data_remark",
+              "hint": "针对今日数据的特殊说明",
+              "type": "textarea",
+              "label": "备注",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "data_detail_data_detail",
+          "type": "general",
+          "title": "数据详细",
+          "fields": [
+            {
+              "id": "implant_visit",
+              "type": "number",
+              "label": "种植-到诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "implant_deal",
+              "type": "number",
+              "label": "种植-成交",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "implant_amount",
+              "type": "money",
+              "label": "种植-金额",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "ortho_visit",
+              "type": "number",
+              "label": "正畸-到诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "ortho_deal",
+              "type": "number",
+              "label": "正畸-成交",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "ortho_amount",
+              "type": "money",
+              "label": "正畸-金额",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "restore_visit",
+              "type": "number",
+              "label": "修复/综合-到诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "restore_deal",
+              "type": "number",
+              "label": "修复/综合-成交",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "restore_amount",
+              "type": "money",
+              "label": "修复/综合-金额",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "pediatric_visit",
+              "type": "number",
+              "label": "儿牙-到诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "pediatric_deal",
+              "type": "number",
+              "label": "儿牙-成交",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "pediatric_amount",
+              "type": "money",
+              "label": "儿牙-金额",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "other_visit",
+              "type": "number",
+              "label": "其他-到诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "other_deal",
+              "type": "number",
+              "label": "其他-成交",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "other_amount",
+              "type": "money",
+              "label": "其他-金额",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-04T09:45:47.645Z",
+    "updatedAt": "2026-01-15T13:46:55.459Z"
+  },
+  {
+    "id": "cmjxyf0i40003o7zoonjya3r0",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "assistant",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "container_1767437331389",
+          "type": "general",
+          "title": "今日主要",
+          "fields": [
+            {
+              "id": "field_1767437332252",
+              "type": "dynamic_rows",
+              "label": "患者",
+              "required": false,
+              "rowFields": [
+                {
+                  "id": "rf_1767437342949",
+                  "type": "text",
+                  "label": "名称"
+                },
+                {
+                  "id": "rf_1767437356061",
+                  "type": "text",
+                  "label": "操作"
+                }
+              ],
+              "addRowLabel": "+ 新增记录",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "container_1767437400765",
+          "type": "general",
+          "title": "总结",
+          "fields": [
+            {
+              "id": "field_1767437407861",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767437415788",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767438013932",
+              "type": "text",
+              "label": "备注",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T07:01:05.589Z",
+    "updatedAt": "2026-01-15T13:46:56.201Z"
+  },
+  {
+    "id": "cmjztzvzr00051r1f1i3h17h8",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7m0006p8bi2n1aup8s",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "container_1767537144538",
+          "type": "general",
+          "title": "总结",
+          "fields": [
+            {
+              "id": "field_1767537155265",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": false,
+              "reportEnabled": false
+            },
+            {
+              "id": "field_1767537163906",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": false,
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-04T14:32:53.861Z",
+    "updatedAt": "2026-01-15T13:26:46.054Z"
+  },
+  {
+    "id": "cmk3f9ebp00019tnpuw676jzm",
+    "role": "STAFF",
+    "departmentId": "cmjaewk740004p8bi3m3k6dv8",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "attendance_mgmt_attendance_mgmt",
+          "type": "general",
+          "title": "一、考勤管理",
+          "fields": [
+            {
+              "id": "att_expected",
+              "type": "number",
+              "label": "应到人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_actual",
+              "type": "number",
+              "label": "实到人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_rest",
+              "type": "number",
+              "label": "休息人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_late_early_count",
+              "type": "number",
+              "label": "迟到/早退人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_late_early_details",
+              "hint": "点击添加记录每位迟到/早退人员信息",
+              "type": "dynamic_rows",
+              "label": "迟到/早退明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "type",
+                  "type": "text",
+                  "label": "类型"
+                },
+                {
+                  "id": "reason",
+                  "type": "text",
+                  "label": "原因"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "时长"
+                }
+              ],
+              "reportEnabled": true
+            },
+            {
+              "id": "att_absent",
+              "type": "number",
+              "label": "旷工人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_leave_count",
+              "type": "number",
+              "label": "请假人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "att_leave_details",
+              "hint": "点击添加记录每位请假人员信息",
+              "type": "dynamic_rows",
+              "label": "请假明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "reason",
+                  "type": "text",
+                  "label": "请假原因"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "请假时长"
+                }
+              ],
+              "reportEnabled": true
+            },
+            {
+              "id": "att_overtime_count",
+              "type": "number",
+              "label": "加班人数",
+              "reportEnabled": true
+            },
+            {
+              "id": "att_overtime_details",
+              "hint": "点击添加记录每位加班人员信息",
+              "type": "dynamic_rows",
+              "label": "加班明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "加班时长"
+                }
+              ],
+              "reportEnabled": true
+            },
+            {
+              "id": "att_other",
+              "type": "textarea",
+              "label": "其他说明",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "recruit_board_recruit_board",
+          "type": "general",
+          "title": "二、招聘看板",
+          "fields": [
+            {
+              "id": "rec_greetings",
+              "type": "number",
+              "label": "打招呼人数",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_intentional",
+              "type": "number",
+              "label": "意向人数",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_positions",
+              "hint": "例：医生、咨询、前台",
+              "type": "text",
+              "label": "招聘岗位",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_results",
+              "type": "textarea",
+              "label": "招聘结果",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_interviews",
+              "type": "number",
+              "label": "面试人数",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_interview_results",
+              "type": "textarea",
+              "label": "面试结果",
+              "reportEnabled": true
+            },
+            {
+              "id": "rec_supplement",
+              "type": "textarea",
+              "label": "其他补充",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "personnel_mgmt_onboardivider",
+          "type": "general",
+          "title": "【入职管理】",
+          "fields": [
+            {
+              "id": "p_onboard_details",
+              "hint": "记录今日入职的人员信息",
+              "type": "dynamic_rows",
+              "label": "今日入职人员",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "dept",
+                  "type": "text",
+                  "label": "入职部门"
+                },
+                {
+                  "id": "time",
+                  "type": "text",
+                  "label": "入职时间"
+                },
+                {
+                  "id": "process",
+                  "type": "text",
+                  "label": "流程进度"
+                }
+              ],
+              "reportEnabled": true
+            },
+            {
+              "id": "p_onboard_note",
+              "hint": "其他需要说明的入职事项",
+              "type": "textarea",
+              "label": "入职备注",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "personnel_mgmt_contract_divider",
+          "type": "general",
+          "title": "【合同签订】",
+          "fields": [
+            {
+              "id": "p_contract_details",
+              "hint": "记录今日签订合同的人员（含试岗期、试用期、免责协议、劳动合同等）",
+              "type": "dynamic_rows",
+              "label": "今日合同签订",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "员工姓名"
+                },
+                {
+                  "id": "contract_type",
+                  "type": "text",
+                  "label": "合同类型"
+                },
+                {
+                  "id": "note",
+                  "type": "text",
+                  "label": "备注"
+                }
+              ],
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "personnel_mgmt_resign_divider",
+          "type": "general",
+          "title": "【离职管理】",
+          "fields": [
+            {
+              "id": "p_resign_details",
+              "hint": "记录离职人员及交接情况",
+              "type": "dynamic_rows",
+              "label": "今日离职人员",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "离职人员"
+                },
+                {
+                  "id": "dept",
+                  "type": "text",
+                  "label": "离职部门"
+                },
+                {
+                  "id": "handover",
+                  "type": "text",
+                  "label": "交接情况"
+                }
+              ],
+              "reportEnabled": true
+            },
+            {
+              "id": "p_resign_note",
+              "hint": "其他需要说明的离职事项",
+              "type": "textarea",
+              "label": "离职备注",
+              "reportEnabled": true
+            },
+            {
+              "id": "p_other",
+              "type": "textarea",
+              "label": "其他人事事项",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-07T02:51:28.069Z",
+    "updatedAt": "2026-01-15T13:46:56.708Z"
+  },
+  {
+    "id": "cmjxyfhut0007o7zoyxjzhzwf",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "hygienist",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "container_1767429352155",
+          "type": "general",
+          "title": "今日数据",
+          "fields": [
+            {
+              "id": "field_1767429365660",
+              "type": "number",
+              "label": "洁牙接诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767429400083",
+              "type": "number",
+              "label": "开发",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767430160195",
+              "type": "money",
+              "label": "个人产出",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767430135979",
+              "type": "textarea",
+              "label": "未开发成功原因",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "container_1767430337539",
+          "type": "general",
+          "title": "总结",
+          "fields": [
+            {
+              "id": "field_1767430343972",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767430353723",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767438024692",
+              "type": "text",
+              "label": "备注",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T07:01:28.230Z",
+    "updatedAt": "2026-01-15T13:46:59.965Z"
+  },
+  {
+    "id": "cmkfgu1y50001tqx4mlxjy94m",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7d0005p8bi32n2xvpd",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "core_metrics_core_metrics",
+          "type": "general",
+          "title": "今日核心数据",
+          "fields": [
+            {
+              "id": "leads_today",
+              "type": "number",
+              "label": "今日建档",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "leads_month",
+              "type": "number",
+              "label": "月建档",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "visits_today",
+              "type": "number",
+              "label": "今日到店",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "visits_month",
+              "type": "number",
+              "label": "本月到店",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "deals_today",
+              "type": "number",
+              "label": "到店成交",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "deals_month",
+              "type": "number",
+              "label": "本月成交",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "revenue_today",
+              "type": "money",
+              "label": "今日业绩",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "followup_today",
+              "type": "number",
+              "label": "今日回访",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "intentional_tomorrow",
+              "type": "number",
+              "label": "明日意向顾客",
+              "required": true,
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "channel_performance_channel_performance",
+          "type": "general",
+          "title": "渠道表现",
+          "fields": [
+            {
+              "id": "dy_v",
+              "type": "number",
+              "label": "抖音-到店",
+              "reportEnabled": false
+            },
+            {
+              "id": "dy_d",
+              "type": "number",
+              "label": "抖音-成交",
+              "reportEnabled": false
+            },
+            {
+              "id": "dy_a",
+              "type": "money",
+              "label": "抖音-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "third_party_channels",
+              "type": "dynamic_rows",
+              "label": "三方渠道明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "渠道名称"
+                },
+                {
+                  "id": "visits",
+                  "type": "number",
+                  "label": "到店人数"
+                },
+                {
+                  "id": "deals",
+                  "type": "number",
+                  "label": "成交人数"
+                },
+                {
+                  "id": "amount",
+                  "type": "money",
+                  "label": "成交金额"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "gd_v",
+              "type": "number",
+              "label": "高德-到店",
+              "reportEnabled": false
+            },
+            {
+              "id": "gd_d",
+              "type": "number",
+              "label": "高德-成交",
+              "reportEnabled": false
+            },
+            {
+              "id": "gd_a",
+              "type": "money",
+              "label": "高德-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "ref_v",
+              "type": "number",
+              "label": "介绍-到店",
+              "reportEnabled": false
+            },
+            {
+              "id": "ref_d",
+              "type": "number",
+              "label": "介绍-成交",
+              "reportEnabled": false
+            },
+            {
+              "id": "ref_a",
+              "type": "money",
+              "label": "介绍-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "ads_v",
+              "type": "number",
+              "label": "信息流-到店",
+              "reportEnabled": false
+            },
+            {
+              "id": "ads_d",
+              "type": "number",
+              "label": "信息流-成交",
+              "reportEnabled": false
+            },
+            {
+              "id": "ads_a",
+              "type": "money",
+              "label": "信息流-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "chan_balance",
+              "type": "money",
+              "label": "补款金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "chan_respend",
+              "type": "money",
+              "label": "再消费金额",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "work_summary_work_summary",
+          "type": "general",
+          "title": "工作总结",
+          "fields": [
+            {
+              "id": "main_tasks",
+              "type": "textarea",
+              "label": "主要工作",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "main_issues",
+              "type": "textarea",
+              "label": "主要问题",
+              "required": true,
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "tomorrow_plan_tomorrow_plan",
+          "type": "general",
+          "title": "明日计划",
+          "fields": [
+            {
+              "id": "primary_task",
+              "type": "textarea",
+              "label": "首要任务",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "core_goal",
+              "hint": "请详细描述明日要达成的业务指标",
+              "type": "textarea",
+              "label": "核心目标",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "daily_notes",
+              "type": "textarea",
+              "label": "备注",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:08:45.532Z",
+    "updatedAt": "2026-01-15T13:26:46.685Z"
+  },
+  {
+    "id": "cmkfgu7hl0003tqx46bu6qfgt",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewjqq0000p8bidt3kbbec",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "teamSummary_teamSummary",
+          "type": "general",
+          "title": "一、团队汇总",
+          "fields": [
+            {
+              "id": "teamReceptionTotal",
+              "type": "number",
+              "label": "组到诊总数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "teamFirstVisit",
+              "type": "number",
+              "label": "首诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "teamReturnVisit",
+              "type": "number",
+              "label": "复诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "teamDealCount",
+              "type": "number",
+              "label": "组成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "teamCashInYuan",
+              "type": "money",
+              "label": "组成交金额",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "teamAvgTicket",
+              "type": "money",
+              "label": "客单价",
+              "reportEnabled": false
+            },
+            {
+              "id": "implantRatio",
+              "type": "number",
+              "label": "种植占比",
+              "suffix": "%",
+              "reportEnabled": false
+            },
+            {
+              "id": "orthoRatio",
+              "type": "number",
+              "label": "正畸占比",
+              "suffix": "%",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreRatio",
+              "type": "number",
+              "label": "综合占比",
+              "suffix": "%",
+              "reportEnabled": false
+            },
+            {
+              "id": "pediatricRatio",
+              "type": "number",
+              "label": "儿牙占比",
+              "suffix": "%",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "funnelLayers_funnelLayers",
+          "type": "general",
+          "title": "二、漏斗分层",
+          "fields": [
+            {
+              "id": "highIntentNoDeal",
+              "hint": "可约二次面谈",
+              "type": "number",
+              "label": "高意向未成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "midIntentNoDeal",
+              "hint": "需内容教育",
+              "type": "number",
+              "label": "中意向未成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "lowIntentNoDeal",
+              "hint": "仅维护",
+              "type": "number",
+              "label": "低意向未成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "todayNewNoDeal",
+              "type": "number",
+              "label": "今日新增未成交",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "historyNoDealCleared",
+              "type": "number",
+              "label": "历史未成交清理",
+              "required": true,
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "alerts_alerts",
+          "type": "general",
+          "title": "三、异常预警",
+          "fields": [
+            {
+              "id": "lowConversionReason",
+              "hint": "至少1条",
+              "type": "textarea",
+              "label": "转化率低于目标原因",
+              "reportEnabled": false
+            },
+            {
+              "id": "lowConversionAction",
+              "hint": "至少2条",
+              "type": "textarea",
+              "label": "明日改进动作",
+              "reportEnabled": false
+            },
+            {
+              "id": "bigProjectGapReason",
+              "type": "textarea",
+              "label": "大项目空白原因",
+              "reportEnabled": false
+            },
+            {
+              "id": "bigProjectAction",
+              "hint": "谁负责、何时会诊",
+              "type": "textarea",
+              "label": "大项目安排",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintEvent",
+              "type": "textarea",
+              "label": "客诉/纠纷事件",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintProgress",
+              "type": "textarea",
+              "label": "处理节点",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "tomorrowPlan_tomorrowPlan",
+          "type": "general",
+          "title": "四、明日排班与重点战役",
+          "fields": [
+            {
+              "id": "keyCustomerList",
+              "hint": "姓名/项目/金额/阻力点/责任人/约见时间",
+              "type": "textarea",
+              "label": "明日重点客户清单",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "doctorConsultSchedule",
+              "hint": "医生/时段/客户",
+              "type": "textarea",
+              "label": "医生会诊安排",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:08:52.714Z",
+    "updatedAt": "2026-01-15T13:26:46.774Z"
+  },
+  {
+    "id": "cmkfgubmw0005tqx448y1wy3u",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk6w0002p8bis94wbri5",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "module_a_module_a",
+          "type": "general",
+          "title": "成本支出",
+          "fields": [
+            {
+              "id": "exp_materials",
+              "type": "money",
+              "label": "材料费",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_marketing",
+              "type": "money",
+              "label": "市场部支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_daily",
+              "type": "money",
+              "label": "日常支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_online",
+              "type": "money",
+              "label": "网络部支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_processing",
+              "type": "money",
+              "label": "加工费",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_refund",
+              "type": "money",
+              "label": "退费支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_water",
+              "type": "money",
+              "label": "水费",
+              "reportEnabled": false
+            },
+            {
+              "id": "exp_electricity",
+              "type": "money",
+              "label": "电费",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "module_b_module_b",
+          "type": "general",
+          "title": "总支出",
+          "fields": [
+            {
+              "id": "pay_wechat",
+              "type": "money",
+              "label": "微信支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "pay_cash",
+              "type": "money",
+              "label": "现金支出",
+              "reportEnabled": false
+            },
+            {
+              "id": "pay_public",
+              "type": "money",
+              "label": "对公支出",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "module_c_module_c",
+          "type": "general",
+          "title": "总收入",
+          "fields": [
+            {
+              "id": "inc_wechat",
+              "type": "money",
+              "label": "微信（工作机）收入",
+              "reportEnabled": false
+            },
+            {
+              "id": "inc_cash",
+              "type": "money",
+              "label": "现金收入",
+              "reportEnabled": false
+            },
+            {
+              "id": "inc_med",
+              "type": "money",
+              "label": "医保卡收入",
+              "reportEnabled": false
+            },
+            {
+              "id": "inc_pos",
+              "type": "money",
+              "label": "刷卡机收入",
+              "reportEnabled": false
+            },
+            {
+              "id": "inc_platform",
+              "type": "money",
+              "label": "平台收入",
+              "reportEnabled": false
+            },
+            {
+              "id": "inc_public",
+              "type": "money",
+              "label": "对公收入",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "module_d_module_d",
+          "type": "general",
+          "title": "大项",
+          "fields": [
+            {
+              "id": "risk_control_desc",
+              "type": "textarea",
+              "label": "风险控制说明",
+              "reportEnabled": false
+            },
+            {
+              "id": "large_refund_reason",
+              "type": "textarea",
+              "label": "大额退费原因",
+              "reportEnabled": false
+            },
+            {
+              "id": "other_notes",
+              "type": "textarea",
+              "label": "备注",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:08:58.088Z",
+    "updatedAt": "2026-01-15T13:26:46.863Z"
+  },
+  {
+    "id": "cmkfh88y2000btqx4668ld54p",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7q0007p8bi8otrtkrt",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "treatment_treatment",
+          "type": "general",
+          "title": "一、诊疗情况",
+          "fields": [
+            {
+              "id": "patientsTotal",
+              "type": "number",
+              "label": "接诊患者总数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "patientsFirst",
+              "type": "number",
+              "label": "初诊患者",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "patientsReturn",
+              "type": "number",
+              "label": "复诊患者",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "implantCases",
+              "type": "number",
+              "label": "种植手术台数",
+              "reportEnabled": false
+            },
+            {
+              "id": "orthoCases",
+              "type": "number",
+              "label": "正畸调整人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreCases",
+              "type": "number",
+              "label": "修复治疗人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "pediatricCases",
+              "type": "number",
+              "label": "儿牙治疗人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "emergencyCases",
+              "type": "number",
+              "label": "急诊处理人数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "quality_quality",
+          "type": "general",
+          "title": "二、医疗质量",
+          "fields": [
+            {
+              "id": "planOutputCount",
+              "type": "number",
+              "label": "治疗方案输出数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "consultationCount",
+              "type": "number",
+              "label": "会诊次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complicationCount",
+              "type": "number",
+              "label": "并发症/不良反应例数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complicationDetail",
+              "type": "textarea",
+              "label": "并发症详情",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "tomorrow_tomorrow",
+          "type": "general",
+          "title": "三、明日计划",
+          "fields": [
+            {
+              "id": "tomorrowSurgery",
+              "type": "textarea",
+              "label": "明日手术安排",
+              "reportEnabled": false
+            },
+            {
+              "id": "tomorrowConsult",
+              "type": "textarea",
+              "label": "明日会诊安排",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:19:47.786Z",
+    "updatedAt": "2026-01-15T13:26:47.130Z"
+  },
+  {
+    "id": "cmkfh8e13000dtqx42qfbmrvj",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "assistant",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "assistWork_assistWork",
+          "type": "general",
+          "title": "一、配台工作",
+          "fields": [
+            {
+              "id": "assistTotal",
+              "type": "number",
+              "label": "今日配台总次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "implantAssist",
+              "type": "number",
+              "label": "种植配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "orthoAssist",
+              "type": "number",
+              "label": "正畸配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreAssist",
+              "type": "number",
+              "label": "修复配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "pediatricAssist",
+              "type": "number",
+              "label": "儿牙配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rootCanalAssist",
+              "type": "number",
+              "label": "根管配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "surgeryAssist",
+              "type": "number",
+              "label": "外科手术配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "otherAssist",
+              "type": "number",
+              "label": "其他配台次数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "sterilization_sterilization",
+          "type": "general",
+          "title": "二、消毒灭菌",
+          "fields": [
+            {
+              "id": "sterilizerCycles",
+              "type": "number",
+              "label": "灭菌锅运行次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "instrumentPacks",
+              "type": "number",
+              "label": "器械包处理数量",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "sterilizationIssue",
+              "hint": "如有异常请详细记录",
+              "type": "textarea",
+              "label": "灭菌异常情况",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "materials_materials",
+          "type": "general",
+          "title": "三、器械与耗材",
+          "fields": [
+            {
+              "id": "materialShortage",
+              "hint": "缺什么、影响哪些诊疗",
+              "type": "textarea",
+              "label": "物料短缺情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "equipmentIssue",
+              "hint": "设备名称、故障描述",
+              "type": "textarea",
+              "label": "设备异常情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "consumableIncidents",
+              "hint": "过期/污染/损坏等",
+              "type": "number",
+              "label": "耗材异常事件",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "workload_workload",
+          "type": "general",
+          "title": "四、工作量与加班",
+          "fields": [
+            {
+              "id": "doctorsAssisted",
+              "type": "number",
+              "label": "配合医生人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeMinutes",
+              "type": "number",
+              "label": "加班时长（分钟）",
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeReason",
+              "type": "textarea",
+              "label": "加班原因",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:19:54.375Z",
+    "updatedAt": "2026-01-15T13:26:47.219Z"
+  },
+  {
+    "id": "cmkfh8krc000ftqx4smsdulgi",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "assistantLead",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "assistWork_assistWork",
+          "type": "general",
+          "title": "一、配台工作",
+          "fields": [
+            {
+              "id": "assistTotal",
+              "type": "number",
+              "label": "今日配台总次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "implantAssist",
+              "type": "number",
+              "label": "种植配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "orthoAssist",
+              "type": "number",
+              "label": "正畸配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreAssist",
+              "type": "number",
+              "label": "修复配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "pediatricAssist",
+              "type": "number",
+              "label": "儿牙配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rootCanalAssist",
+              "type": "number",
+              "label": "根管配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "surgeryAssist",
+              "type": "number",
+              "label": "外科手术配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "otherAssist",
+              "type": "number",
+              "label": "其他配台次数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "sterilization_sterilization",
+          "type": "general",
+          "title": "二、消毒灭菌",
+          "fields": [
+            {
+              "id": "sterilizerCycles",
+              "type": "number",
+              "label": "灭菌锅运行次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "instrumentPacks",
+              "type": "number",
+              "label": "器械包处理数量",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "sterilizationIssue",
+              "hint": "如有异常请详细记录",
+              "type": "textarea",
+              "label": "灭菌异常情况",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "materials_materials",
+          "type": "general",
+          "title": "三、器械与耗材",
+          "fields": [
+            {
+              "id": "materialShortage",
+              "hint": "缺什么、影响哪些诊疗",
+              "type": "textarea",
+              "label": "物料短缺情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "equipmentIssue",
+              "hint": "设备名称、故障描述",
+              "type": "textarea",
+              "label": "设备异常情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "consumableIncidents",
+              "hint": "过期/污染/损坏等",
+              "type": "number",
+              "label": "耗材异常事件",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "workload_workload",
+          "type": "general",
+          "title": "四、工作量与加班",
+          "fields": [
+            {
+              "id": "doctorsAssisted",
+              "type": "number",
+              "label": "配合医生人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeMinutes",
+              "type": "number",
+              "label": "加班时长（分钟）",
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeReason",
+              "type": "textarea",
+              "label": "加班原因",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:03.096Z",
+    "updatedAt": "2026-01-15T13:26:47.307Z"
+  },
+  {
+    "id": "cmkfh8o61000htqx4g7igzzfc",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "hygienist",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "cleaningWork_cleaningWork",
+          "type": "general",
+          "title": "一、洁牙工作",
+          "fields": [
+            {
+              "id": "cleaningTotal",
+              "type": "number",
+              "label": "今日洁牙人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "deepCleaningCount",
+              "type": "number",
+              "label": "深度洁牙人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "perioTherapyCount",
+              "type": "number",
+              "label": "牙周治疗人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "polishingCount",
+              "type": "number",
+              "label": "抛光人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "fluorideCount",
+              "type": "number",
+              "label": "涂氟人数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "revenue_revenue",
+          "type": "general",
+          "title": "二、业绩统计",
+          "fields": [
+            {
+              "id": "revenueTotal",
+              "type": "money",
+              "label": "今日业绩金额",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "avgRevenuePerPatient",
+              "type": "money",
+              "label": "人均消费",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "referral_referral",
+          "type": "general",
+          "title": "三、转诊情况",
+          "fields": [
+            {
+              "id": "referralToDoctor",
+              "hint": "发现需要进一步治疗的患者",
+              "type": "number",
+              "label": "转诊给医生人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "referralReason",
+              "hint": "牙周病/龋齿/正畸需求等",
+              "type": "textarea",
+              "label": "转诊原因说明",
+              "reportEnabled": false
+            },
+            {
+              "id": "followupAppointment",
+              "type": "number",
+              "label": "预约复诊人数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "patientFeedback_patientFeedback",
+          "type": "general",
+          "title": "四、患者反馈",
+          "fields": [
+            {
+              "id": "satisfiedCount",
+              "type": "number",
+              "label": "满意患者数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintCount",
+              "type": "number",
+              "label": "不满/投诉数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintDetail",
+              "type": "textarea",
+              "label": "投诉详情",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:07.431Z",
+    "updatedAt": "2026-01-15T13:26:47.397Z"
+  },
+  {
+    "id": "cmkfh7n270007tqx4p6jkkt4v",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk710003p8bi3vp1b6sf",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "daily_daily",
+          "type": "general",
+          "title": "店长经营日报",
+          "fields": [
+            {
+              "id": "totalVisits",
+              "type": "number",
+              "label": "当日总到诊",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "firstVisits",
+              "type": "number",
+              "label": "首诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "returnVisits",
+              "type": "number",
+              "label": "复诊人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "dealCount",
+              "type": "number",
+              "label": "当日成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "cashInYuan",
+              "type": "money",
+              "label": "实收金额",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "avgTicket",
+              "type": "money",
+              "label": "客单价",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreCount",
+              "type": "number",
+              "label": "综合-人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreAmount",
+              "type": "money",
+              "label": "综合-金额",
+              "reportEnabled": false
+            },
+            {
+              "id": "returnAppointment7Days",
+              "hint": "未来7天",
+              "type": "number",
+              "label": "复诊预约锁定人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "todayIssues",
+              "hint": "请输入...",
+              "type": "textarea",
+              "label": "今日异常/风险/需协调",
+              "reportEnabled": false
+            },
+            {
+              "id": "tomorrowKeyFocus",
+              "hint": "请输入...",
+              "type": "textarea",
+              "label": "明日重点安排",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:19:19.423Z",
+    "updatedAt": "2026-01-15T13:26:46.951Z"
+  },
+  {
+    "id": "cmkfh8yba000ltqx4fe2vzf7j",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "headNurse",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "assistWork_assistWork",
+          "type": "general",
+          "title": "一、配台工作",
+          "fields": [
+            {
+              "id": "assistTotal",
+              "type": "number",
+              "label": "今日配台总次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "implantAssist",
+              "type": "number",
+              "label": "种植配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "orthoAssist",
+              "type": "number",
+              "label": "正畸配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "restoreAssist",
+              "type": "number",
+              "label": "修复配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "pediatricAssist",
+              "type": "number",
+              "label": "儿牙配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rootCanalAssist",
+              "type": "number",
+              "label": "根管配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "surgeryAssist",
+              "type": "number",
+              "label": "外科手术配台次数",
+              "reportEnabled": false
+            },
+            {
+              "id": "otherAssist",
+              "type": "number",
+              "label": "其他配台次数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "sterilization_sterilization",
+          "type": "general",
+          "title": "二、消毒灭菌",
+          "fields": [
+            {
+              "id": "sterilizerCycles",
+              "type": "number",
+              "label": "灭菌锅运行次数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "instrumentPacks",
+              "type": "number",
+              "label": "器械包处理数量",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "sterilizationIssue",
+              "hint": "如有异常请详细记录",
+              "type": "textarea",
+              "label": "灭菌异常情况",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "materials_materials",
+          "type": "general",
+          "title": "三、器械与耗材",
+          "fields": [
+            {
+              "id": "materialShortage",
+              "hint": "缺什么、影响哪些诊疗",
+              "type": "textarea",
+              "label": "物料短缺情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "equipmentIssue",
+              "hint": "设备名称、故障描述",
+              "type": "textarea",
+              "label": "设备异常情况",
+              "reportEnabled": false
+            },
+            {
+              "id": "consumableIncidents",
+              "hint": "过期/污染/损坏等",
+              "type": "number",
+              "label": "耗材异常事件",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "workload_workload",
+          "type": "general",
+          "title": "四、工作量与加班",
+          "fields": [
+            {
+              "id": "doctorsAssisted",
+              "type": "number",
+              "label": "配合医生人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeMinutes",
+              "type": "number",
+              "label": "加班时长（分钟）",
+              "reportEnabled": false
+            },
+            {
+              "id": "overtimeReason",
+              "type": "textarea",
+              "label": "加班原因",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:20.662Z",
+    "updatedAt": "2026-01-15T13:26:47.577Z"
+  },
+  {
+    "id": "cmkfh958x000ntqx4jmekrfbh",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk6t0001p8biaxwq7y1l",
+    "schemaId": "expansion",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "daily_spots",
+          "type": "general",
+          "title": "多点位清单",
+          "fields": [
+            {
+              "id": "spot_details",
+              "type": "dynamic_rows",
+              "label": "点位明细",
+              "rowFields": [
+                {
+                  "id": "spot_name",
+                  "type": "dynamic_select",
+                  "label": "点位名称",
+                  "dynamicOptionsKey": "marketing_spots"
+                },
+                {
+                  "id": "valid_leads_phone",
+                  "type": "number",
+                  "label": "有效线索(电话)"
+                },
+                {
+                  "id": "direct_visits",
+                  "type": "number",
+                  "label": "现场引流到诊"
+                },
+                {
+                  "id": "visit_deal",
+                  "type": "number",
+                  "label": "到诊成交"
+                },
+                {
+                  "id": "cash_expected",
+                  "type": "money",
+                  "label": "应收"
+                },
+                {
+                  "id": "cash_received",
+                  "type": "money",
+                  "label": "实收"
+                },
+                {
+                  "id": "remark",
+                  "type": "text",
+                  "label": "备注",
+                  "fullWidth": true
+                }
+              ],
+              "addRowLabel": "+ 新增点位",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "daily_plan",
+          "type": "general",
+          "title": "计划",
+          "fields": [
+            {
+              "id": "today_plan",
+              "type": "textarea",
+              "label": "今日计划",
+              "reportEnabled": false
+            },
+            {
+              "id": "tomorrow_plan",
+              "type": "textarea",
+              "label": "明日计划",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:29.649Z",
+    "updatedAt": "2026-01-15T13:26:47.667Z"
+  },
+  {
+    "id": "cmkfh9787000ptqx4sgf2tjb7",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk6t0001p8biaxwq7y1l",
+    "schemaId": "customerService",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "dailyWork_dailyWork",
+          "type": "general",
+          "title": "今日工作汇报",
+          "fields": [
+            {
+              "id": "followUpCount",
+              "hint": "总拨打次数",
+              "type": "number",
+              "label": "今日回访量",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "validCallCount",
+              "hint": "接通并有效沟通",
+              "type": "number",
+              "label": "有效通话数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "invalidCallCount",
+              "hint": "未接通/挂断",
+              "type": "number",
+              "label": "无效通话数",
+              "reportEnabled": false
+            },
+            {
+              "id": "appointmentCount",
+              "hint": "成功预约到店",
+              "type": "number",
+              "label": "预约人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "classACount",
+              "hint": "高意向、近期可转化",
+              "type": "number",
+              "label": "A类高意向客户(新增)",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "classBCount",
+              "hint": "有意向需跟进",
+              "type": "number",
+              "label": "B类普通客户(新增)",
+              "reportEnabled": false
+            },
+            {
+              "id": "classCCount",
+              "hint": "长期跟进培育",
+              "type": "number",
+              "label": "C类待培育客户(新增)",
+              "reportEnabled": false
+            },
+            {
+              "id": "todayRecordsCount",
+              "hint": "新建客户档案数",
+              "type": "number",
+              "label": "今日建档量",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "dealCount",
+              "hint": "今日成交客户数",
+              "type": "number",
+              "label": "成交人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "todayExpected",
+              "type": "money",
+              "label": "当日应收",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "todayActual",
+              "type": "money",
+              "label": "当日实收",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "todayProblems",
+              "hint": "客户拒接、异议处理等",
+              "type": "textarea",
+              "label": "今日遇到问题",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "tomorrowPlan",
+              "hint": "重点客户跟进等",
+              "type": "textarea",
+              "label": "明日工作计划",
+              "required": true,
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:32.216Z",
+    "updatedAt": "2026-01-15T13:26:47.760Z"
+  },
+  {
+    "id": "cmjxyemr60001o7zoso3wjp5x",
+    "role": "STAFF",
+    "departmentId": "cmjaewk7q0007p8bi8otrtkrt",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "container_1767434163342",
+          "type": "general",
+          "title": "今日接诊",
+          "fields": [
+            {
+              "id": "field_1767434202958",
+              "type": "number",
+              "label": "普诊",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434216574",
+              "type": "number",
+              "label": "种植",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434228334",
+              "type": "number",
+              "label": "正畸",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434246831",
+              "type": "number",
+              "label": "复诊",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434258702",
+              "type": "number",
+              "label": "初诊预约",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434267542",
+              "type": "text",
+              "label": "复诊预约",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "container_1767434305814",
+          "type": "general",
+          "title": "总结",
+          "fields": [
+            {
+              "id": "field_1767434317806",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434330694",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767434341366",
+              "type": "textarea",
+              "label": "备注",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-03T07:00:47.771Z",
+    "updatedAt": "2026-01-15T13:47:00.908Z"
+  },
+  {
+    "id": "cmkfh85le0009tqx4kqnmj8sd",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk740004p8bi3m3k6dv8",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "attendance_mgmt_attendance_mgmt",
+          "type": "general",
+          "title": "一、考勤管理",
+          "fields": [
+            {
+              "id": "att_expected",
+              "type": "number",
+              "label": "应到人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_actual",
+              "type": "number",
+              "label": "实到人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_rest",
+              "type": "number",
+              "label": "休息人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_late_early_count",
+              "type": "number",
+              "label": "迟到/早退人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_late_early_details",
+              "hint": "点击添加记录每位迟到/早退人员信息",
+              "type": "dynamic_rows",
+              "label": "迟到/早退明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "type",
+                  "type": "text",
+                  "label": "类型"
+                },
+                {
+                  "id": "reason",
+                  "type": "text",
+                  "label": "原因"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "时长"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "att_absent",
+              "type": "number",
+              "label": "旷工人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_leave_count",
+              "type": "number",
+              "label": "请假人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "att_leave_details",
+              "hint": "点击添加记录每位请假人员信息",
+              "type": "dynamic_rows",
+              "label": "请假明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "reason",
+                  "type": "text",
+                  "label": "请假原因"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "请假时长"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "att_overtime_count",
+              "type": "number",
+              "label": "加班人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "att_overtime_details",
+              "hint": "点击添加记录每位加班人员信息",
+              "type": "dynamic_rows",
+              "label": "加班明细",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "duration",
+                  "type": "text",
+                  "label": "加班时长"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "att_other",
+              "type": "textarea",
+              "label": "其他说明",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "recruit_board_recruit_board",
+          "type": "general",
+          "title": "二、招聘看板",
+          "fields": [
+            {
+              "id": "rec_greetings",
+              "type": "number",
+              "label": "打招呼人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_intentional",
+              "type": "number",
+              "label": "意向人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_positions",
+              "hint": "例：医生、咨询、前台",
+              "type": "text",
+              "label": "招聘岗位",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_results",
+              "type": "textarea",
+              "label": "招聘结果",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_interviews",
+              "type": "number",
+              "label": "面试人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_interview_results",
+              "type": "textarea",
+              "label": "面试结果",
+              "reportEnabled": false
+            },
+            {
+              "id": "rec_supplement",
+              "type": "textarea",
+              "label": "其他补充",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "personnel_mgmt_onboardivider",
+          "type": "general",
+          "title": "【入职管理】",
+          "fields": [
+            {
+              "id": "p_onboard_details",
+              "hint": "记录今日入职的人员信息",
+              "type": "dynamic_rows",
+              "label": "今日入职人员",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "姓名"
+                },
+                {
+                  "id": "dept",
+                  "type": "text",
+                  "label": "入职部门"
+                },
+                {
+                  "id": "time",
+                  "type": "text",
+                  "label": "入职时间"
+                },
+                {
+                  "id": "process",
+                  "type": "text",
+                  "label": "流程进度"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "p_onboard_note",
+              "hint": "其他需要说明的入职事项",
+              "type": "textarea",
+              "label": "入职备注",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "personnel_mgmt_contract_divider",
+          "type": "general",
+          "title": "【合同签订】",
+          "fields": [
+            {
+              "id": "p_contract_details",
+              "hint": "记录今日签订合同的人员（含试岗期、试用期、免责协议、劳动合同等）",
+              "type": "dynamic_rows",
+              "label": "今日合同签订",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "员工姓名"
+                },
+                {
+                  "id": "contract_type",
+                  "type": "text",
+                  "label": "合同类型"
+                },
+                {
+                  "id": "note",
+                  "type": "text",
+                  "label": "备注"
+                }
+              ],
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "personnel_mgmt_resign_divider",
+          "type": "general",
+          "title": "【离职管理】",
+          "fields": [
+            {
+              "id": "p_resign_details",
+              "hint": "记录离职人员及交接情况",
+              "type": "dynamic_rows",
+              "label": "今日离职人员",
+              "rowFields": [
+                {
+                  "id": "name",
+                  "type": "text",
+                  "label": "离职人员"
+                },
+                {
+                  "id": "dept",
+                  "type": "text",
+                  "label": "离职部门"
+                },
+                {
+                  "id": "handover",
+                  "type": "text",
+                  "label": "交接情况"
+                }
+              ],
+              "reportEnabled": false
+            },
+            {
+              "id": "p_resign_note",
+              "hint": "其他需要说明的离职事项",
+              "type": "textarea",
+              "label": "离职备注",
+              "reportEnabled": false
+            },
+            {
+              "id": "p_other",
+              "type": "textarea",
+              "label": "其他人事事项",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:19:43.442Z",
+    "updatedAt": "2026-01-15T13:26:47.041Z"
+  },
+  {
+    "id": "cmkfh8t3z000jtqx4f31tthv5",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7s0008p8biksd7sbgm",
+    "schemaId": "hygienistLead",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "cleaningWork_cleaningWork",
+          "type": "general",
+          "title": "一、洁牙工作",
+          "fields": [
+            {
+              "id": "cleaningTotal",
+              "type": "number",
+              "label": "今日洁牙人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "deepCleaningCount",
+              "type": "number",
+              "label": "深度洁牙人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "perioTherapyCount",
+              "type": "number",
+              "label": "牙周治疗人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "polishingCount",
+              "type": "number",
+              "label": "抛光人数",
+              "reportEnabled": false
+            },
+            {
+              "id": "fluorideCount",
+              "type": "number",
+              "label": "涂氟人数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "revenue_revenue",
+          "type": "general",
+          "title": "二、业绩统计",
+          "fields": [
+            {
+              "id": "revenueTotal",
+              "type": "money",
+              "label": "今日业绩金额",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "avgRevenuePerPatient",
+              "type": "money",
+              "label": "人均消费",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "referral_referral",
+          "type": "general",
+          "title": "三、转诊情况",
+          "fields": [
+            {
+              "id": "referralToDoctor",
+              "hint": "发现需要进一步治疗的患者",
+              "type": "number",
+              "label": "转诊给医生人数",
+              "required": true,
+              "reportEnabled": false
+            },
+            {
+              "id": "referralReason",
+              "hint": "牙周病/龋齿/正畸需求等",
+              "type": "textarea",
+              "label": "转诊原因说明",
+              "reportEnabled": false
+            },
+            {
+              "id": "followupAppointment",
+              "type": "number",
+              "label": "预约复诊人数",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        },
+        {
+          "id": "patientFeedback_patientFeedback",
+          "type": "general",
+          "title": "四、患者反馈",
+          "fields": [
+            {
+              "id": "satisfiedCount",
+              "type": "number",
+              "label": "满意患者数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintCount",
+              "type": "number",
+              "label": "不满/投诉数",
+              "reportEnabled": false
+            },
+            {
+              "id": "complaintDetail",
+              "type": "textarea",
+              "label": "投诉详情",
+              "reportEnabled": false
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-15T13:20:13.919Z",
+    "updatedAt": "2026-01-15T13:26:47.487Z"
+  },
+  {
+    "id": "cmk89v3sx0001ygza3pfw6xjd",
+    "role": "STAFF",
+    "departmentId": "cmjaewk6w0002p8bis94wbri5",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "module_a_module_a",
+          "type": "general",
+          "title": "成本支出",
+          "fields": [
+            {
+              "id": "exp_materials",
+              "type": "money",
+              "label": "材料费",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_marketing",
+              "type": "money",
+              "label": "市场部支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_daily",
+              "type": "money",
+              "label": "日常支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_online",
+              "type": "money",
+              "label": "网络部支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_processing",
+              "type": "money",
+              "label": "加工费",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_refund",
+              "type": "money",
+              "label": "退费支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_water",
+              "type": "money",
+              "label": "水费",
+              "reportEnabled": true
+            },
+            {
+              "id": "exp_electricity",
+              "type": "money",
+              "label": "电费",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "module_b_module_b",
+          "type": "general",
+          "title": "总支出",
+          "fields": [
+            {
+              "id": "pay_wechat",
+              "type": "money",
+              "label": "微信支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "pay_cash",
+              "type": "money",
+              "label": "现金支出",
+              "reportEnabled": true
+            },
+            {
+              "id": "pay_public",
+              "type": "money",
+              "label": "对公支出",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "module_c_module_c",
+          "type": "general",
+          "title": "总收入",
+          "fields": [
+            {
+              "id": "inc_wechat",
+              "type": "money",
+              "label": "微信（工作机）收入",
+              "reportEnabled": true
+            },
+            {
+              "id": "inc_cash",
+              "type": "money",
+              "label": "现金收入",
+              "reportEnabled": true
+            },
+            {
+              "id": "inc_med",
+              "type": "money",
+              "label": "医保卡收入",
+              "reportEnabled": true
+            },
+            {
+              "id": "inc_pos",
+              "type": "money",
+              "label": "刷卡机收入",
+              "reportEnabled": true
+            },
+            {
+              "id": "inc_platform",
+              "type": "money",
+              "label": "平台收入",
+              "reportEnabled": true
+            },
+            {
+              "id": "inc_public",
+              "type": "money",
+              "label": "对公收入",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "module_d_module_d",
+          "type": "general",
+          "title": "大项",
+          "fields": [
+            {
+              "id": "risk_control_desc",
+              "type": "textarea",
+              "label": "风险控制说明",
+              "reportEnabled": true
+            },
+            {
+              "id": "large_refund_reason",
+              "type": "textarea",
+              "label": "大额退费原因",
+              "reportEnabled": true
+            },
+            {
+              "id": "other_notes",
+              "type": "textarea",
+              "label": "备注",
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        }
+      ]
+    },
+    "createdAt": "2026-01-10T12:19:14.049Z",
+    "updatedAt": "2026-01-15T13:47:00.613Z"
+  },
+  {
+    "id": "cmjzu0o8200071r1fn0kzpopk",
+    "role": "DEPT_LEAD",
+    "departmentId": "cmjaewk7m0006p8bi2n1aup8s",
+    "schemaId": "",
+    "configJson": {
+      "version": 2,
+      "containers": [
+        {
+          "id": "all_content_section_1",
+          "type": "general",
+          "title": "一、业绩统计",
+          "fields": [
+            {
+              "id": "actualRevenue",
+              "type": "money",
+              "label": "实收业绩",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "expectedRevenue",
+              "type": "money",
+              "label": "应收业绩",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "refundAmount",
+              "type": "money",
+              "label": "今日退费",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "all_content_section_2",
+          "type": "general",
+          "title": "二、到院统计",
+          "fields": [
+            {
+              "id": "new_patients_count",
+              "hint": "今日新建立档案的患者数",
+              "type": "number",
+              "label": "新增患者(建档)",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "totalVisitors",
+              "type": "number",
+              "label": "总到院人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "firstVisitCount",
+              "type": "number",
+              "label": "初诊人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "returnVisitCount",
+              "type": "number",
+              "label": "复诊人数",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "firstVisitAmount",
+              "type": "money",
+              "label": "初诊消费金额",
+              "required": true,
+              "reportEnabled": true
+            },
+            {
+              "id": "returnVisitAmount",
+              "type": "money",
+              "label": "复诊消费金额",
+              "required": true,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": true
+        },
+        {
+          "id": "container_1767537178753",
+          "type": "general",
+          "title": "总结",
+          "fields": [
+            {
+              "id": "field_1767537186345",
+              "type": "textarea",
+              "label": "今日总结",
+              "required": false,
+              "reportEnabled": true
+            },
+            {
+              "id": "field_1767537198353",
+              "type": "textarea",
+              "label": "明日计划",
+              "required": false,
+              "reportEnabled": true
+            }
+          ],
+          "reportEnabled": false
+        }
+      ]
+    },
+    "createdAt": "2026-01-04T14:33:30.448Z",
+    "updatedAt": "2026-01-15T13:52:54.431Z"
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "cmjy5jrom0005likdjo8vm2x5",
+    "category": "AD",
+    "name": "腾讯AD",
+    "value": "腾讯AD",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:20:44.753Z",
+    "updatedAt": "2026-01-03T10:20:44.753Z"
+  },
+  {
+    "id": "cmjy5k0sv0006likdroadcjli",
+    "category": "AD",
+    "name": "高德AD",
+    "value": "高德AD",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:20:56.719Z",
+    "updatedAt": "2026-01-03T10:20:56.719Z"
+  },
+  {
+    "id": "cmjy5k8h30007likdn2nw7wkj",
+    "category": "AD",
+    "name": "小红书AD",
+    "value": "小红书AD",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:21:06.514Z",
+    "updatedAt": "2026-01-03T10:21:06.514Z"
+  },
+  {
+    "id": "cmjy5kd940008likdb88a8avj",
+    "category": "AD",
+    "name": "百度AD",
+    "value": "百度AD",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:21:12.856Z",
+    "updatedAt": "2026-01-03T10:21:12.856Z"
+  },
+  {
+    "id": "cmjy5kn7g0009likd1ewpe0fp",
+    "category": "AD",
+    "name": "抖音AD",
+    "value": "抖音AD",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:21:25.606Z",
+    "updatedAt": "2026-01-03T10:21:25.606Z"
+  },
+  {
+    "id": "cmjy5ky3f000alikdsmus2fso",
+    "category": "AD",
+    "name": "其它",
+    "value": "其它",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:21:39.868Z",
+    "updatedAt": "2026-01-03T10:21:39.868Z"
+  },
+  {
+    "id": "cmjy5niav000blikdmy20m6vt",
+    "category": "buy",
+    "name": "抖音团购",
+    "value": "抖音团购",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:23:39.218Z",
+    "updatedAt": "2026-01-03T10:23:39.218Z"
+  },
+  {
+    "id": "cmjy5nmw9000clikdy2nsurvv",
+    "category": "buy",
+    "name": "美团团购",
+    "value": "美团团购",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:23:45.322Z",
+    "updatedAt": "2026-01-03T10:23:45.322Z"
+  },
+  {
+    "id": "cmjy5nrdi000dlikdsym2uohy",
+    "category": "buy",
+    "name": "高德团购",
+    "value": "高德团购",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:23:51.126Z",
+    "updatedAt": "2026-01-03T10:23:51.126Z"
+  },
+  {
+    "id": "cmjy5nw1w000elikd7x105t10",
+    "category": "buy",
+    "name": "快手团购",
+    "value": "快手团购",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:23:57.038Z",
+    "updatedAt": "2026-01-03T10:23:57.038Z"
+  },
+  {
+    "id": "cmjy5o2bm000flikd3cakumn7",
+    "category": "buy",
+    "name": "其它",
+    "value": "其它",
+    "isActive": true,
+    "sortOrder": 0,
+    "createdAt": "2026-01-03T10:24:05.314Z",
+    "updatedAt": "2026-01-03T10:24:05.314Z"
+  },
+  {
+    "id": "cmk9ockkh0000lv8xgxig9wf9",
+    "category": "user_roles",
+    "name": "员工",
+    "value": "STAFF",
+    "isActive": true,
+    "sortOrder": 1,
+    "createdAt": "2026-01-11T11:52:29.729Z",
+    "updatedAt": "2026-01-11T11:52:29.729Z"
+  },
+  {
+    "id": "cmk9ockrv0001lv8xud65ytbr",
+    "category": "user_roles",
+    "name": "部门负责人",
+    "value": "DEPT_LEAD",
+    "isActive": true,
+    "sortOrder": 2,
+    "createdAt": "2026-01-11T11:52:29.996Z",
+    "updatedAt": "2026-01-11T11:52:29.996Z"
+  },
+  {
+    "id": "cmk9ockwl0002lv8xg38gr606",
+    "category": "user_roles",
+    "name": "财务人员",
+    "value": "FINANCE",
+    "isActive": true,
+    "sortOrder": 3,
+    "createdAt": "2026-01-11T11:52:30.166Z",
+    "updatedAt": "2026-01-11T11:52:30.166Z"
+  },
+  {
+    "id": "cmk9ocl190003lv8xjkn1r9rj",
+    "category": "user_roles",
+    "name": "医疗质控",
+    "value": "MEDICAL_QC",
+    "isActive": true,
+    "sortOrder": 4,
+    "createdAt": "2026-01-11T11:52:30.333Z",
+    "updatedAt": "2026-01-11T11:52:30.333Z"
+  },
+  {
+    "id": "cmk9ocl5w0004lv8xywf94x5e",
+    "category": "user_roles",
+    "name": "店长",
+    "value": "STORE_MANAGER",
+    "isActive": true,
+    "sortOrder": 5,
+    "createdAt": "2026-01-11T11:52:30.501Z",
+    "updatedAt": "2026-01-11T11:52:30.501Z"
+  },
+  {
+    "id": "cmk9oclaj0005lv8xfzjtu1vb",
+    "category": "user_roles",
+    "name": "区域经理",
+    "value": "REGION_MANAGER",
+    "isActive": true,
+    "sortOrder": 6,
+    "createdAt": "2026-01-11T11:52:30.667Z",
+    "updatedAt": "2026-01-11T11:52:30.667Z"
+  },
+  {
+    "id": "cmk9oclf50006lv8xk6e8tcag",
+    "category": "user_roles",
+    "name": "总部管理员",
+    "value": "HQ_ADMIN",
+    "isActive": true,
+    "sortOrder": 7,
+    "createdAt": "2026-01-11T11:52:30.834Z",
+    "updatedAt": "2026-01-11T11:52:30.834Z"
+  }
+]
